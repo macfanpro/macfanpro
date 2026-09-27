@@ -362,6 +362,10 @@ struct Watch: ParsableCommand {
             )
         }
 
+        guard interval.isFinite, interval > 0 else {
+            throw ValidationError("--interval must be a positive number of seconds")
+        }
+
         let fc = try FanControl()
         let monitor = ThermalMonitor(fanControl: fc, profile: selectedProfile)
 
@@ -477,6 +481,13 @@ struct Calibrate: ParsableCommand {
             )
         }
 
+        // A running app with a controlling profile (Smart) keeps rewriting fan
+        // targets through the daemon and overrides every calibration level. Quit it
+        // the same way `auto --stop-app` does, and reopen it when calibration ends.
+        let stoppedApp = Self.stopApp()
+        calibrationStoppedApp = stoppedApp != nil
+        defer { if let app = stoppedApp { Self.reopen(app) } }
+
         print("MacFanPro Calibration")
         print("========================")
         print("Mode: \(calMode.description)")
@@ -501,6 +512,9 @@ struct Calibrate: ParsableCommand {
                 try? resetFC.resetAuto()
             }
             print("Fans reset. No calibration data was saved.")
+            if calibrationStoppedApp {
+                print("The menu bar app was quit for calibration. Reopen MacFanPro from Applications.")
+            }
             Darwin.exit(0)
         }
 
@@ -509,7 +523,20 @@ struct Calibrate: ParsableCommand {
         }
 
         let data = try runner.run()
-        try data.save()
+        do {
+            try data.save()
+        } catch let invalid as CalibrationData.InvalidResult {
+            // Keep the previous calibration: the app would reject this one and fall
+            // back to the default curve.
+            print("\nCalibration finished, but the result was NOT saved: \(invalid.reason)")
+            print("The existing calibration file was left unchanged:")
+            print("  \(CalibrationData.filePath.path)")
+            if let logPath = runner.logPath {
+                print("The sensor log of this run is at:")
+                print("  \(logPath.path)")
+            }
+            throw invalid
+        }
 
         print("\nCalibration complete.")
         print("\nSaved to:")
@@ -526,7 +553,59 @@ struct Calibrate: ParsableCommand {
             print("The CSV log contains every sensor reading taken during calibration.")
         }
     }
+
+    /// Quits the menu bar app if the invoking user runs it, and returns its bundle
+    /// path for `reopen`. Nil when it was not running.
+    private static func stopApp() -> String? {
+        guard let uid = ProcessInfo.processInfo.environment["SUDO_UID"],
+              let pid = output("/usr/bin/pgrep", ["-x", "-u", uid, "MacFanProApp"])?
+                .split(separator: "\n").first else { return nil }
+        let executable = output("/bin/ps", ["-o", "comm=", "-p", String(pid)]) ?? ""
+        let bundle = executable.range(of: ".app/").map { String(executable[..<$0.lowerBound]) + ".app" }
+            ?? "/Applications/MacFanPro.app"
+
+        let kill = Process()
+        kill.executableURL = URL(fileURLWithPath: "/usr/bin/killall")
+        kill.arguments = ["MacFanProApp"]
+        try? kill.run()
+        kill.waitUntilExit()
+        // Wait for it to exit, so it cannot write one last fan target.
+        for _ in 0..<50 where output("/usr/bin/pgrep", ["-x", "MacFanProApp"]) != nil {
+            Thread.sleep(forTimeInterval: 0.1)
+        }
+        print("Quit the MacFanPro menu bar app for calibration. It will be reopened afterwards.\n")
+        return bundle
+    }
+
+    /// Reopens the app in the invoking user's session, as Install does after an upgrade.
+    private static func reopen(_ bundle: String) {
+        guard let uid = ProcessInfo.processInfo.environment["SUDO_UID"] else { return }
+        let open = Process()
+        open.executableURL = URL(fileURLWithPath: "/bin/launchctl")
+        open.arguments = ["asuser", uid, "/usr/bin/open", bundle]
+        try? open.run()
+        open.waitUntilExit()
+        print("\nReopening the MacFanPro menu bar app. If it does not appear, open it from Applications.")
+    }
+
+    private static func output(_ path: String, _ args: [String]) -> String? {
+        let process = Process()
+        let pipe = Pipe()
+        process.executableURL = URL(fileURLWithPath: path)
+        process.arguments = args
+        process.standardOutput = pipe
+        process.standardError = FileHandle.nullDevice
+        guard (try? process.run()) != nil else { return nil }
+        let data = pipe.fileHandleForReading.readDataToEndOfFile()
+        process.waitUntilExit()
+        guard process.terminationStatus == 0 else { return nil }
+        let text = String(decoding: data, as: UTF8.self).trimmingCharacters(in: .whitespacesAndNewlines)
+        return text.isEmpty ? nil : text
+    }
 }
+
+/// Read by calibration's Ctrl-C handler, which cannot capture context.
+private var calibrationStoppedApp = false
 
 // MARK: - Log
 
@@ -653,6 +732,12 @@ struct Install: ParsableCommand {
         }
 
         let sourceBinary = URL(fileURLWithPath: ProcessInfo.processInfo.arguments[0]).resolvingSymlinksInPath()
+        // The version this run installs: this binary's, or a newer Homebrew keg's when
+        // this is the installed copy re-run after `brew upgrade`. The app bundle must
+        // match it, both here and when the bundle is copied below.
+        let resyncKeg = sourceBinary.path == URL(fileURLWithPath: MacFanProDaemon.installPath).resolvingSymlinksInPath().path
+            ? Self.newerHomebrewKeg(than: MacFanProVersion.current) : nil
+        let installVersion = resyncKeg?.version ?? MacFanProVersion.current
         let appCandidates = [
             sourceBinary.deletingLastPathComponent().appendingPathComponent("MacFanPro.app").path,
             sourceBinary.deletingLastPathComponent().deletingLastPathComponent().appendingPathComponent("MacFanPro.app").path,
@@ -661,7 +746,7 @@ struct Install: ParsableCommand {
         ]
         guard appCandidates.contains(where: {
             let info = NSDictionary(contentsOfFile: "\($0)/Contents/Info.plist")
-            return info?["CFBundleShortVersionString"] as? String == MacFanProVersion.current
+            return info?["CFBundleShortVersionString"] as? String == installVersion
                 && info?["CFBundleIdentifier"] as? String == "io.github.macfanpro.app"
         }) else {
             throw ValidationError("No matching MacFanPro.app was found. Install with Homebrew or run ./setup.sh before installing the daemon.")
@@ -824,46 +909,12 @@ struct Install: ParsableCommand {
         } else {
             // Self-referential invocation → a re-sync request. The running binary's
             // version IS installPath's version (same file), so only a strictly-newer
-            // Homebrew keg is worth installing; never downgrade.
+            // Homebrew keg is worth installing (found above as resyncKeg); never downgrade.
             let current = MacFanProVersion.current
-            let kegBinaries = [
-                "/opt/homebrew/opt/macfanpro/bin/macfanpro",
-                "/usr/local/opt/macfanpro/bin/macfanpro",
-            ]
-            // Version from the keg's resolved Cellar path — no execution. opt/<f>
-            // symlinks to Cellar/<f>/<version>; take the component after it.
-            func kegVersion(_ path: String) -> String? {
-                let real = URL(fileURLWithPath: path).resolvingSymlinksInPath().path
-                let parts = real.components(separatedBy: "/Cellar/macfanpro/")
-                guard parts.count == 2 else { return nil }
-                return parts[1].components(separatedBy: "/").first
-            }
-
-            var resynced = false
-            for keg in kegBinaries {
-                guard fm.fileExists(atPath: keg) else { continue }
-                guard let version = kegVersion(keg) else {
-                    // Keg is present but its version couldn't be read from the path —
-                    // most likely the formula was renamed (the parse keys on
-                    // "/Cellar/macfanpro/"). Say so loudly: otherwise re-sync goes
-                    // silent and no one would know why a stale daemon won't update.
-                    let resolved = URL(fileURLWithPath: keg).resolvingSymlinksInPath().path
-                    print("""
-                        Found a Homebrew keg at \(keg) but couldn't parse its version \
-                        from the resolved path \(resolved) (expected \
-                        .../Cellar/macfanpro/<version>/...). Skipping re-sync — \
-                        check whether the formula was renamed.
-                        """)
-                    continue
-                }
-                // Only a numerically newer version qualifies for automatic re-sync.
-                guard MacFanProVersion.isNewerRelease(version, than: current) else { continue }
-                print("Re-syncing daemon binary from Homebrew keg \(version) at \(keg).")
-                try installBinary(from: URL(fileURLWithPath: keg).resolvingSymlinksInPath().path)
-                resynced = true
-                break
-            }
-            if !resynced {
+            if let keg = resyncKeg {
+                print("Re-syncing daemon binary from Homebrew keg \(keg.version) at \(keg.path).")
+                try installBinary(from: keg.path)
+            } else {
                 // Already current — nothing newer to install. Re-assert ownership/
                 // perms and fail LOUD if it doesn't take. launchd execs installPath as
                 // root at every boot, so if a prior bad state left it user-owned or
@@ -982,7 +1033,7 @@ struct Install: ParsableCommand {
         func bundleVersion(_ appPath: String) -> String? {
             NSDictionary(contentsOfFile: "\(appPath)/Contents/Info.plist")?["CFBundleShortVersionString"] as? String
         }
-        let wantedVersion = MacFanProVersion.current
+        let wantedVersion = installVersion
 
         // Whether a version-matching bundle was actually installed THIS run. The
         // relaunch at the end keys off this: reopening a stale /Applications bundle
@@ -1072,6 +1123,45 @@ struct Install: ParsableCommand {
 
         migration?.complete()
         print("Done.")
+    }
+
+    /// When this run IS the installed copy (sudo's secure_path picks /usr/local/bin
+    /// after `brew upgrade`), the Homebrew keg to re-sync from if it is strictly newer.
+    /// Its version is read from the keg's resolved Cellar path — no execution.
+    static func newerHomebrewKeg(than current: String) -> (path: String, version: String)? {
+        let fm = FileManager.default
+        let kegBinaries = [
+            "/opt/homebrew/opt/macfanpro/bin/macfanpro",
+            "/usr/local/opt/macfanpro/bin/macfanpro",
+        ]
+        // opt/<f> symlinks to Cellar/<f>/<version>; take the component after it.
+        func kegVersion(_ path: String) -> String? {
+            let real = URL(fileURLWithPath: path).resolvingSymlinksInPath().path
+            let parts = real.components(separatedBy: "/Cellar/macfanpro/")
+            guard parts.count == 2 else { return nil }
+            return parts[1].components(separatedBy: "/").first
+        }
+        for keg in kegBinaries {
+            guard fm.fileExists(atPath: keg) else { continue }
+            guard let version = kegVersion(keg) else {
+                // Keg is present but its version couldn't be read from the path —
+                // most likely the formula was renamed (the parse keys on
+                // "/Cellar/macfanpro/"). Say so loudly: otherwise re-sync goes
+                // silent and no one would know why a stale daemon won't update.
+                let resolved = URL(fileURLWithPath: keg).resolvingSymlinksInPath().path
+                print("""
+                    Found a Homebrew keg at \(keg) but couldn't parse its version \
+                    from the resolved path \(resolved) (expected \
+                    .../Cellar/macfanpro/<version>/...). Skipping re-sync — \
+                    check whether the formula was renamed.
+                    """)
+                continue
+            }
+            // Only a numerically newer version qualifies for automatic re-sync.
+            guard MacFanProVersion.isNewerRelease(version, than: current) else { continue }
+            return (URL(fileURLWithPath: keg).resolvingSymlinksInPath().path, version)
+        }
+        return nil
     }
 }
 

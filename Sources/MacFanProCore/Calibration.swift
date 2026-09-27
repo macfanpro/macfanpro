@@ -154,14 +154,25 @@ extension CalibrationData {
         return try body()
     }
 
-    public func save() throws {
+    /// Thrown by `save` for a result the app would reject; nothing is written.
+    public struct InvalidResult: Error, CustomStringConvertible {
+        public let reason: String
+        public var description: String { "Calibration result is invalid: \(reason)" }
+    }
+
+    /// Refuses a result that fails `validationError`, so a failed run (for example one
+    /// whose fan levels were overridden and hit the ceiling at once) never replaces a
+    /// valid calibration with one the app would reject.
+    public func save(to url: URL = Self.filePath) throws {
+        if let reason = validationError { throw InvalidResult(reason: reason) }
         let encoder = JSONEncoder()
         encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
         let data = try encoder.encode(self)
         try Self.asInvokingUser {
-            let dir = Self.filePath.deletingLastPathComponent()
+            let dir = url.deletingLastPathComponent()
             try FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
-            try data.write(to: Self.filePath)
+            // Atomic: a crash mid-write can't leave a truncated file in place.
+            try data.write(to: url, options: .atomic)
         }
     }
 
