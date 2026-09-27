@@ -1,5 +1,15 @@
 # MacFanPro changelog
 
+## 0.2.3.23
+
+- Recover failed fan writes even when a previous CLI or app hold exists. A partly applied low-speed command can no longer leave an old max label suppressing recovery. Failed releases remain pending until they succeed, and new writes cannot discard that recovery.
+- Decide watchdog expiry and thermal suspension under the same hardware lock. A watchdog waiting behind thermal max no longer resets the fans using an obsolete suspension snapshot.
+- Automatic app releases now ask the daemon to preserve CLI ownership at execution time. Background retries, launch recovery and shutdown cannot clear a newer CLI hold; explicit Default and CLI auto remain unconditional.
+- Share acknowledgement and retry handling between the app and CLI watch. Failed writes do not report success, stale profile completions are ignored, and a failed safety max is retried through the hysteresis band.
+- Accumulate small ramp steps at short watch intervals. Balanced and Smart now ramp in both directions at 0.01, 0.1 and 1 second intervals while keeping their sustained-start timing.
+- Return and display each fan's accepted target after clamping. All-fan requests use each fan's own limits on both daemon and direct paths.
+- Add 20 regression tests, including simulated hardware failures, controlled watchdog interleavings and asynchronous command acknowledgements. Smart's curve and the 95/90°C protection thresholds are unchanged.
+
 ## 0.2.3.22
 
 - A max or set that fails part-way through taking manual control no longer leaves fans manual (or Apple's thermal control suppressed) with nothing recorded. The background service resets them to auto, and keeps retrying every 5 seconds if the SMC is not ready, for example during dark wake.
