@@ -1,5 +1,12 @@
 # MacFanPro changelog
 
+## 0.2.3.20
+
+- Default now reliably returns the fans to macOS control when pressed while a profile is ramping. Previously a ramp write from the old profile could land after the reset, which left the fans manual while the menu showed Silent.
+- After wake, the background service no longer replays a fan setting that was released or replaced during its 2-second delay, or while the thermal floor holds the fans at max.
+- The heartbeat watchdog re-checks that the app has really stopped checking in before it resets the fans. The thermal floor keeps retrying until a restore write succeeds, instead of reporting the override as over while the fans stay at max.
+- `sudo macfanpro calibrate` now saves to your own `~/Library/Application Support/MacFanPro/` instead of root's, so the Smart profile actually uses the calibration. It also watches GPU temperatures as well as CPU, which is the same reading Smart looks up. Earlier calibrations were saved where the app could not read them; run calibration again to use it.
+
 ## 0.2.3.19
 
 - Size the language pop-up to its choices instead of stretching it across the row. It takes the native pop-up width (its longest choice), stays the same width when the selection changes, and lines up with the version value below.
