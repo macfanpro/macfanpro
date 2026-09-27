@@ -59,7 +59,8 @@ public final class ThermalMonitor {
     // MARK: - Tick Timing
 
     /// Thermal tick interval in seconds. Fan control runs at this rate.
-    private let tickInterval: Float
+    /// Seconds per tick, for the sustained trigger and ramp rates. Set by start().
+    private var tickInterval: Float
 
     /// Monitor cadence: process capture + anomaly detection every N thermal ticks.
     /// At 100ms thermal tick, 20 × 0.1s = 2 seconds.
@@ -122,6 +123,7 @@ public final class ThermalMonitor {
 
     public func start(interval: TimeInterval = 0.1) {
         stop()
+        tickInterval = Float(interval)
 
         let timer = DispatchSource.makeTimerSource(queue: queue)
         timer.schedule(deadline: .now(), repeating: interval)
@@ -137,8 +139,9 @@ public final class ThermalMonitor {
         timer = nil
     }
 
-    /// Update the active profile.
-    public func switchProfile(_ profile: FanProfile) {
+    /// Update the active profile. `applied`, if given, runs on the monitor's queue once
+    /// the switch has taken effect, after any command the previous profile issued.
+    public func switchProfile(_ profile: FanProfile, applied: (@Sendable () -> Void)? = nil) {
         queue.async { [self] in
             activeProfile = profile
             lastAppliedRPMPercent = 0
@@ -159,6 +162,7 @@ public final class ThermalMonitor {
             }
 
             state = .idle
+            applied?()
         }
     }
 
@@ -193,10 +197,16 @@ public final class ThermalMonitor {
             return
         }
 
-        // Clear safety override with hysteresis
-        if state == .safetyOverride
-            && maxTemp < FanProfile.safetyTempThreshold - FanProfile.hysteresisDegrees
-        {
+        // Clear safety override with hysteresis. Until then keep the override: falling
+        // through would let the profile lower the fans (Silent resets at once) at 94°C.
+        if state == .safetyOverride {
+            guard maxTemp < FanProfile.safetyTempThreshold - FanProfile.hysteresisDegrees else {
+                if tickCounter % Self.uiUpdateCadence == 0 {
+                    onUpdate?(status, activeProfile, state)
+                }
+                tickCounter += 1
+                return
+            }
             state = .idle
         }
 

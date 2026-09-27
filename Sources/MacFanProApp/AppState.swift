@@ -56,6 +56,8 @@ final class AppState: ObservableObject {
     /// Keeps the previous profile's late writes, and a superseded Default result,
     /// from landing after a profile switch.
     private var profileSwitch = ProfileSwitchGate()
+    /// Counts the monitor's writes, so a retried reset stops once a newer write exists.
+    private var monitorWrites = 0
 
     /// Runs the 5s heartbeat/version/state polls OFF the main thread so a slow
     /// or hung daemon can never stall the UI run loop (the v0.1.7 freeze).
@@ -353,7 +355,6 @@ final class AppState: ObservableObject {
         monitor.onUpdate = { [weak self] status, profile, state in
             Task { @MainActor [weak self] in
                 self?.latestStatus = status
-                self?.profileSwitch.monitorReported(handsOff: profile.curve.handsOff)
                 self?.activeProfile = profile
                 self?.monitorState = state
                 // Max of only the displayed sensors (CPU and GPU rows)
@@ -372,7 +373,7 @@ final class AppState: ObservableObject {
                 // OFF the main thread. During a ramp these fire up to ~10x/sec;
                 // previously each ran a blocking round-trip on the main actor and
                 // starved the run loop (v0.1.7).
-                self.commandPump.submit(command)
+                self.submitMonitorCommand(command)
             }
         }
         monitor.start()
@@ -394,7 +395,7 @@ final class AppState: ObservableObject {
     func setSmart() {
         guard servicesEnabled else { return }
         let took = seizeControl()
-        profileSwitch.picked(handsOff: false)
+        _ = profileSwitch.picked(handsOff: false)
         activeProfile = .smart
         persistSelectedProfile(FanProfile.smart.id)
         monitor?.switchProfile(.smart)
@@ -434,7 +435,7 @@ final class AppState: ObservableObject {
                 // Default is a deliberate user click, so it persists Silent — but only
                 // here, on the daemon-confirmed success path, never on a failed reset.
                 self.persistSelectedProfile(FanProfile.silent.id)
-                self.monitor?.switchProfile(.silent)
+                self.monitor?.switchProfile(.silent, applied: self.reopenGate(press))
                 TFLogger.shared.profile("Reset to Default (Silent (Apple Default))")
             }
         }
@@ -443,10 +444,10 @@ final class AppState: ObservableObject {
     func selectProfile(_ profile: FanProfile) {
         guard servicesEnabled else { return }
         let took = seizeControl()
-        profileSwitch.picked(handsOff: profile.curve.handsOff)
+        let switchToken = profileSwitch.picked(handsOff: profile.curve.handsOff)
         activeProfile = profile
         persistSelectedProfile(profile.id)
-        monitor?.switchProfile(profile)
+        monitor?.switchProfile(profile, applied: reopenGate(switchToken))
         TFLogger.shared.profile("Selected: \(profile.name)")
 
         // Reset to auto when switching to a hands-off profile, OR when taking over
@@ -456,6 +457,34 @@ final class AppState: ObservableObject {
         if profile.curve.handsOff || profile.id == "smart" || profile.id == "silent" || took {
             commandPump.submit(.resetAuto)
         }
+    }
+
+    /// Hand a monitor write to the pump. The monitor treats a reset as done once sent
+    /// (it goes idle and sends nothing more until the next ramp), so a failed reset
+    /// would leave fans manual under a hold the heartbeat keeps alive. Retry it, backing
+    /// off to 30s, until it lands or the monitor writes something newer.
+    private func submitMonitorCommand(_ command: FanCommand, attempt: Int = 0) {
+        monitorWrites += 1
+        let write = monitorWrites
+        guard command == .resetAuto else {
+            commandPump.submit(command)
+            return
+        }
+        commandPump.submit(command) { [weak self] ok in
+            guard !ok else { return }
+            Task { @MainActor [weak self] in
+                try? await Task.sleep(for: .seconds(min(2 * (attempt + 1), 30)))
+                guard let self, self.monitorWrites == write, self.externalHold == nil,
+                      self.profileSwitch.allows(.resetAuto) else { return }
+                self.submitMonitorCommand(.resetAuto, attempt: attempt + 1)
+            }
+        }
+    }
+
+    /// Called on the monitor's queue once a switch took effect. Hops to the main actor
+    /// behind any write the previous profile queued there, so those are dropped first.
+    private func reopenGate(_ token: Int) -> @Sendable () -> Void {
+        { [weak self] in Task { @MainActor in self?.profileSwitch.switchApplied(token) } }
     }
 
     // MARK: - Profile persistence
