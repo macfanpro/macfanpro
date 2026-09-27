@@ -1,0 +1,16 @@
+Thermal app events (UTC):
+[2026-09-27T09:27:18Z] [FAN] Smart fans on: 1350 RPM at 64.6°C
+[2026-09-27T09:27:19Z] [SAFETY] Override triggered: 96.6°C — fans maxed
+[2026-09-27T09:27:22Z] [FAN] Smart fans off: 49.8°C below 50°C
+
+Sleep/wake power events (Asia/Shanghai):
+2026-09-27 17:33:21 +0800 Sleep               	Entering Sleep state due to 'Software Sleep pid=50218':TCPKeepAlive=active Using AC (Charge:80%) 31 secs
+2026-09-27 17:33:52 +0800 DarkWake            	DarkWake from Deep Idle [CDNP] : due to smc.sysState.Wake(0x70070000) wifibt SMC.OutboxNotEmpty/ Using AC (Charge:80%) 24 secs
+2026-09-27 17:34:16 +0800 Wake                	DarkWake to FullWake from Deep Idle [CDNVA] : due to HID Activity Using AC (Charge:80%)
+
+Daemon fan writes (UTC):
+[2026-09-27T09:33:15Z] [FAN] Set fan 0 to 3000 RPM
+[2026-09-27T09:33:15Z] [FAN] Set fan 1 to 3000 RPM
+[2026-09-27T09:34:23Z] [FAN] Set fan 0 to 3000 RPM
+[2026-09-27T09:34:23Z] [FAN] Set fan 1 to 3000 RPM
+[2026-09-27T09:34:52Z] [FAN] Reset to Apple defaults

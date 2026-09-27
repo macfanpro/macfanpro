@@ -1,0 +1,50 @@
+time,stage,safety_peak_c,pressure,owner,command,safety_suspended,fan0_mode,fan0_target_rpm,fan0_actual_rpm,fan1_mode,fan1_target_rpm,fan1_actual_rpm
+2026-09-27T09:27:03.362988+00:00,baseline,40,0,none,,False,system,0,0,system,0,0
+2026-09-27T09:27:03.398227+00:00,cpu-4,40,0,none,,False,system,0,0,system,0,0
+2026-09-27T09:27:03.936794+00:00,cpu-4,51.4,0,none,,False,system,0,0,system,0,0
+2026-09-27T09:27:04.476096+00:00,cpu-4,51.4,0,none,,False,system,0,0,system,0,0
+2026-09-27T09:27:05.015128+00:00,cpu-4,55.3,0,none,,False,system,0,0,system,0,0
+2026-09-27T09:27:05.553708+00:00,cpu-4,55.3,0,none,,False,system,0,0,system,0,0
+2026-09-27T09:27:06.091855+00:00,cpu-4,85,0,none,,False,system,0,0,system,0,0
+2026-09-27T09:27:06.625532+00:00,cpu-4,85,0,none,,False,system,0,0,system,0,0
+2026-09-27T09:27:07.191161+00:00,cpu-4,68.5,0,none,,False,system,0,0,system,0,0
+2026-09-27T09:27:07.720288+00:00,cpu-4,83.8,0,none,,False,system,0,0,system,0,0
+2026-09-27T09:27:08.258894+00:00,cpu-4,83.8,0,none,,False,system,0,0,system,0,0
+2026-09-27T09:27:08.797548+00:00,cpu-4,86.5,0,none,,False,system,0,0,system,0,0
+2026-09-27T09:27:09.336577+00:00,cpu-4,86.5,0,none,,False,system,0,0,system,0,0
+2026-09-27T09:27:09.872561+00:00,cpu-4,64.6,0,none,,False,system,0,0,system,0,0
+2026-09-27T09:27:10.412702+00:00,cpu-4,64.6,0,none,,False,system,0,0,system,0,0
+2026-09-27T09:27:10.949625+00:00,cpu-4,76.3,0,none,,False,system,0,0,system,0,0
+2026-09-27T09:27:11.489592+00:00,cpu-4,76.3,0,none,,False,system,0,0,system,0,0
+2026-09-27T09:27:12.028218+00:00,cpu-4,57.5,0,none,,False,system,0,0,system,0,0
+2026-09-27T09:27:12.566526+00:00,cpu-4,60.3,0,none,,False,system,0,0,system,0,0
+2026-09-27T09:27:13.105099+00:00,cpu-4,87.7,0,none,,False,system,0,0,system,0,0
+2026-09-27T09:27:13.644477+00:00,cpu-4,87.7,0,none,,False,auto,0,0,auto,0,0
+2026-09-27T09:27:14.182851+00:00,cpu-4,74.9,0,none,,False,auto,0,0,auto,0,0
+2026-09-27T09:27:14.715900+00:00,cpu-4,74.9,0,none,,False,auto,1350,0,auto,1458,0
+2026-09-27T09:27:15.254946+00:00,cpu-4,61.1,0,none,,False,auto,1350,0,auto,1458,0
+2026-09-27T09:27:15.794321+00:00,cpu-4,90.9,0,none,,False,auto,1350,0,auto,1458,0
+2026-09-27T09:27:16.332585+00:00,cpu-4,90.9,0,none,,False,auto,1350,152,auto,1458,153
+2026-09-27T09:27:16.871666+00:00,cpu-4,85.4,0,none,,False,auto,1350,258,auto,1458,260
+2026-09-27T09:27:17.410188+00:00,cpu-4,85.4,0,none,,False,auto,1350,468,auto,1458,471
+2026-09-27T09:27:17.950113+00:00,cpu-4,77.8,0,none,,False,auto,1350,732,auto,1458,737
+2026-09-27T09:27:18.495210+00:00,cpu-8,77.8,0,none,,False,auto,1350,923,auto,1458,944
+2026-09-27T09:27:19.033521+00:00,cpu-8,96.6,0,app,set 1350,False,manual,1350,1267,manual,1350,1289
+2026-09-27T09:27:19.066004+00:00,cooldown,96.6,0,app,set 1350,False,manual,1350,1267,manual,1350,1289
+2026-09-27T09:27:19.612855+00:00,cooldown,96.6,0,app,max,False,manual,5777,2245,manual,5777,2197
+2026-09-27T09:27:20.163925+00:00,cooldown,67.9,0,app,set 5719,False,manual,5719,4460,manual,5719,4460
+2026-09-27T09:27:20.715384+00:00,cooldown,62.6,0,app,set 5632,False,manual,5661,4951,manual,5661,4934
+2026-09-27T09:27:21.259042+00:00,cooldown,51.8,0,app,set 5560,False,manual,5574,5285,manual,5574,5282
+2026-09-27T09:27:21.811903+00:00,cooldown,51,0,app,set 5488,False,manual,5488,5420,manual,5488,5417
+2026-09-27T09:27:22.359940+00:00,cooldown,51,0,app,set 5401,False,manual,5430,5440,manual,5430,5378
+2026-09-27T09:27:22.898190+00:00,cooldown,49.8,0,none,,False,manual,5343,5440,manual,5343,5415
+2026-09-27T09:27:23.437388+00:00,cooldown,49.8,0,none,,False,auto,1350,4951,auto,1458,4952
+2026-09-27T09:27:23.978424+00:00,cooldown,49.4,0,none,,False,auto,1350,3502,auto,1458,3541
+2026-09-27T09:27:24.533508+00:00,cooldown,49.4,0,none,,False,auto,0,2525,auto,0,2659
+2026-09-27T09:27:25.075639+00:00,cooldown,48.8,0,none,,False,auto,0,0,auto,0,0
+2026-09-27T09:27:25.629206+00:00,cooldown,48.8,0,none,,False,system,0,0,system,0,0
+2026-09-27T09:27:26.185378+00:00,cooldown,47.7,0,none,,False,system,0,0,system,0,0
+2026-09-27T09:27:26.736443+00:00,cooldown,44.1,0,none,,False,system,0,0,system,0,0
+2026-09-27T09:27:27.293921+00:00,cooldown,44.1,0,none,,False,system,0,0,system,0,0
+2026-09-27T09:27:27.843537+00:00,cooldown,44.2,0,none,,False,system,0,0,system,0,0
+2026-09-27T09:27:28.396359+00:00,cooldown,44.2,0,none,,False,system,0,0,system,0,0
