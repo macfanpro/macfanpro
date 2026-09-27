@@ -267,11 +267,16 @@ public final class FanControl {
         try unlockFans(count: count)
 
         for i in 0..<count {
+            // Fans can differ in range; keep each target inside its own fan's limits.
+            let limits = i == 0 ? info : try fanInfo(i)
+            var target = rpm
+            if limits.maxRPM > 0 { target = min(target, limits.maxRPM) }
+            if limits.minRPM > 0 { target = max(target, limits.minRPM) }
             let targetKey = SMCFanKey.key(SMCFanKey.target, fan: i)
-            guard smc.writeKey(targetKey, bytes: floatToSMCBytes(rpm)) else {
+            guard smc.writeKey(targetKey, bytes: floatToSMCBytes(target)) else {
                 throw MacFanProError.writeFailed(targetKey)
             }
-            log("Set fan \(i) to \(Int(rpm)) RPM")
+            log("Set fan \(i) to \(Int(target)) RPM")
         }
     }
 
