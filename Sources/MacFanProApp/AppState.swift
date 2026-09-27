@@ -53,6 +53,11 @@ final class AppState: ObservableObject {
     private var heartbeatTimer: DispatchSourceTimer?
     /// Consecutive failed heartbeats, for debouncing `daemonUnreachable`.
     private var heartbeatFailures = 0
+    /// True from a Default press, or a hands-off profile pick, until the user picks
+    /// a profile that ramps. The monitor switches profile asynchronously, so ramp
+    /// writes from its previous profile can still arrive after the reset is queued;
+    /// dropping them keeps that reset the last write. Max and reset always pass.
+    private var dropRampWrites = false
 
     /// Runs the 5s heartbeat/version/state polls OFF the main thread so a slow
     /// or hung daemon can never stall the UI run loop (the v0.1.7 freeze).
@@ -363,6 +368,7 @@ final class AppState: ObservableObject {
                 // the main actor where externalHold lives; the monitor resumes
                 // control when they pick a profile or press Default.
                 guard self.externalHold == nil else { return }
+                guard !(self.dropRampWrites && Self.isRampWrite(command)) else { return }
                 // Hand off to the coalescing pump; the blocking socket write happens
                 // OFF the main thread. During a ramp these fire up to ~10x/sec;
                 // previously each ran a blocking round-trip on the main actor and
@@ -389,6 +395,7 @@ final class AppState: ObservableObject {
     func setSmart() {
         guard servicesEnabled else { return }
         let took = seizeControl()
+        dropRampWrites = false
         activeProfile = .smart
         persistSelectedProfile(FanProfile.smart.id)
         monitor?.switchProfile(.smart)
@@ -410,10 +417,13 @@ final class AppState: ObservableObject {
         // Send the reset off-main and reflect Silent ONLY once the daemon confirms;
         // on failure, leave the current profile active (so the monitor keeps trying)
         // and log it, rather than a false "Silent, handled" over a dead daemon.
+        // Until then, drop the old profile's ramp writes so none lands after the reset.
+        dropRampWrites = true
         commandPump.submit(.resetAuto) { [weak self] ok in
             Task { @MainActor in
                 guard let self else { return }
                 guard ok else {
+                    self.dropRampWrites = false
                     TFLogger.shared.error("Reset to Default failed — daemon unreachable; fans NOT reset")
                     return
                 }
@@ -430,6 +440,7 @@ final class AppState: ObservableObject {
     func selectProfile(_ profile: FanProfile) {
         guard servicesEnabled else { return }
         let took = seizeControl()
+        dropRampWrites = profile.curve.handsOff
         activeProfile = profile
         persistSelectedProfile(profile.id)
         monitor?.switchProfile(profile)
@@ -441,6 +452,15 @@ final class AppState: ObservableObject {
         // on the pump (never coalesced/reordered).
         if profile.curve.handsOff || profile.id == "smart" || profile.id == "silent" || took {
             commandPump.submit(.resetAuto)
+        }
+    }
+
+    /// Writes that only move a fan speed along a curve. Max (safety override) and
+    /// reset are never dropped.
+    nonisolated static func isRampWrite(_ command: FanCommand) -> Bool {
+        switch command {
+        case .setRPM, .setFan: return true
+        case .setMax, .resetAuto: return false
         }
     }
 
