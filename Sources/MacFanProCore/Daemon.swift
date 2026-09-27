@@ -269,6 +269,10 @@ public final class DaemonServer {
     private var hold: HoldState = .none
     /// True while the thermal floor is overriding a hold to max. Guarded by stateLock.
     private var safetySuspended = false
+    /// True after a failed write could not be undone: fans may be left manual (or
+    /// Ftst set) with no hold recorded. The watchdog loop retries the reset.
+    /// Guarded by stateLock.
+    private var releasePending = false
     private let stateLock = NSLock()
 
     /// Per-fan [min, max] RPM, cached at init (fixed hardware constants) for clamping
@@ -404,6 +408,8 @@ public final class DaemonServer {
             while true {
                 Thread.sleep(forTimeInterval: 5)
 
+                retryPendingRelease()
+
                 stateLock.lock()
                 let current = hold
                 stateLock.unlock()
@@ -427,9 +433,14 @@ public final class DaemonServer {
                 let suspended = safetySuspended
                 stateLock.unlock()
                 if suspended {
+                    // Under smcLock, like the floor's restore, so the hold can't vanish
+                    // between the restore reading it and applying it (which would leave
+                    // that speed pinned with no hold). Re-check once the lock is held.
+                    smcLock.lock()
                     stateLock.lock()
-                    if case .supervised(_, let beat) = hold, beat == lastBeat { hold = .none }
+                    if safetySuspended, case .supervised(_, let beat) = hold, beat == lastBeat { hold = .none }
                     stateLock.unlock()
+                    smcLock.unlock()
                     NSLog("MacFanPro daemon: supervised hold timed out during thermal suspension — cleared; fans stay at max until cooldown")
                     continue
                 }
@@ -581,11 +592,13 @@ public final class DaemonServer {
         case .engage:
             // Override the below-max hold to max. Direct SMC write — NEVER recordHold,
             // so the user's command + lastBeat are preserved for restore.
+            // Mark the suspension in the same smcLock section as the write, so a
+            // command can't slip in between, see no suspension and lower the fans.
             smcLock.lock()
             let ok = (try? fanControl.setMax()) != nil
+            if ok { stateLock.lock(); safetySuspended = true; stateLock.unlock() }
             smcLock.unlock()
             guard ok else { return }
-            stateLock.lock(); safetySuspended = true; stateLock.unlock()
             NSLog("MacFanPro daemon: thermal floor engaged at %.1f°C — fans held at max (was %@)",
                   temp, heldCommand ?? "none")
 
@@ -741,6 +754,7 @@ public final class DaemonServer {
             // re-apply (handleWake) and the `state` snapshot are unchanged.
             func recordHold(_ heldCommand: String) {
                 stateLock.lock()
+                releasePending = false
                 hold = oneshot
                     ? .unsupervised(command: heldCommand)
                     : .supervised(command: heldCommand, lastBeat: Date())
@@ -777,7 +791,7 @@ public final class DaemonServer {
                 // Exempt from the rate cap. Also the "hand back to Apple's auto curve"
                 // path, so it clears any thermal suspension — Apple's auto handles heat.
                 try fanControl.resetAuto()
-                stateLock.lock(); hold = .none; safetySuspended = false; stateLock.unlock()
+                stateLock.lock(); hold = .none; safetySuspended = false; releasePending = false; stateLock.unlock()
                 response = .ok()
             case .set:
                 guard let rpm = request.rpm else {
@@ -842,12 +856,49 @@ public final class DaemonServer {
                 response = .failure(.usage, "\(error)")
             default:
                 response = .failure(.internal, "\(error)")
+                releaseAfterFailedWrite(request.verb)
             }
         } catch {
             response = .failure(.internal, "\(error)")
+            releaseAfterFailedWrite(request.verb)
         }
 
         return response
+    }
+
+    /// A max/set/setfan that failed part-way may have left Ftst or a fan's manual mode
+    /// set, and no hold is recorded for it, so nothing would ever hand the fans back.
+    /// With no earlier hold to keep, reset to auto; if that fails too (the SMC can be
+    /// unavailable during dark wake), let the watchdog loop retry. Caller holds smcLock.
+    private func releaseAfterFailedWrite(_ verb: DaemonRequest.Verb) {
+        switch verb {
+        case .max, .set, .setfan: break
+        default: return
+        }
+        stateLock.lock()
+        let keep = hold.command != nil || safetySuspended
+        stateLock.unlock()
+        guard !keep else { return }
+        let released = (try? fanControl.resetAuto()) != nil
+        stateLock.lock(); releasePending = !released; stateLock.unlock()
+        NSLog("MacFanPro daemon: fan write failed — %@", released ? "reset to auto" : "reset failed, will retry")
+    }
+
+    /// Retry a reset that `releaseAfterFailedWrite` could not complete, unless a hold
+    /// or the thermal floor has taken the fans since.
+    private func retryPendingRelease() {
+        stateLock.lock()
+        let pending = releasePending
+        stateLock.unlock()
+        guard pending else { return }
+        smcLock.lock()
+        defer { smcLock.unlock() }
+        stateLock.lock()
+        let needed = releasePending && hold.command == nil && !safetySuspended
+        stateLock.unlock()
+        let done = !needed || (try? fanControl.resetAuto()) != nil
+        stateLock.lock(); if done { releasePending = false }; stateLock.unlock()
+        if needed { NSLog("MacFanPro daemon: pending reset %@", done ? "succeeded" : "failed, will retry") }
     }
 
     deinit {
