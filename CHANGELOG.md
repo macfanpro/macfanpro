@@ -1,5 +1,12 @@
 # MacFanPro changelog
 
+## 0.2.3.21
+
+- Security: `sudo macfanpro calibrate` now reads and writes your calibration files with your own permissions. In 0.2.3.20 it wrote them as root and then changed their owner, so a link planted in `~/Library/Application Support/MacFanPro/` by another program running as you could make root overwrite a system file and give it to you.
+- When the thermal floor ends, it re-checks the fan setting under the same lock it restores with, so it no longer restores a speed that `auto` had just cancelled.
+- The heartbeat watchdog clears an expired hold in the same step as it re-checks it, so a heartbeat arriving during the reset can no longer leave a manual hold on record over fans that are back on auto.
+- A slow Default no longer switches you back to Silent after you picked another profile, and no write from the previous profile, including its max, can land after the reset.
+
 ## 0.2.3.20
 
 - Default now reliably returns the fans to macOS control when pressed while a profile is ramping. Previously a ramp write from the old profile could land after the reset, which left the fans manual while the menu showed Silent.
