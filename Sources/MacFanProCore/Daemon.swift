@@ -439,8 +439,18 @@ public final class DaemonServer {
                 // it. The sleep/guard/continue stay outside — a steady tick allocates
                 // nothing autoreleasable (Date is a value type).
                 autoreleasepool {
-                    NSLog("MacFanPro daemon: heartbeat timeout — resetting fans to auto")
                     smcLock.lock()
+                    // Re-check once smcLock is held: heartbeats take only stateLock, so
+                    // one may have renewed the hold while this waited for the lock.
+                    stateLock.lock()
+                    let stillExpired: Bool
+                    if case .supervised(_, let beat) = hold, beat == lastBeat { stillExpired = true } else { stillExpired = false }
+                    stateLock.unlock()
+                    guard stillExpired else {
+                        smcLock.unlock()
+                        return
+                    }
+                    NSLog("MacFanPro daemon: heartbeat timeout — resetting fans to auto")
                     let resetSucceeded: Bool
                     do {
                         try fanControl.resetAuto()
@@ -588,12 +598,19 @@ public final class DaemonServer {
             let restoreCommand = hold.command
             stateLock.unlock()
             smcLock.lock()
+            let ok: Bool
             if let cmd = restoreCommand {
-                try? applyCommandString(cmd)
+                ok = (try? applyCommandString(cmd)) != nil
             } else {
-                try? fanControl.resetAuto()
+                ok = (try? fanControl.resetAuto()) != nil
             }
             smcLock.unlock()
+            // Like engage: change state only after the write lands. Staying suspended
+            // makes the next tick retry instead of leaving fans at max unreported.
+            guard ok else {
+                NSLog("MacFanPro daemon: thermal floor restore failed at %.1f°C — will retry", temp)
+                return
+            }
             stateLock.lock(); safetySuspended = false; stateLock.unlock()
             NSLog("MacFanPro daemon: thermal floor cleared at %.1f°C — %@",
                   temp, restoreCommand.map { "restored \($0)" } ?? "reset to auto")
@@ -655,6 +672,18 @@ public final class DaemonServer {
         DispatchQueue.global(qos: .utility).asyncAfter(deadline: .now() + 2.0) { [self] in
             smcLock.lock()
             defer { smcLock.unlock() }
+            // Re-check under smcLock: during the delay an `auto` or a watchdog reset may
+            // have cleared the hold, a new command may have replaced it, or the thermal
+            // floor may be holding max. Replaying the stale command would re-pin fans
+            // with no hold recorded, outside the watchdog's and the floor's reach.
+            stateLock.lock()
+            let current = hold.command
+            let suspended = safetySuspended
+            stateLock.unlock()
+            guard current == command, !suspended else {
+                NSLog("MacFanPro daemon: wake re-apply skipped — hold changed during the delay")
+                return
+            }
             do {
                 try applyCommandString(command)
                 NSLog("MacFanPro daemon: re-applied after wake")
