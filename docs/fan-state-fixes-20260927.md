@@ -115,7 +115,7 @@ Tests:
 
 ## Fourth review: recovery and acknowledgement (working tree, 2026-09-27)
 
-Status: local fixes on top of `705f48e` / 0.2.3.22. This section is not a release or installed-app acceptance record.
+Status: fixes based on `705f48e` / 0.2.3.22 were committed as `f3849d4` and shipped in 0.2.3.23. This section records the source repair and simulated regression checks; see the separate [0.2.3.23 release and installation acceptance record](macfanpro-0.2.3.23-validation.md) for CI, downloaded artifacts and the installed runtime.
 
 The `macfanpro-main` Claude Code session was read from local session
 `220788e8-f2c0-4892-b6bb-1450d9474d0b`. Its last delivery described 0.2.3.22 and acknowledged that daemon failure interleavings had not been forced. The subsequent review found six remaining defects (R1–R6). The user then asked Codex to implement and verify their repair.
@@ -157,4 +157,4 @@ Compiler logs for the final Debug/Release runs contain zero warnings or errors. 
 - The new conditional release uses a distinct verb. Old daemons reject it instead of silently interpreting it as unconditional auto. Install the matching app and daemon together when shipping this change.
 - Older daemon responses remain decodable. The new CLI reports unknown all-fan targets if a daemon supplies only the old scalar, rather than claiming that scalar was applied to every fan.
 - The all-fan direct path now clamps each fan independently, matching the daemon; per-fan direct requests still validate their requested RPM.
-- These are source/build/simulated-failure checks. The candidate has not been installed, published or validated through a real sleep/wake or thermal stress cycle. Earlier hardware and release evidence in this document applies to its named historical versions.
+- The table above contains source/build/simulated-failure checks. Release 0.2.3.23 was subsequently published and installed through Homebrew, with separate acceptance evidence linked above. It has not been validated through a real sleep/wake or thermal stress cycle in this review. Earlier hardware and release evidence in this document applies to its named historical versions.
