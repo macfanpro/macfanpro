@@ -130,27 +130,46 @@ extension CalibrationData {
             .appendingPathComponent("Library/Application Support/MacFanPro/calibration.json")
     }
 
-    /// Give files created as root under sudo back to the invoking user, so the app
-    /// (running as that user) can read, replace and delete them.
-    static func handToInvokingUser(_ urls: URL...) {
-        guard let user = invokingUser() else { return }
-        for url in urls {
-            try? FileManager.default.setAttributes(
-                [.ownerAccountID: user.uid, .groupOwnerAccountID: user.gid], ofItemAtPath: url.path)
+    /// Run file access in the invoking user's home as that user under sudo. The home
+    /// is theirs to rearrange, so root must not touch it with root's rights: a link
+    /// planted there could otherwise make root overwrite (or hand over) a system file.
+    /// With the effective ids switched, the kernel applies the user's own permissions,
+    /// and files and directories it creates belong to the user. The real ids stay root,
+    /// so the switch back always succeeds. Process-wide, so call it only while no other
+    /// thread does privileged work (calibration's stress threads are stopped). Runs
+    /// `body` unchanged when not under sudo.
+    static func asInvokingUser<T>(_ body: () throws -> T) throws -> T {
+        guard let user = invokingUser() else { return try body() }
+        guard setegid(user.gid) == 0 else {
+            throw MacFanProError.writeFailed("could not switch to group \(user.gid)")
         }
+        guard seteuid(user.uid) == 0 else {
+            setegid(0)
+            throw MacFanProError.writeFailed("could not switch to user \(user.uid)")
+        }
+        defer {
+            seteuid(0)
+            setegid(0)
+        }
+        return try body()
     }
 
     public func save() throws {
-        let dir = Self.filePath.deletingLastPathComponent()
-        try FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
         let encoder = JSONEncoder()
         encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
         let data = try encoder.encode(self)
-        try data.write(to: Self.filePath)
-        Self.handToInvokingUser(dir, Self.filePath)
+        try Self.asInvokingUser {
+            let dir = Self.filePath.deletingLastPathComponent()
+            try FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
+            try data.write(to: Self.filePath)
+        }
     }
 
     public static func load() -> CalibrationData? {
+        (try? asInvokingUser { readFile() }) ?? nil
+    }
+
+    private static func readFile() -> CalibrationData? {
         guard FileManager.default.fileExists(atPath: filePath.path) else { return nil }
 
         guard let data = try? Data(contentsOf: filePath) else {
@@ -434,15 +453,16 @@ public final class CalibrationRunner {
         try fanControl.resetAuto()
         waitForCooldown(below: 45)
 
-        // Set up CSV log
+        // Set up CSV log (stress is stopped, so no other thread runs during the switch)
         let logDir = CalibrationData.filePath.deletingLastPathComponent()
-        try FileManager.default.createDirectory(at: logDir, withIntermediateDirectories: true)
         let timestamp = isoFormatter.string(from: Date())
             .replacingOccurrences(of: ":", with: "-")
         let csvURL = logDir.appendingPathComponent("calibration_\(timestamp).csv")
-        FileManager.default.createFile(atPath: csvURL.path, contents: nil)
-        csvHandle = try FileHandle(forWritingTo: csvURL)
-        CalibrationData.handToInvokingUser(logDir, csvURL)
+        csvHandle = try CalibrationData.asInvokingUser {
+            try FileManager.default.createDirectory(at: logDir, withIntermediateDirectories: true)
+            FileManager.default.createFile(atPath: csvURL.path, contents: nil)
+            return try FileHandle(forWritingTo: csvURL)
+        }
         logPath = csvURL
         csvWrite("timestamp,fan_pct,actual_temp,fan0_rpm,fan1_rpm,phase")
 
