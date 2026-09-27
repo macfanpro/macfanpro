@@ -14,18 +14,20 @@ import Foundation
 
 // MARK: - Fan Commands
 
-public enum FanCommand: Equatable {
+public enum FanCommand: Equatable, Sendable {
     case setMax
     case setRPM(Float)
     case setFan(index: Int, rpm: Float)
     case resetAuto
+    /// Background app release; the daemon refuses it while a CLI hold is active.
+    case releaseAppHold
 
     /// A hold keeps fans at a manual setting (so an unsupervised one-shot could
     /// be reverted by the watchdog); resetAuto hands control back and isn't held.
     public var isHold: Bool {
         switch self {
         case .setMax, .setRPM, .setFan: return true
-        case .resetAuto: return false
+        case .resetAuto, .releaseAppHold: return false
         }
     }
 
@@ -47,10 +49,16 @@ public enum MonitorState: Equatable {
 
 // MARK: - Thermal Monitor
 
-public final class ThermalMonitor {
+/// Control state is confined to `queue`; configure callbacks before starting.
+public final class ThermalMonitor: @unchecked Sendable {
     private let fanControl: FanControl
+    private let logger: TFLogger?
+    private let loadCalibration: () -> CalibrationData?
+    private let now: () -> Date
+    private let captureProcesses: (() -> String)?
     private var timer: DispatchSourceTimer?
     private let queue = DispatchQueue(label: "io.github.macfanpro.monitor")
+    private let queueKey = DispatchSpecificKey<Bool>()
 
     public private(set) var activeProfile: FanProfile
     public private(set) var state: MonitorState = .idle
@@ -75,8 +83,22 @@ public final class ThermalMonitor {
     // MARK: - Fan State
 
     private var lastAppliedRPMPercent: Float = 0
+    /// Accumulates sub-threshold ramp steps independently of acknowledged writes.
+    private var rampedRPMPercent: Float = 0
+    /// Latch the temperature demand independently of a successful max write, so
+    /// a failed/pending max is still retried in the 90–95°C hysteresis band.
+    private var safetyDemand = false
+    private var profileGeneration = 0
+    private var pendingCommand = false
+    /// False while a write is outstanding or failed: even an unchanged target must
+    /// be re-established because the daemon may have recovered to auto meanwhile.
+    private var commandConfirmed = false
+    private var failedCommand: (command: FanCommand, attempts: Int, retryAfter: Date)?
     private var fansCurrentlyRunning = false
-    private var sustainedAboveCount = 0
+    /// A write may have acquired manual control, even if it failed or belongs to a
+    /// previous profile. Keep its release obligation separate from profile engagement.
+    private var needsRelease = false
+    private var sustainedAboveSeconds: TimeInterval = 0
 
     // MARK: - Smart Profile State
 
@@ -99,44 +121,70 @@ public final class ThermalMonitor {
     public func setCalibrating(_ value: Bool) {
         queue.async { self.isCalibrating = value }
     }
-    private var calibration: CalibrationData? = {
-        guard let data = CalibrationData.load() else { return nil }
-        if let error = data.validationError {
-            TFLogger.shared.error("Calibration data rejected: \(error)")
-            return nil
-        }
-        return data
-    }()
+    private var calibration: CalibrationData?
 
-    /// Called on UI update cadence (every 500ms) with updated status
+    /// Called on UI update cadence (every 500ms) with updated status.
     public var onUpdate: ((ThermalStatus, FanProfile, MonitorState) -> Void)?
-    /// Called when a fan command needs to be executed (may require privilege)
+    /// Synchronous execution, used by CLI watch. Throwing leaves the command pending
+    /// in the control state so it is retried while still required.
     public var onFanCommand: ((FanCommand) throws -> Void)?
+    /// GUI execution remains off-main. State is committed only after acknowledgement;
+    /// at most one monitor write is outstanding, with bounded backoff on failure.
+    public var onFanCommandAsync: ((FanCommand, @escaping @Sendable (Bool) -> Void) -> Void)?
 
-    public init(fanControl: FanControl, profile: FanProfile = .silent) {
+    public convenience init(fanControl: FanControl, profile: FanProfile = .silent) {
+        self.init(fanControl: fanControl, profile: profile, interval: 0.1, logger: .shared,
+                  loadCalibration: CalibrationData.load, now: Date.init, captureProcesses: nil)
+    }
+
+    /// Injected log/clock/calibration/process capture keep control-loop tests isolated
+    /// from the user's logs and calibration, while exercising the production loop.
+    init(fanControl: FanControl, profile: FanProfile, interval: TimeInterval,
+         logger: TFLogger?, loadCalibration: @escaping () -> CalibrationData?,
+         now: @escaping () -> Date, captureProcesses: (() -> String)?) {
         self.fanControl = fanControl
         self.activeProfile = profile
-        self.tickInterval = 0.1
+        self.tickInterval = Float(interval)
+        self.logger = logger
+        self.loadCalibration = loadCalibration
+        self.now = now
+        self.captureProcesses = captureProcesses
+        queue.setSpecific(key: queueKey, value: true)
+        let loaded = loadCalibration()
+        if let error = loaded?.validationError {
+            logger?.error("Calibration data rejected: \(error)")
+        } else {
+            calibration = loaded
+        }
+    }
+
+    /// A single serialized sample, without installing a timer.
+    func pollOnce() { onQueue { tick() } }
+
+    private func onQueue<T>(_ work: () -> T) -> T {
+        if DispatchQueue.getSpecific(key: queueKey) == true { return work() }
+        return queue.sync(execute: work)
     }
 
     // MARK: - Lifecycle
 
     public func start(interval: TimeInterval = 0.1) {
         stop()
-        tickInterval = Float(interval)
-
-        let timer = DispatchSource.makeTimerSource(queue: queue)
-        timer.schedule(deadline: .now(), repeating: interval)
-        timer.setEventHandler { [weak self] in
-            self?.tick()
+        onQueue {
+            tickInterval = Float(interval)
+            let timer = DispatchSource.makeTimerSource(queue: queue)
+            timer.schedule(deadline: .now(), repeating: interval)
+            timer.setEventHandler { [weak self] in self?.tick() }
+            timer.resume()
+            self.timer = timer
         }
-        timer.resume()
-        self.timer = timer
     }
 
     public func stop() {
-        timer?.cancel()
-        timer = nil
+        onQueue {
+            timer?.cancel()
+            timer = nil
+        }
     }
 
     /// Update the active profile. `applied`, if given, runs on the monitor's queue once
@@ -144,17 +192,23 @@ public final class ThermalMonitor {
     public func switchProfile(_ profile: FanProfile, applied: (@Sendable () -> Void)? = nil) {
         queue.async { [self] in
             activeProfile = profile
+            profileGeneration += 1
+            commandConfirmed = false
+            failedCommand = nil
             lastAppliedRPMPercent = 0
+            rampedRPMPercent = 0
+            // Preserve needsRelease for an earlier write, but keep the new profile's
+            // own sustained-start timing and engagement state.
             fansCurrentlyRunning = false
-            sustainedAboveCount = 0
+            sustainedAboveSeconds = 0
             tickCounter = 0
 
             if profile.id == "smart" {
                 // Reset Smart state and reload calibration data
                 tempHistory.removeAll()
-                let loaded = CalibrationData.load()
+                let loaded = loadCalibration()
                 if let error = loaded?.validationError {
-                    TFLogger.shared.error("Calibration data rejected on reload: \(error)")
+                    logger?.error("Calibration data rejected on reload: \(error)")
                     calibration = nil
                 } else {
                     calibration = loaded
@@ -181,14 +235,17 @@ public final class ThermalMonitor {
             monitorTick(status: status, maxTemp: maxTemp)
         }
 
-        // Safety override: any sensor > 95°C
-        if maxTemp >= FanProfile.safetyTempThreshold {
-            if state != .safetyOverride {
-                applyCommand(.setMax)
-                state = .safetyOverride
-                fansCurrentlyRunning = true
-                lastAppliedRPMPercent = 1.0
-                TFLogger.shared.safety("Override triggered: \(String(format: "%.1f", maxTemp))°C — fans maxed")
+        if maxTemp >= FanProfile.safetyTempThreshold { safetyDemand = true }
+        if maxTemp < FanProfile.safetyTempThreshold - FanProfile.hysteresisDegrees { safetyDemand = false }
+        if safetyDemand {
+            if state != .safetyOverride || !commandConfirmed {
+                applyCommand(.setMax) { [self] in
+                    state = .safetyOverride
+                    fansCurrentlyRunning = true
+                    lastAppliedRPMPercent = 1.0
+                    rampedRPMPercent = 1.0
+                    logger?.safety("Override triggered: \(String(format: "%.1f", maxTemp))°C — fans maxed")
+                }
             }
             if tickCounter % Self.uiUpdateCadence == 0 {
                 onUpdate?(status, activeProfile, state)
@@ -197,26 +254,13 @@ public final class ThermalMonitor {
             return
         }
 
-        // Clear safety override with hysteresis. Until then keep the override: falling
-        // through would let the profile lower the fans (Silent resets at once) at 94°C.
-        if state == .safetyOverride {
-            guard maxTemp < FanProfile.safetyTempThreshold - FanProfile.hysteresisDegrees else {
-                if tickCounter % Self.uiUpdateCadence == 0 {
-                    onUpdate?(status, activeProfile, state)
-                }
-                tickCounter += 1
-                return
-            }
-            state = .idle
-        }
-
         // Sustained trigger: track consecutive ticks above start threshold.
-        // Per-profile duration — converted to tick count at runtime.
+        // Track elapsed seconds so custom intervals do not truncate the duration.
         let startThreshold = activeProfile.curve.startTemp
         if maxTemp >= startThreshold {
-            sustainedAboveCount += 1
+            sustainedAboveSeconds += TimeInterval(tickInterval)
         } else {
-            sustainedAboveCount = 0
+            sustainedAboveSeconds = 0
         }
 
         // Profile-specific logic
@@ -240,8 +284,8 @@ public final class ThermalMonitor {
     /// Runs at 2-second intervals to avoid sysctl overhead at 100ms.
     private func monitorTick(status: ThermalStatus, maxTemp: Float) {
         // Rolling process buffer — always capturing, like a security camera
-        let currentProcs = captureTopProcesses()
-        let ts = isoFormatter.string(from: Date())
+        let currentProcs = captureProcesses?() ?? captureTopProcesses()
+        let ts = isoFormatter.string(from: now())
         processBuffer.append((timestamp: ts, processes: currentProcs))
         if processBuffer.count > 15 { processBuffer.removeFirst() }
 
@@ -257,7 +301,7 @@ public final class ThermalMonitor {
                 if abs(instantDelta) > 5 {
                     let direction = instantDelta > 0 ? "spike" : "drop"
                     let fan0 = status.fans.first
-                    TFLogger.shared.info(
+                    logger?.info(
                         "Instant \(direction): \(String(format: "%.1f", prevTemp))→\(String(format: "%.1f", maxTemp))°C " +
                         "(\(String(format: "%+.1f", instantDelta))°C in 2s) | " +
                         "Fan0: \(fan0?.actualRPM ?? 0) RPM (\(fan0?.mode ?? "?")) | " +
@@ -274,7 +318,7 @@ public final class ThermalMonitor {
                 if abs(sustainedDelta) > 10 {
                     let direction = sustainedDelta > 0 ? "spike" : "drop"
                     let fan0 = status.fans.first
-                    TFLogger.shared.info(
+                    logger?.info(
                         "Sustained \(direction): \(String(format: "%.1f", oldest))→\(String(format: "%.1f", maxTemp))°C " +
                         "(\(String(format: "%+.1f", sustainedDelta))°C in 30s) | " +
                         "Fan0: \(fan0?.actualRPM ?? 0) RPM (\(fan0?.mode ?? "?")) | " +
@@ -287,9 +331,9 @@ public final class ThermalMonitor {
 
             // Dump the rolling buffer on any spike — shows what was running BEFORE
             if spikeDetected {
-                TFLogger.shared.info("Pre-spike process history (last \(processBuffer.count * 2)s):")
+                logger?.info("Pre-spike process history (last \(processBuffer.count * 2)s):")
                 for entry in processBuffer {
-                    TFLogger.shared.info("  \(entry.timestamp): \(entry.processes)")
+                    logger?.info("  \(entry.timestamp): \(entry.processes)")
                 }
             }
         }
@@ -320,12 +364,14 @@ public final class ThermalMonitor {
         let minPct = minRPM / maxRPM
 
         // Below stop threshold and fans running: turn off (with hysteresis)
-        if peakTemp < Self.smartStopTemp && fansCurrentlyRunning && rateOfChange() <= 0 {
-            applyCommand(.resetAuto)
-            lastAppliedRPMPercent = 0
-            fansCurrentlyRunning = false
-            state = .idle
-            TFLogger.shared.fan("Smart fans off: \(String(format: "%.1f", peakTemp))°C below \(Int(Self.smartStopTemp))°C")
+        if peakTemp < Self.smartStopTemp && needsRelease && rateOfChange() <= 0 {
+            applyCommand(.resetAuto) { [self] in
+                lastAppliedRPMPercent = 0
+                rampedRPMPercent = 0
+                fansCurrentlyRunning = false
+                state = .idle
+                logger?.fan("Smart fans off: \(String(format: "%.1f", peakTemp))°C below \(Int(Self.smartStopTemp))°C")
+            }
             return
         }
 
@@ -340,11 +386,7 @@ public final class ThermalMonitor {
         }
 
         // Sustained trigger: per-profile duration
-        let sustainedTicksNeeded = Int(activeProfile.curve.sustainedTriggerSec / tickInterval)
-        if !fansCurrentlyRunning && sustainedAboveCount < sustainedTicksNeeded {
-            if sustainedAboveCount == 1 {
-                TFLogger.shared.fan("Sustained trigger: \(String(format: "%.1f", peakTemp))°C — waiting (\(sustainedAboveCount)/\(sustainedTicksNeeded)) [Smart]")
-            }
+        if !fansCurrentlyRunning && sustainedAboveSeconds < TimeInterval(activeProfile.curve.sustainedTriggerSec) {
             return
         }
 
@@ -385,24 +427,26 @@ public final class ThermalMonitor {
         let rampUp = activeProfile.curve.rampUpPerSec * tickInterval
         let rampDown = activeProfile.curve.rampDownPerSec * tickInterval
 
-        if targetPct > lastAppliedRPMPercent {
-            targetPct = min(targetPct, lastAppliedRPMPercent + rampUp)
-        } else if targetPct < lastAppliedRPMPercent {
-            targetPct = max(targetPct, lastAppliedRPMPercent - rampDown)
+        if targetPct > rampedRPMPercent {
+            targetPct = min(targetPct, rampedRPMPercent + rampUp)
+        } else if targetPct < rampedRPMPercent {
+            targetPct = max(targetPct, rampedRPMPercent - rampDown)
         }
 
-        // Apply if changed meaningfully (threshold scaled for 100ms ticks)
-        if abs(targetPct - lastAppliedRPMPercent) > 0.002 {
+        rampedRPMPercent = targetPct
+        // Accumulate even when this tick is too small to justify an SMC write.
+        if !commandConfirmed || abs(targetPct - lastAppliedRPMPercent) > 0.002 {
             let targetRPM = max(maxRPM * targetPct, minRPM)
-            applyCommand(.setRPM(targetRPM))
+            let appliedPercent = targetPct
+            applyCommand(.setRPM(targetRPM)) { [self] in
+                if !fansCurrentlyRunning {
+                    logger?.fan("Smart fans on: \(Int(targetRPM)) RPM at \(String(format: "%.1f", peakTemp))°C")
+                }
 
-            if !fansCurrentlyRunning {
-                TFLogger.shared.fan("Smart fans on: \(Int(targetRPM)) RPM at \(String(format: "%.1f", peakTemp))°C")
+                lastAppliedRPMPercent = appliedPercent
+                fansCurrentlyRunning = true
+                state = .active(profileName: "Smart")
             }
-
-            lastAppliedRPMPercent = targetPct
-            fansCurrentlyRunning = true
-            state = .active(profileName: "Smart")
         } else if fansCurrentlyRunning {
             state = .active(profileName: "Smart")
         }
@@ -428,11 +472,14 @@ public final class ThermalMonitor {
 
         // Hands-off profiles (Silent): don't control fans, just monitor
         if curve.handsOff {
-            if fansCurrentlyRunning {
-                applyCommand(.resetAuto)
-                fansCurrentlyRunning = false
-                lastAppliedRPMPercent = 0
-                state = .idle
+            if needsRelease {
+                applyCommand(.resetAuto) { [self] in
+                    fansCurrentlyRunning = false
+                    lastAppliedRPMPercent = 0
+                    rampedRPMPercent = 0
+                    state = .idle
+                    logger?.fan("Fans returned to auto [\(activeProfile.name)]")
+                }
             }
             return
         }
@@ -440,23 +487,21 @@ public final class ThermalMonitor {
         // Get target from curve (now applies curve shape: easeIn, linear, easeOut, sCurve)
         guard let rawTarget = curve.targetPercent(at: peakTemp, fansCurrentlyRunning: fansCurrentlyRunning) else {
             // Curve says fans should be off
-            if fansCurrentlyRunning {
-                applyCommand(.resetAuto)
-                fansCurrentlyRunning = false
-                lastAppliedRPMPercent = 0
-                state = .idle
-                TFLogger.shared.fan("Fans off: \(String(format: "%.1f", peakTemp))°C below \(Int(curve.stopTemp))°C [\(activeProfile.name)]")
+            if needsRelease {
+                applyCommand(.resetAuto) { [self] in
+                    fansCurrentlyRunning = false
+                    lastAppliedRPMPercent = 0
+                    rampedRPMPercent = 0
+                    state = .idle
+                    logger?.fan("Fans off: \(String(format: "%.1f", peakTemp))°C below \(Int(curve.stopTemp))°C [\(activeProfile.name)]")
+                }
             }
             return
         }
 
         // Sustained trigger: per-profile duration.
-        // Converted to tick count at runtime based on tick interval.
-        let sustainedTicksNeeded = Int(curve.sustainedTriggerSec / tickInterval)
-        if !fansCurrentlyRunning && sustainedAboveCount < sustainedTicksNeeded {
-            if sustainedAboveCount == 1 {
-                TFLogger.shared.fan("Sustained trigger: \(String(format: "%.1f", peakTemp))°C — waiting (\(sustainedAboveCount)/\(sustainedTicksNeeded)) [\(activeProfile.name)]")
-            }
+        // Measured in seconds at the configured tick interval.
+        if !fansCurrentlyRunning && sustainedAboveSeconds < TimeInterval(curve.sustainedTriggerSec) {
             return
         }
 
@@ -470,29 +515,31 @@ public final class ThermalMonitor {
         let rampUp = curve.rampUpPerSec * tickInterval
         let rampDown = curve.rampDownPerSec * tickInterval
 
-        if targetPct > lastAppliedRPMPercent {
+        if targetPct > rampedRPMPercent {
             if !curve.instantEngage {
                 // Governed ramp-up
-                targetPct = min(targetPct, lastAppliedRPMPercent + rampUp)
+                targetPct = min(targetPct, rampedRPMPercent + rampUp)
             }
             // instantEngage: skip governor, jump directly to target
-        } else if targetPct < lastAppliedRPMPercent {
+        } else if targetPct < rampedRPMPercent {
             // Ramp-down governor always applies (even for instantEngage profiles)
-            targetPct = max(targetPct, lastAppliedRPMPercent - rampDown)
+            targetPct = max(targetPct, rampedRPMPercent - rampDown)
         }
 
-        // Apply if changed meaningfully (threshold scaled for 100ms ticks)
-        if abs(targetPct - lastAppliedRPMPercent) > 0.002 {
+        rampedRPMPercent = targetPct
+        // Accumulate even when this tick is too small to justify an SMC write.
+        if !commandConfirmed || abs(targetPct - lastAppliedRPMPercent) > 0.002 {
             let targetRPM = max(maxRPM * targetPct, minRPM)
-            applyCommand(.setRPM(targetRPM))
+            let appliedPercent = targetPct
+            applyCommand(.setRPM(targetRPM)) { [self] in
+                if !fansCurrentlyRunning {
+                    logger?.fan("Fans on: \(Int(targetRPM)) RPM at \(String(format: "%.1f", peakTemp))°C [\(activeProfile.name)]")
+                }
 
-            if !fansCurrentlyRunning {
-                TFLogger.shared.fan("Fans on: \(Int(targetRPM)) RPM at \(String(format: "%.1f", peakTemp))°C [\(activeProfile.name)]")
+                lastAppliedRPMPercent = appliedPercent
+                fansCurrentlyRunning = true
+                state = .active(profileName: activeProfile.name)
             }
-
-            lastAppliedRPMPercent = targetPct
-            fansCurrentlyRunning = true
-            state = .active(profileName: activeProfile.name)
         } else if fansCurrentlyRunning {
             state = .active(profileName: activeProfile.name)
         }
@@ -538,12 +585,46 @@ public final class ThermalMonitor {
 
     // MARK: - Helpers
 
-    private func applyCommand(_ command: FanCommand) {
-        do {
-            try onFanCommand?(command)
-        } catch {
-            TFLogger.shared.error("Fan command failed: \(command) — \(error)")
+    private func applyCommand(_ command: FanCommand, onSuccess: @escaping @Sendable () -> Void) {
+        guard !pendingCommand else { return }
+        if let failed = failedCommand, failed.command == command, now() < failed.retryAfter { return }
+        let generation = profileGeneration
+        if let execute = onFanCommandAsync {
+            pendingCommand = true
+            commandConfirmed = false
+            if command.isHold { needsRelease = true }
+            execute(command) { [weak self] ok in
+                guard let self else { return }
+                self.queue.async { [self] in
+                    self.pendingCommand = false
+                    // A later profile choice invalidates both the old acknowledgement
+                    // and its retry; it must never restore the previous profile's state.
+                    guard generation == self.profileGeneration else { return }
+                    self.commandFinished(command, ok: ok, onSuccess: onSuccess)
+                }
+            }
+        } else if let execute = onFanCommand {
+            commandConfirmed = false
+            if command.isHold { needsRelease = true }
+            do {
+                try execute(command)
+                commandFinished(command, ok: true, onSuccess: onSuccess)
+            } catch {
+                logger?.error("Fan command failed: \(command) — \(error)")
+                commandFinished(command, ok: false, onSuccess: onSuccess)
+            }
         }
     }
 
+    private func commandFinished(_ command: FanCommand, ok: Bool, onSuccess: () -> Void) {
+        if ok {
+            commandConfirmed = true
+            if !command.isHold { needsRelease = false }
+            failedCommand = nil
+            onSuccess()
+        } else {
+            let attempts = failedCommand?.command == command ? (failedCommand?.attempts ?? 0) + 1 : 1
+            failedCommand = (command, min(attempts, 15), now().addingTimeInterval(Double(min(attempts, 15) * 2)))
+        }
+    }
 }

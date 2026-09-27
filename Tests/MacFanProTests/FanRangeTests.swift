@@ -46,7 +46,8 @@ struct FanRangeTests {
             "F0Md": [0], "F1Md": [0],
         ])
         let fans = FanControl(smc: smc.connection)
-        try fans.setAllFans(rpm: 5000)
+        let targets = try fans.setAllFans(rpm: 5000)
+        #expect(targets == [FanRPM(index: 0, rpm: 5000), FanRPM(index: 1, rpm: 4000)])
         #expect(smc.float("F0Tg") == 5000)
         #expect(smc.float("F1Tg") == 4000)
         #expect(smc.keys["F0Md"] == [1] && smc.keys["F1Md"] == [1])

@@ -130,7 +130,7 @@ struct Max: ParsableCommand {
         // Route through the daemon (no sudo) when it's running; oneshot so a
         // fire-and-forget max hold isn't reverted by the watchdog. The router
         // handles the version query and reportRoute the single mismatch warning.
-        let (route, _, _) = try FanCommandRouter.apply(.setMax, oneshot: true)
+        let (route, _, _, _) = try FanCommandRouter.apply(.setMax, oneshot: true)
         reportRoute(route)
 
         // Status readout is a read — works without root regardless of route.
@@ -175,7 +175,7 @@ struct Auto: ParsableCommand {
 
         // Route through the daemon (coordinates its state, no sudo) when running;
         // resetAuto isn't a hold, so oneshot doesn't apply.
-        let (route, _, _) = try FanCommandRouter.apply(.resetAuto, oneshot: false)
+        let (route, _, _, _) = try FanCommandRouter.apply(.resetAuto, oneshot: false)
         reportRoute(route)
         print(stopApp
             ? "Menu bar app stopped; fans reset to Apple defaults"
@@ -201,9 +201,9 @@ struct SetSpeed: ParsableCommand {
     /// is too old (pre-0.2.1) to report the RPM it clamped to. We echo the value the
     /// daemon says it applied — never a target-register read-back (it lags a command
     /// ~1s) and never the raw request as if the daemon confirmed it. On the direct
-    /// (no-daemon) path the request IS authoritative, because FanControl throws on an
-    /// out-of-range value rather than clamping. When neither holds, we say the value is
-    /// unknown rather than print a number we can't vouch for.
+    /// (no-daemon) path per-fan writes validate the request, while all-fan writes
+    /// return each clamped target. Older daemons' scalar replies cannot establish
+    /// every fan's target, so an all-fan result without the list is reported unknown.
     private static let appliedUnknownByOldDaemon = """
         Fan speed set, but the background daemon is an older build that doesn't report \
         the applied RPM, so the exact value can't be shown. Re-sync to fix:
@@ -216,7 +216,7 @@ struct SetSpeed: ParsableCommand {
         if let index = fan {
             // Per-fan now routes through the daemon too (0.1.5 `setfan`); older
             // daemons fall back to direct SMC, which reportRoute flags.
-            let (route, note, applied) = try FanCommandRouter.apply(.setFan(index: index, rpm: target), oneshot: true)
+            let (route, note, applied, _) = try FanCommandRouter.apply(.setFan(index: index, rpm: target), oneshot: true)
             reportRoute(route)
             if let note { print(note) }
             if let shown = applied ?? (route.wentThroughDaemon ? nil : rpm) {
@@ -225,16 +225,12 @@ struct SetSpeed: ParsableCommand {
                 print(Self.appliedUnknownByOldDaemon)
             }
         } else {
-            let (route, note, applied) = try FanCommandRouter.apply(.setRPM(target), oneshot: true)
+            let (route, note, _, targets) = try FanCommandRouter.apply(.setRPM(target), oneshot: true)
             reportRoute(route)
             if let note { print(note) }
-            if let shown = applied ?? (route.wentThroughDaemon ? nil : rpm) {
-                if let fc = try? FanControl(), let count = try? fc.fanCount() {
-                    for i in 0..<count {
-                        print("Fan \(i) → \(shown) RPM")
-                    }
-                } else {
-                    print("All fans → \(shown) RPM")
+            if let targets {
+                for target in targets {
+                    print("Fan \(target.index) target → \(target.rpm) RPM")
                 }
             } else {
                 print(Self.appliedUnknownByOldDaemon)
@@ -380,6 +376,7 @@ struct Watch: ParsableCommand {
             case .setRPM(let rpm): try fc.setAllFans(rpm: rpm)
             case .setFan(let index, let rpm): try fc.setSpeed(fan: index, rpm: rpm)
             case .resetAuto: try fc.resetAuto()
+            case .releaseAppHold: throw DaemonError.notRunning
             }
         }
 

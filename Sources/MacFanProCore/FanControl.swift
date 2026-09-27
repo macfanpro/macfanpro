@@ -47,6 +47,14 @@ public struct FanInfo {
     public let mode: String
 }
 
+/// An accepted target, returned by the writer rather than read from lagging SMC registers.
+public struct FanRPM: Codable, Equatable {
+    public let index: Int
+    public let rpm: Int
+
+    public init(index: Int, rpm: Int) { self.index = index; self.rpm = rpm }
+}
+
 public struct ThermalStatus: Encodable {
     public let fans: [FanStatus]
     public let temperatures: [String: Float]
@@ -86,6 +94,7 @@ public struct DiscoveredKey {
 
 public final class FanControl {
     private let smc: SMCConnection
+    private let logger: TFLogger?
     /// Which mode key works on this hardware (detected at init)
     private let modeKeyTemplate: String
     /// Whether Ftst unlock is available (M1-M4) or not (M5+)
@@ -95,11 +104,13 @@ public final class FanControl {
         guard let connection = SMCConnection() else {
             throw MacFanProError.smcConnectionFailed
         }
-        self.init(smc: connection)
+        self.init(smc: connection, logger: .shared)
     }
 
-    init(smc: SMCConnection) {
+    /// Injected SMC tests do not write the user's runtime log.
+    init(smc: SMCConnection, logger: TFLogger? = nil) {
         self.smc = smc
+        self.logger = logger
 
         // Detect hardware: which mode key exists?
         // M5 Max uses F%dmd (lowercase), M1-M4 use F%dMd (uppercase)
@@ -246,38 +257,33 @@ public final class FanControl {
         log("Set fan \(index) to \(Int(rpm)) RPM")
     }
 
-    /// Set all fans to a specific RPM
-    public func setAllFans(rpm: Float) throws {
+    /// Resolve each fan independently; fan 0's limits do not constrain other fans.
+    func allFanTargets(rpm: Float) throws -> [(index: Int, rpm: Float)] {
         try Self.validateRPM(rpm)
         let count = try fanCount()
-
-        // Validate against first fan's limits
-        let info = try fanInfo(0)
-        if info.minRPM > 0 && rpm < info.minRPM {
-            throw MacFanProError.rpmOutOfRange(
-                requested: rpm, min: info.minRPM, max: info.maxRPM
-            )
-        }
-        if info.maxRPM > 0 && rpm > info.maxRPM {
-            throw MacFanProError.rpmOutOfRange(
-                requested: rpm, min: info.minRPM, max: info.maxRPM
-            )
-        }
-
-        try unlockFans(count: count)
-
-        for i in 0..<count {
-            // Fans can differ in range; keep each target inside its own fan's limits.
-            let limits = i == 0 ? info : try fanInfo(i)
+        guard count > 0 else { throw MacFanProError.invalidFanIndex(index: 0, count: count) }
+        return try (0..<count).map { i in
+            let limits = try fanInfo(i)
             var target = rpm
             if limits.maxRPM > 0 { target = min(target, limits.maxRPM) }
             if limits.minRPM > 0 { target = max(target, limits.minRPM) }
-            let targetKey = SMCFanKey.key(SMCFanKey.target, fan: i)
-            guard smc.writeKey(targetKey, bytes: floatToSMCBytes(target)) else {
+            return (i, target)
+        }
+    }
+
+    /// Set all fans, clamping independently, and return the targets actually written.
+    @discardableResult
+    public func setAllFans(rpm: Float) throws -> [FanRPM] {
+        let targets = try allFanTargets(rpm: rpm)
+        try unlockFans(count: targets.count)
+        for target in targets {
+            let targetKey = SMCFanKey.key(SMCFanKey.target, fan: target.index)
+            guard smc.writeKey(targetKey, bytes: floatToSMCBytes(target.rpm)) else {
                 throw MacFanProError.writeFailed(targetKey)
             }
-            log("Set fan \(i) to \(Int(target)) RPM")
+            log("Set fan \(target.index) to \(Int(target.rpm)) RPM")
         }
+        return targets.map { FanRPM(index: $0.index, rpm: Int($0.rpm)) }
     }
 
     // MARK: - Reset
@@ -432,6 +438,6 @@ public final class FanControl {
     }
 
     private func log(_ message: String) {
-        TFLogger.shared.fan(message)
+        logger?.fan(message)
     }
 }

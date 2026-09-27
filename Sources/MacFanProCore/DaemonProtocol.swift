@@ -124,6 +124,9 @@ public enum DaemonProtocol {
 public struct DaemonRequest: Codable, Equatable {
     public enum Verb: String, Codable {
         case max, auto, set, setfan, status, state, heartbeat, version
+        /// Conditional background release. A separate verb makes older daemons
+        /// reject it instead of ignoring an optional guard on an ordinary auto.
+        case autoIfApp = "auto-if-app"
     }
 
     /// Protocol version this client speaks.
@@ -160,6 +163,8 @@ public struct DaemonRequest: Codable, Equatable {
             self.init(verb: .setfan, rpm: Int(exactly: rpm.rounded(.towardZero)), fan: index, oneshot: os)
         case .resetAuto:
             self.init(verb: .auto)
+        case .releaseAppHold:
+            self.init(verb: .autoIfApp)
         }
     }
 }
@@ -202,10 +207,13 @@ public struct DaemonResponse: Codable, Equatable {
     /// and would print a stale RPM) or recomputes the clamp (a second source that can
     /// drift). Set on OK `set`/`setfan`; nil otherwise.
     public var appliedRPM: Int?
+    /// Per-fan targets after clamping. Older responses omit this field.
+    public var appliedFanRPMs: [FanRPM]?
 
     public init(ok: Bool, error: DaemonErrorKind? = nil, message: String? = nil,
                 version: String? = nil, statusJSON: String? = nil, state: DaemonHoldState? = nil,
-                note: String? = nil, appliedRPM: Int? = nil, v: Int = DaemonProtocol.version) {
+                note: String? = nil, appliedRPM: Int? = nil, appliedFanRPMs: [FanRPM]? = nil,
+                v: Int = DaemonProtocol.version) {
         self.v = v
         self.ok = ok
         self.error = error
@@ -215,10 +223,12 @@ public struct DaemonResponse: Codable, Equatable {
         self.state = state
         self.note = note
         self.appliedRPM = appliedRPM
+        self.appliedFanRPMs = appliedFanRPMs
     }
 
-    public static func ok(note: String? = nil, appliedRPM: Int? = nil) -> DaemonResponse {
-        .init(ok: true, note: note, appliedRPM: appliedRPM)
+    public static func ok(note: String? = nil, appliedRPM: Int? = nil,
+                          appliedFanRPMs: [FanRPM]? = nil) -> DaemonResponse {
+        .init(ok: true, note: note, appliedRPM: appliedRPM, appliedFanRPMs: appliedFanRPMs)
     }
     public static func failure(_ kind: DaemonErrorKind, _ message: String) -> DaemonResponse {
         .init(ok: false, error: kind, message: message)

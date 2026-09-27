@@ -56,8 +56,6 @@ final class AppState: ObservableObject {
     /// Keeps the previous profile's late writes, and a superseded Default result,
     /// from landing after a profile switch.
     private var profileSwitch = ProfileSwitchGate()
-    /// Counts the monitor's writes, so a retried reset stops once a newer write exists.
-    private var monitorWrites = 0
 
     /// Runs the 5s heartbeat/version/state polls OFF the main thread so a slow
     /// or hung daemon can never stall the UI run loop (the v0.1.7 freeze).
@@ -143,22 +141,25 @@ final class AppState: ObservableObject {
                 // the live app now, so take over by clearing it (the crash
                 // recovery the old blind reset provided).
                 adopted = nil
-                try? executor.execute(.resetAuto)
-                TFLogger.shared.info("App launched — cleared stale app hold")
+                do {
+                    try executor.execute(.releaseAppHold)
+                    TFLogger.shared.info("App launched — cleared stale app hold")
+                } catch {
+                    TFLogger.shared.error("App launch release failed: \(error)")
+                }
             } else if state != nil {
                 adopted = nil
                 TFLogger.shared.info("App launched — no active hold")
             } else {
-                // State unreadable — a pre-0.1.7 daemon with no `state` verb
-                // (upgrade window) or unreachable. DELIBERATE fallback to the old
-                // conservative reset: without arbitration we can't tell a CLI hold
-                // from a crashed prior instance's stale hold, and leaving fans
-                // possibly stuck is worse than clearing a possible CLI hold.
-                // Bounded to the pre-0.1.7 daemon window, where the version-
-                // mismatch banner already tells the user to re-sync.
+                // A transient read failure must not bypass daemon ownership checks.
+                // Older daemons reject this verb; the mismatch banner requests sync.
                 adopted = nil
-                try? executor.execute(.resetAuto)
-                TFLogger.shared.info("App launched — daemon state unreadable; reset to auto (degraded)")
+                do {
+                    try executor.execute(.releaseAppHold)
+                    TFLogger.shared.info("App launched — conditional release completed after state read failure")
+                } catch {
+                    TFLogger.shared.error("App launch state/release unavailable: \(error)")
+                }
             }
 
             Task { @MainActor [weak self] in
@@ -361,19 +362,14 @@ final class AppState: ObservableObject {
                 self?.maxTemp = status.displayedPeakTemp
             }
         }
-        monitor.onFanCommand = { [weak self] command in
+        monitor.onFanCommandAsync = { [weak self] command, complete in
             Task { @MainActor [weak self] in
-                guard let self else { return }
-                // Don't fight a CLI hold — the user set it deliberately. Decide on
-                // the main actor where externalHold lives; the monitor resumes
-                // control when they pick a profile or press Default.
-                guard self.externalHold == nil else { return }
-                guard self.profileSwitch.allows(command) else { return }
-                // Hand off to the coalescing pump; the blocking socket write happens
-                // OFF the main thread. During a ramp these fire up to ~10x/sec;
-                // previously each ran a blocking round-trip on the main actor and
-                // starved the run loop (v0.1.7).
-                self.submitMonitorCommand(command)
+                guard let self, self.externalHold == nil,
+                      self.profileSwitch.allows(command) else { complete(false); return }
+                // A cooldown or retry has no authority over a CLI hold. The daemon
+                // checks that at execution time; the five-second UI poll is advisory.
+                let routed: FanCommand = command == .resetAuto ? .releaseAppHold : command
+                self.commandPump.submit(routed, onComplete: complete)
             }
         }
         monitor.start()
@@ -456,28 +452,6 @@ final class AppState: ObservableObject {
         // on the pump (never coalesced/reordered).
         if profile.curve.handsOff || profile.id == "smart" || profile.id == "silent" || took {
             commandPump.submit(.resetAuto)
-        }
-    }
-
-    /// Hand a monitor write to the pump. The monitor treats a reset as done once sent
-    /// (it goes idle and sends nothing more until the next ramp), so a failed reset
-    /// would leave fans manual under a hold the heartbeat keeps alive. Retry it, backing
-    /// off to 30s, until it lands or the monitor writes something newer.
-    private func submitMonitorCommand(_ command: FanCommand, attempt: Int = 0) {
-        monitorWrites += 1
-        let write = monitorWrites
-        guard command == .resetAuto else {
-            commandPump.submit(command)
-            return
-        }
-        commandPump.submit(command) { [weak self] ok in
-            guard !ok else { return }
-            Task { @MainActor [weak self] in
-                try? await Task.sleep(for: .seconds(min(2 * (attempt + 1), 30)))
-                guard let self, self.monitorWrites == write, self.externalHold == nil,
-                      self.profileSwitch.allows(.resetAuto) else { return }
-                self.submitMonitorCommand(.resetAuto, attempt: attempt + 1)
-            }
         }
     }
 

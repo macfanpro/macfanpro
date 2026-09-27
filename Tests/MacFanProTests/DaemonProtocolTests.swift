@@ -41,6 +41,7 @@ struct DaemonProtocolTests {
         let requests: [DaemonRequest] = [
             DaemonRequest(verb: .max, oneshot: true),
             DaemonRequest(verb: .auto),
+            DaemonRequest(verb: .autoIfApp),
             DaemonRequest(verb: .set, rpm: 3000, oneshot: true),
             DaemonRequest(verb: .setfan, rpm: 2500, fan: 1, oneshot: true),
             DaemonRequest(verb: .status),
@@ -60,6 +61,7 @@ struct DaemonProtocolTests {
             .ok(note: "clamped 999999 → 3500 RPM (max)"),
             .ok(note: "clamped 999999 → 3500 RPM (max)", appliedRPM: 3500),
             .ok(appliedRPM: 2500),
+            .ok(appliedFanRPMs: [.init(index: 0, rpm: 5000), .init(index: 1, rpm: 4000)]),
             .failure(.usage, "usage: set <rpm>"),
             .failure(.heldByCLI, "held by cli"),
             .failure(.rateLimited, "too many fan commands; try again shortly"),
@@ -83,11 +85,20 @@ struct DaemonProtocolTests {
         #expect(DaemonRequest(.setFan(index: 1, rpm: 2500), oneshot: true)
                 == DaemonRequest(verb: .setfan, rpm: 2500, fan: 1, oneshot: true))
         #expect(DaemonRequest(.resetAuto, oneshot: true).oneshot == false)
+        #expect(DaemonRequest(.releaseAppHold, oneshot: true) == DaemonRequest(verb: .autoIfApp))
         #expect(DaemonRequest(.setMax, oneshot: false).oneshot == false)
 
         // And the flag survives a frame round-trip either way.
         #expect(try roundTrip(DaemonRequest(.setMax, oneshot: true), max: DaemonProtocol.maxRequestBytes).oneshot == true)
         #expect(try roundTrip(DaemonRequest(.setRPM(1200), oneshot: false), max: DaemonProtocol.maxRequestBytes).oneshot == false)
+    }
+
+    @Test("Old response payloads still decode without per-fan target metadata")
+    func oldResponse() throws {
+        let json = Data(#"{"v":1,"ok":true,"appliedRPM":5000}"#.utf8)
+        let response = try DaemonProtocol.decode(DaemonResponse.self, from: json)
+        #expect(response.appliedRPM == 5000)
+        #expect(response.appliedFanRPMs == nil)
     }
 
     @Test("an unknown verb fails to decode (daemon maps this to unsupportedVersion)")

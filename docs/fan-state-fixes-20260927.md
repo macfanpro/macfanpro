@@ -112,3 +112,49 @@ Tests:
 - 125 tests pass in Debug and Release, with no warnings.
 - `AuditFixTests` covers the token-based switch confirmation and invalid calibration saves.
 - `FanRangeTests` drives `FanControl` against a simulated SMC. The daemon and an end-to-end `ThermalMonitor` loop still have no harness; the monitor would write to the user's real log.
+
+## Fourth review: recovery and acknowledgement (working tree, 2026-09-27)
+
+Status: local fixes on top of `705f48e` / 0.2.3.22. This section is not a release or installed-app acceptance record.
+
+The `macfanpro-main` Claude Code session was read from local session
+`220788e8-f2c0-4892-b6bb-1450d9474d0b`. Its last delivery described 0.2.3.22 and acknowledged that daemon failure interleavings had not been forced. The subsequent review found six remaining defects (R1–R6). The user then asked Codex to implement and verify their repair.
+
+| Review | Repair | Regression evidence |
+|---|---|---|
+| R1: a failed multi-fan write retained an old `max` hold | Any failed hardware command invalidates the old hold and attempts automatic release. A failed release remains pending and is retried by the watchdog. New manual commands must finish pending recovery first, including single-fan commands. A failed wake replay uses the same recovery path. | Simulated second-fan failure after both CLI and app max holds, with successful and failed rollback; a later single-fan command cannot abandon another fan's recovery. |
+| R2: watchdog selected its suspension branch before locking | One `watchdogTick` takes the SMC lock, then checks expiry and suspension together. It clears an expired app hold but preserves thermal max until cooldown. | Pause a real floor write, start the watchdog behind it, then release the write: fans stay manual at max, the hold clears, and cooldown returns them to auto. A heartbeat during reset cannot recreate a hold. |
+| R3: delayed app reset erased a newer CLI hold | Add the distinct `auto-if-app` request (`releaseAppHold` in the client). The daemon rejects it over CLI ownership in the same SMC critical section as the write. Monitor resets, launch recovery and app shutdown use it; explicit Default/CLI auto still clears any hold. Remove AppState's delayed reset tasks. | A real monitor plus `FanCommandPump` retries a failed reset after a newer CLI max arrives, without any UI state poll: CLI max survives. Explicit auto still releases it. |
+| R4: short intervals never accumulated a ramp step | Track the accumulated ramp separately from the last acknowledged target. Sustained triggers count elapsed seconds rather than a truncated number of ticks. | Balanced and Smart ramp up and down at 0.01, 0.1 and 1 second intervals. |
+| R5: watch treated failed reset as successful | Shared `ThermalMonitor` handles synchronous CLI execution and asynchronous GUI acknowledgement. It commits successful commands only, retains recovery on failure and retries while still needed, with 2–30 second backoff. A profile generation rejects old completions; only one monitor command is outstanding. | Failed resets in Balanced, Smart and Silent retry; async resets do not complete early; profile changes reject stale acknowledgement; a failed first direct hold still releases partially acquired fans on cooldown. |
+| R6: CLI repeated fan 0's RPM for all fans | Return each clamped target from `FanControl`, carry it through the daemon/router and print it per fan. Resolve all-fan requests against each fan's own range, including the direct path. The legacy scalar is present only for a common target. | Both fan orderings (maxima 6000/4000 and 4000/6000) produce matching SMC writes and response arrays, including after thermal restore; protocol round-trip and old-response decoding pass. |
+
+Related conditions covered while repairing these paths:
+
+- The thermal floor rechecks its hold after temperature sampling, so a concurrent auto cannot be followed by an orphan max write.
+- A partly failed cooldown restore re-establishes max before retaining the suspension. If max cannot be restored either, tracked automatic release takes over.
+- Safety demand remains latched through 90–95°C even when the initial max failed. A failed reset invalidates confidence in the previous command, so a later hot tick reissues max.
+- The existing Smart curve, 95°C trigger and below-90°C clearance thresholds are unchanged.
+
+### Reproducible validation
+
+`Tests/MacFanProTests/ControlLoopRecoveryTests.swift` drives the production dispatcher, watchdog, thermal floor, command pump and monitor. The daemon has an internal constructor without a bound socket and an injected clock; the monitor has injected clock, calibration, logger and process capture. `FanControl` uses a dictionary-backed `SMCConnection` and disables file logging for that injected path. No sudo, installed daemon connection, stress load or physical fan write is needed.
+
+Final validation on 2026-09-27:
+
+| Command | Result |
+|---|---|
+| `bash Scripts/test.sh` | 145 tests in 23 suites passed; 108 abandoned-reply checks plus a subsequent request passed. |
+| `bash Scripts/test.sh -c release` | 145 tests in 23 suites passed; the disconnect process fixture passed again. |
+| `swift build -c release` | CLI and menu bar app built successfully. |
+| `bash Scripts/check-localization-package.sh "$(swift build -c release --show-bin-path)"` | Bundle identity, license, all three locale resources and rejection of missing resources passed. |
+| `git diff --check` | Passed. |
+
+Compiler logs for the final Debug/Release runs contain zero warnings or errors. Compared with the 125-test baseline, this adds 20 tests (including parameterized fault/interval cases). Logs from this run are `/tmp/macfanpro-fix-debug-tests.log`, `/tmp/macfanpro-fix-release-tests.log`, `/tmp/macfanpro-fix-release-build.log` and `/tmp/macfanpro-fix-package.log`.
+
+### Compatibility and remaining acceptance scope
+
+- The new conditional release uses a distinct verb. Old daemons reject it instead of silently interpreting it as unconditional auto. Install the matching app and daemon together when shipping this change.
+- Older daemon responses remain decodable. The new CLI reports unknown all-fan targets if a daemon supplies only the old scalar, rather than claiming that scalar was applied to every fan.
+- The all-fan direct path now clamps each fan independently, matching the daemon; per-fan direct requests still validate their requested RPM.
+- These are source/build/simulated-failure checks. The candidate has not been installed, published or validated through a real sleep/wake or thermal stress cycle. Earlier hardware and release evidence in this document applies to its named historical versions.

@@ -73,7 +73,7 @@ enum FanHandoff {
 enum DaemonRequestPolicy {
     static func timeout(for verb: DaemonRequest.Verb) -> TimeInterval {
         switch verb {
-        case .max, .set, .setfan, .auto: return 30
+        case .max, .set, .setfan, .auto, .autoIfApp: return 30
         case .status, .state, .heartbeat, .version: return 2
         }
     }

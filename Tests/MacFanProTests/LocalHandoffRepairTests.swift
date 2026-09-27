@@ -75,7 +75,7 @@ struct LocalHandoffRepairTests {
 
     @Test("hardware budget covers shared acquisition deadline, liveness stays two seconds")
     func timeoutPolicy() {
-        for verb: DaemonRequest.Verb in [.max, .set, .setfan, .auto] {
+        for verb: DaemonRequest.Verb in [.max, .set, .setfan, .auto, .autoIfApp] {
             #expect(DaemonRequestPolicy.timeout(for: verb) > FanHandoff.acquisitionSeconds)
             #expect(DaemonRequestPolicy.needsSMCLock(verb))
         }

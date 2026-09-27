@@ -82,10 +82,10 @@ public enum FanCommandRouter {
     ///   for resetAuto.
     /// Returns the route taken plus an advisory note from the daemon (e.g. a clamp),
     /// which is a command *result* — kept off FanRoute, which is only about routing.
-    public static func apply(_ command: FanCommand, oneshot: Bool) throws -> (route: FanRoute, note: String?, appliedRPM: Int?) {
+    public static func apply(_ command: FanCommand, oneshot: Bool) throws -> (route: FanRoute, note: String?, appliedRPM: Int?, appliedFanRPMs: [FanRPM]?) {
         guard MacFanProDaemon.isRunning else {
-            try applyDirect(command)   // fails fast if a hold needs root
-            return (.direct, nil, nil)
+            let result = try applyDirect(command)   // fails fast if a hold needs root
+            return (.direct, result.note, result.appliedRPM, result.appliedFanRPMs)
         }
 
         let client = DaemonClient()
@@ -100,8 +100,8 @@ public enum FanCommandRouter {
         switch probeDaemon(client) {
         case .legacy:
             guard geteuid() == 0 else { throw FanRouteError.legacyDaemonNeedsReinstall }
-            try applyDirect(command)
-            return (.directLegacyDaemon, nil, nil)
+            let result = try applyDirect(command)
+            return (.directLegacyDaemon, result.note, result.appliedRPM, result.appliedFanRPMs)
         case .version(let v):
             daemonVersion = v
         case .unreachable:
@@ -129,8 +129,9 @@ public enum FanCommandRouter {
             guard geteuid() == 0 else {
                 throw FanRouteError.perFanNeedsNewerDaemon(daemonVersion: daemonVersion ?? "an older build")
             }
-            try applyDirect(command)
-            return (.directOldDaemon(daemonVersion: daemonVersion ?? "an older build"), nil, nil)
+            let result = try applyDirect(command)
+            return (.directOldDaemon(daemonVersion: daemonVersion ?? "an older build"),
+                    result.note, result.appliedRPM, result.appliedFanRPMs)
         }
 
         // Backstop: a daemon that turned legacy between the probe and here (restarted
@@ -142,33 +143,40 @@ public enum FanCommandRouter {
             result = try client.execute(command, oneshot: oneshot)
         } catch DaemonError.incompatibleDaemon {
             guard geteuid() == 0 else { throw FanRouteError.legacyDaemonNeedsReinstall }
-            try applyDirect(command)
-            return (.directLegacyDaemon, nil, nil)
+            let result = try applyDirect(command)
+            return (.directLegacyDaemon, result.note, result.appliedRPM, result.appliedFanRPMs)
         }
 
         // A hold sent with oneshot to a daemon KNOWN to predate the token will be
         // reverted by the watchdog — surface it. Gated on known-old (not unknown) for
         // the same reason as the per-fan path above.
         if oneshot && command.isHold && protocolKnownUnsupported {
-            return (.daemonHoldWillRevert(daemonVersion: daemonVersion ?? "an older build"), result.note, result.appliedRPM)
+            return (.daemonHoldWillRevert(daemonVersion: daemonVersion ?? "an older build"), result.note, result.appliedRPM, result.appliedFanRPMs)
         }
-        return (.daemon(daemonVersion: daemonVersion), result.note, result.appliedRPM)
+        return (.daemon(daemonVersion: daemonVersion), result.note, result.appliedRPM, result.appliedFanRPMs)
     }
 
-    private static func applyDirect(_ command: FanCommand) throws {
+    private static func applyDirect(_ command: FanCommand) throws -> FanApplyResult {
         // Manual fan writes require root; without it the SMC unlock loop hangs
         // ~10s before failing (issue #22). Fail fast instead. resetAuto is exempt
         // — releasing to Apple's auto mode doesn't need the unlock.
         if command.isHold && geteuid() != 0 {
             throw FanRouteError.rootRequired
         }
+        // A conditional app release must never fall back to an unconditional
+        // hardware reset when the daemon cannot arbitrate ownership.
+        guard command != .releaseAppHold else { throw DaemonError.notRunning }
         let fc = try FanControl()
         switch command {
         case .setMax: try fc.setMax()
-        case .setRPM(let rpm): try fc.setAllFans(rpm: rpm)
+        case .setRPM(let rpm):
+            let targets = try fc.setAllFans(rpm: rpm)
+            return FanApplyResult(note: nil, appliedRPM: nil, appliedFanRPMs: targets)
         case .setFan(let index, let rpm): try fc.setSpeed(fan: index, rpm: rpm)
         case .resetAuto: try fc.resetAuto()
+        case .releaseAppHold: throw DaemonError.notRunning
         }
+        return FanApplyResult(note: nil, appliedRPM: nil)
     }
 
     /// How the running daemon answered a `version` probe.
