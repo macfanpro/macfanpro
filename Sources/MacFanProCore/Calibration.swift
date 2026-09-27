@@ -112,9 +112,32 @@ public struct CalibrationData: Codable {
 // MARK: - Persistence
 
 extension CalibrationData {
+    /// `calibrate` must run under sudo, but the app reads calibration from the user's
+    /// own home. Under sudo, resolve the invoking user (SUDO_UID) instead of root, the
+    /// same way `uninstall --purge-data` does. Nil when not running as root via sudo.
+    static func invokingUser(
+        euid: uid_t = geteuid(),
+        environment: [String: String] = ProcessInfo.processInfo.environment
+    ) -> (uid: uid_t, gid: gid_t, home: URL)? {
+        guard euid == 0,
+              let uid = environment["SUDO_UID"].flatMap(uid_t.init), uid != 0,
+              let account = getpwuid(uid), let directory = account.pointee.pw_dir else { return nil }
+        return (uid, account.pointee.pw_gid, URL(fileURLWithPath: String(cString: directory)))
+    }
+
     public static var filePath: URL {
-        FileManager.default.homeDirectoryForCurrentUser
+        (invokingUser()?.home ?? FileManager.default.homeDirectoryForCurrentUser)
             .appendingPathComponent("Library/Application Support/MacFanPro/calibration.json")
+    }
+
+    /// Give files created as root under sudo back to the invoking user, so the app
+    /// (running as that user) can read, replace and delete them.
+    static func handToInvokingUser(_ urls: URL...) {
+        guard let user = invokingUser() else { return }
+        for url in urls {
+            try? FileManager.default.setAttributes(
+                [.ownerAccountID: user.uid, .groupOwnerAccountID: user.gid], ofItemAtPath: url.path)
+        }
     }
 
     public func save() throws {
@@ -124,6 +147,7 @@ extension CalibrationData {
         encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
         let data = try encoder.encode(self)
         try data.write(to: Self.filePath)
+        Self.handToInvokingUser(dir, Self.filePath)
     }
 
     public static func load() -> CalibrationData? {
@@ -291,7 +315,7 @@ public final class CalibrationRunner {
 
         for attempt in 0..<maxAttempts {
             // Record starting temp
-            let startTemp = peakCPUTemp()
+            let startTemp = peakSafetyTemp()
             guard startTemp > 0 else {
                 log("  Can't read temperature, using default intensity 0.02")
                 return 0.02
@@ -303,7 +327,7 @@ public final class CalibrationRunner {
             stopStress()
 
             // Measure how much temp rose
-            let endTemp = peakCPUTemp()
+            let endTemp = peakSafetyTemp()
             let rise = endTemp - startTemp
             let rate = rise / 10.0 // °C/sec
 
@@ -336,12 +360,12 @@ public final class CalibrationRunner {
         return intensity
     }
 
-    /// Read peak CPU temperature right now
-    private func peakCPUTemp() -> Float {
+    /// Read peak CPU/GPU temperature right now — the same value the Smart profile
+    /// looks up in this data and the safety floor watches, so a GPU stress run can't
+    /// overheat unseen and the measurements match what Smart compares them against.
+    private func peakSafetyTemp() -> Float {
         guard let status = try? fanControl.status() else { return 0 }
-        return status.temperatures
-            .filter { k, _ in k.hasPrefix("TC") || k.hasPrefix("Tp") }
-            .values.max() ?? 0
+        return status.safetyPeakTemp
     }
 
     /// Cleanup: always stop stress, reset fans, close CSV on any exit path
@@ -418,6 +442,7 @@ public final class CalibrationRunner {
         let csvURL = logDir.appendingPathComponent("calibration_\(timestamp).csv")
         FileManager.default.createFile(atPath: csvURL.path, contents: nil)
         csvHandle = try FileHandle(forWritingTo: csvURL)
+        CalibrationData.handToInvokingUser(logDir, csvURL)
         logPath = csvURL
         csvWrite("timestamp,fan_pct,actual_temp,fan0_rpm,fan1_rpm,phase")
 
@@ -441,7 +466,7 @@ public final class CalibrationRunner {
             var stabilized = false
 
             while Date() < deadline {
-                let temp = peakCPUTemp()
+                let temp = peakSafetyTemp()
                 readings.append(temp)
 
                 // CSV logging
@@ -485,7 +510,7 @@ public final class CalibrationRunner {
             if !stabilized && !abortLowerLevels {
                 let windowSize = min(readings.count, mode.stabilizationWindowSize)
                 let window = readings.suffix(windowSize)
-                let equilTemp = window.isEmpty ? peakCPUTemp() : window.reduce(0, +) / Float(window.count)
+                let equilTemp = window.isEmpty ? peakSafetyTemp() : window.reduce(0, +) / Float(window.count)
                 log("[\(Int(fanPct * 100))%] Timeout — best estimate: \(String(format: "%.1f", equilTemp))°C (\(readings.count * 2)s)")
                 rawData.append((fanPct: fanPct, equilTemp: equilTemp))
             }
@@ -586,7 +611,7 @@ public final class CalibrationRunner {
 
     private func waitForCooldown(below threshold: Float) {
         for _ in 0..<60 {
-            let temp = peakCPUTemp()
+            let temp = peakSafetyTemp()
             if temp > 0 && temp < threshold {
                 log("Cooled to \(String(format: "%.1f", temp))°C")
                 return
