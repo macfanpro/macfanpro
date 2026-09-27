@@ -90,3 +90,25 @@ Hardware checks (M4 Max, candidate installed with `./setup.sh`):
 Found while testing, not caused by these fixes:
 - **Calibration and the app fight over the fans.** The first rerun had the app running Smart. The app kept rewriting fan targets, so calibration's "100 %" level ran at about 3600 RPM and hit the 84 °C ceiling at once. The result was a calibration with no measurements, which overwrote the previous one. The app rejects such a file ("No measurements") and falls back to the default curve, so it is safe, but the run is wasted. `calibrate` should stop the app first, as `auto --stop-app` does. It should also refuse to save a result that fails validation. Both are upstream behaviour and are left for a separate change.
 - **The thermal floor worked under combined load.** During one Default check, a local-model server was running alongside the test load. Peaks reached 96–100 °C, and the safety override held the fans at max until the load stopped.
+
+## Third review (0.2.3.22)
+
+A third review of 0.2.3.21 reported ten findings, F1–F10. All ten were confirmed against the code.
+
+| # | Finding | Origin | Fix |
+|---|---|---|---|
+| F1 | While the floor held max, the watchdog cleared an expired hold using only `stateLock`. That could happen between the floor's restore reading the hold and applying it, leaving the old speed pinned with no hold. | upstream | The watchdog's suspended branch takes `smcLock`, then re-checks the suspension and the heartbeat. |
+| F2 | The floor's engage path released `smcLock` after `setMax` and only then set `safetySuspended`. A `set` in between saw no suspension and lowered the fans, and later commands then skipped their writes. | upstream | The suspension is set inside the same `smcLock` section as the write. |
+| F3 | Taking manual control can fail part-way, after Ftst or a fan mode was already written, and the daemon recorded no hold. This was observed during dark wake on 2026-09-27. | upstream | If a max/set/setfan fails with no hold to keep, the daemon resets to auto. If that fails too, `releasePending` makes the watchdog loop retry every 5 s. |
+| F4 | 0.2.3.21's gate reopened on the monitor's next status report. Silent's first safety `setMax` arrives before that report, so it was dropped. | this fork (0.2.3.21) | `ThermalMonitor.switchProfile(_:applied:)` calls back from the monitor's queue once the switch took effect, and the gate reopens on that token. Writes queued before the switch arrive first and are dropped; the new profile's writes pass. |
+| F5 | The monitor treats a sent `resetAuto` as done, and the pump never reported failures back. A failed cooldown reset left the fans manual under a hold the heartbeat kept alive. | upstream | AppState retries a failed monitor reset with backoff (2–30 s) until it lands or a newer write exists. |
+| F6 | Between 90 and 95 °C, the safety override fell through to the profile logic, so Silent reset to auto at 94 °C. | upstream | The override is kept until the temperature is below 90 °C. |
+| F7 | `setAllFans` and the daemon clamp checked only fan 0's range. | upstream | Each fan's target is clamped to that fan's own range. |
+| F8 | An invalid (empty) calibration overwrote a valid one, and the app could fight calibration over the fans. | upstream | Merged from the separate calibrate session: `calibrate` quits the app for the run and reopens it, and `save` refuses results that fail validation. The save is also atomic. |
+| F9 | The install precheck required an app bundle matching the running CLI. Run from the stale `/usr/local/bin` copy after `brew upgrade` (sudo's `secure_path`), it failed before reaching the keg re-sync. | this fork | The keg to re-sync from is resolved first. The precheck and the bundle copy use the version being installed. |
+| F10 | `watch --interval` changed the timer, but the control maths stayed at 0.1 s per tick. | upstream | `start(interval:)` sets the tick interval, and `watch` rejects non-positive intervals. |
+
+Tests:
+- 125 tests pass in Debug and Release, with no warnings.
+- `AuditFixTests` covers the token-based switch confirmation and invalid calibration saves.
+- `FanRangeTests` drives `FanControl` against a simulated SMC. The daemon and an end-to-end `ThermalMonitor` loop still have no harness; the monitor would write to the user's real log.

@@ -1,5 +1,17 @@
 # MacFanPro changelog
 
+## 0.2.3.22
+
+- A max or set that fails part-way through taking manual control no longer leaves fans manual (or Apple's thermal control suppressed) with nothing recorded. The background service resets them to auto, and keeps retrying every 5 seconds if the SMC is not ready, for example during dark wake.
+- The thermal floor marks its override in the same step as it raises the fans, so a command arriving in between can no longer lower them while it believes they are at max. The watchdog no longer clears a hold while the floor is restoring it.
+- The 95°C safety override now holds until the temperature is below 90°C, as intended. Previously Silent handed the fans back at 94°C.
+- Choosing Silent or pressing Default no longer drops Silent's own first safety max. 0.2.3.21 waited for a later status report before letting writes through.
+- If handing the fans back to macOS fails when Smart or a curve cools down, the app retries until it succeeds, instead of leaving them manual.
+- `sudo macfanpro calibrate` quits the menu bar app while it runs and reopens it afterwards, so the app can't override the fan levels being measured. A result that fails validation is not saved, so a failed run keeps the previous calibration, and the file is written atomically.
+- Setting all fans to one speed keeps each fan inside its own range.
+- `sudo macfanpro install` run from the installed copy after `brew upgrade` now finds the newer Homebrew app bundle and re-syncs from it, instead of stopping with "No matching MacFanPro.app".
+- `macfanpro watch --interval` now scales ramp rates and trigger times to the chosen interval, and rejects intervals that are not positive.
+
 ## 0.2.3.21
 
 - Security: `sudo macfanpro calibrate` now reads and writes your calibration files with your own permissions. In 0.2.3.20 it wrote them as root and then changed their owner, so a link planted in `~/Library/Application Support/MacFanPro/` by another program running as you could make root overwrite a system file and give it to you.
