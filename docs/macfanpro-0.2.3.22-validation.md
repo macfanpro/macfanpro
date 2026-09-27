@@ -43,4 +43,7 @@
 
 ## 公开发行
 
-待发行包验收后填写。
+- 发行源提交：`cad2a1b`，标签 `v0.2.3.22`。[源码 CI](https://github.com/macfanpro/macfanpro/actions/runs/36303018659)、[发行 CI](https://github.com/macfanpro/macfanpro/actions/runs/36303020502) 通过。
+- 下载草稿附件，`SHA256SUMS` 校验通过，与 GitHub asset digest 一致：`MacFanPro-0.2.3.22-macos-arm64.tar.gz` 为 `5b6722bee25013c3da839cb6c71dfc3b6b9a9f74cfcdd52fe233b2eca3820ff2`。CLI 版本为 0.2.3.22，严格代码签名校验通过。
+- 以先退出应用、同步后台、再打开的步骤安装下载产物；已安装的后台服务 CLI 与应用二进制与发行包逐字节一致。
+- Homebrew 从 0.2.3.21 升级到 0.2.3.22，`brew test` 通过；同步后后台服务 CLI、应用与 Homebrew 版逐字节一致，三者版本均为 0.2.3.22，无版本不一致提示。
