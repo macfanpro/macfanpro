@@ -420,6 +420,16 @@ private struct UpdateAvailableBanner: View {
                 .padding(.vertical, 3)
                 .background(RoundedRectangle(cornerRadius: 4).fill(Color.secondary.opacity(0.15)))
 
+            // Runs the steps above in Terminal: download (or brew), then the
+            // password prompt for the background service.
+            Button(language.text("Update in Terminal")) {
+                UpdateScript.open(version: update.version, homebrew: homebrew)
+            }
+            .buttonStyle(.borderedProminent)
+            .controlSize(.small)
+            .padding(.top, 2)
+            .accessibilityIdentifier("io.github.macfanpro.update-in-terminal")
+
             Text(language.text("Built from source? Run  git pull && ./setup.sh"))
                 .font(.caption2)
                 .foregroundStyle(.tertiary)

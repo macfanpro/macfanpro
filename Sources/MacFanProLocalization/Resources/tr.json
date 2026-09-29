@@ -55,5 +55,6 @@
   "Updates": "Güncellemeler",
   "Check for Updates": "Denetle",
   "Download the new version, then run this in its folder:": "Yeni sürümü indirin, ardından klasöründe çalıştırın:",
-  "Download": "İndir"
+  "Download": "İndir",
+  "Update in Terminal": "Terminal'de güncelle"
 }
