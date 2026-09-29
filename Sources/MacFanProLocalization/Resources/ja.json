@@ -53,5 +53,7 @@
   "{version} available": "新バージョン {version}",
   "Couldn't reach GitHub": "GitHub に接続できません",
   "Updates": "アップデート",
-  "Check for Updates": "アップデートを確認"
+  "Check for Updates": "アップデートを確認",
+  "Download the new version, then run this in its folder:": "新しいバージョンをダウンロードし、そのフォルダで実行：",
+  "Download": "ダウンロード"
 }

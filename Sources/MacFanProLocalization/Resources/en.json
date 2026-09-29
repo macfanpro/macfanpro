@@ -53,5 +53,7 @@
   "{version} available": "{version} available",
   "Couldn't reach GitHub": "Couldn't reach GitHub",
   "Updates": "Updates",
-  "Check for Updates": "Check for Updates"
+  "Check for Updates": "Check for Updates",
+  "Download the new version, then run this in its folder:": "Download the new version, then run this in its folder:",
+  "Download": "Download"
 }

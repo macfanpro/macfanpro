@@ -53,5 +53,7 @@
   "{version} available": "Có bản {version}",
   "Couldn't reach GitHub": "Không kết nối được GitHub",
   "Updates": "Cập nhật",
-  "Check for Updates": "Kiểm tra cập nhật"
+  "Check for Updates": "Kiểm tra cập nhật",
+  "Download the new version, then run this in its folder:": "Tải phiên bản mới, rồi chạy lệnh này trong thư mục của nó:",
+  "Download": "Tải về"
 }

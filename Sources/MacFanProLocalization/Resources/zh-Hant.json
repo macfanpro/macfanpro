@@ -8,6 +8,8 @@
   "Checking…" : "正在檢查…",
   "Couldn't reach GitHub" : "無法連接 GitHub",
   "Default" : "默認",
+  "Download" : "下載",
+  "Download the new version, then run this in its folder:" : "下載新版本，然後在它的文件夾中運行：",
   "FANS" : "風扇",
   "Fan control unavailable" : "風扇控制不可用",
   "Fan {fan} is held at about {rpm} RPM. The app won't adjust fans until you take over." : "風扇 {fan} 的目標轉速保持在約 {rpm} RPM。在你接管前，應用不會調整風扇。",

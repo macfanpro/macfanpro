@@ -53,5 +53,7 @@
   "{version} available": "{version} beschikbaar",
   "Couldn't reach GitHub": "GitHub niet bereikbaar",
   "Updates": "Updates",
-  "Check for Updates": "Zoek naar updates"
+  "Check for Updates": "Zoek naar updates",
+  "Download the new version, then run this in its folder:": "Download de nieuwe versie en voer dit uit in de map:",
+  "Download": "Downloaden"
 }

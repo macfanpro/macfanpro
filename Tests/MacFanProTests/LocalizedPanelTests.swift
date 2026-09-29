@@ -25,9 +25,11 @@ struct LocalizedPanelTests {
         let panel = NSHostingView(rootView: MenuBarView().environmentObject(state).environmentObject(language)
             .background(Color(nsColor: .windowBackgroundColor)).environment(\.colorScheme, .light))
         var normalHeights: [AppLanguage: CGFloat] = [:]
-        for scenario in ["normal", "held-update", "mismatch-safety", "daemon-down", "normal"] {
+        for scenario in ["normal", "held-update", "update-brew", "mismatch-safety", "daemon-down", "normal"] {
             state.externalHold = scenario == "held-update" ? DaemonHoldState(command: "setfan 1 5777", owner: "cli") : nil
-            state.availableUpdate = scenario == "held-update" ? AvailableUpdate(version: "99.99.99", url: "https://github.com/macfanpro/macfanpro/releases") : nil
+            // The update banner shows release-package steps, or a brew command for Homebrew.
+            state.installedWithHomebrew = scenario == "update-brew"
+            state.availableUpdate = ["held-update", "update-brew"].contains(scenario) ? AvailableUpdate(version: "99.99.99", url: "https://github.com/macfanpro/macfanpro/releases") : nil
             state.daemonVersionMismatch = scenario == "mismatch-safety" ? "0.2.3.5" : nil
             state.daemonUnreachable = scenario == "daemon-down"
             // The update-check row keeps one height across its states.

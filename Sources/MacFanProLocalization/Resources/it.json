@@ -53,5 +53,7 @@
   "{version} available": "{version} disponibile",
   "Couldn't reach GitHub": "GitHub non raggiungibile",
   "Updates": "Aggiornamenti",
-  "Check for Updates": "Verifica"
+  "Check for Updates": "Verifica",
+  "Download the new version, then run this in its folder:": "Scarica la nuova versione, poi esegui nella sua cartella:",
+  "Download": "Scarica"
 }

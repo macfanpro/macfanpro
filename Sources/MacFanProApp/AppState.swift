@@ -46,6 +46,14 @@ final class AppState: ObservableObject {
     /// state on launch (so it shows without waiting for a network round-trip); a
     /// dismissed version is suppressed until a newer one ships.
     @Published var availableUpdate: AvailableUpdate?
+    /// Whether this install is managed by Homebrew (its keg exists), so the update
+    /// banner can show the matching steps: a brew command, or a package download.
+    @Published var installedWithHomebrew: Bool = AppState.homebrewKegExists()
+
+    nonisolated static func homebrewKegExists(fileManager: FileManager = .default) -> Bool {
+        ["/opt/homebrew/opt/macfanpro", "/usr/local/opt/macfanpro"].contains { fileManager.fileExists(atPath: $0) }
+    }
+
     /// Outcome of the menu's "Check for Updates", shown beside the button.
     @Published var manualUpdateCheck: ManualUpdateCheck = .idle
 

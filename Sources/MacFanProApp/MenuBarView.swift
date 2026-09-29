@@ -54,7 +54,8 @@ struct MenuBarView: View {
                 // while "Update needed" (daemon out of sync) shows, so two update-ish
                 // banners never stack; can coexist with a CLI hold.
                 if appState.daemonVersionMismatch == nil, let update = appState.availableUpdate {
-                    UpdateAvailableBanner(update: update, onDismiss: { appState.dismissUpdate() })
+                    UpdateAvailableBanner(update: update, homebrew: appState.installedWithHomebrew,
+                                          onDismiss: { appState.dismissUpdate() })
                     Divider()
                 }
             }
@@ -384,6 +385,9 @@ private struct DaemonUpdateBanner: View {
 private struct UpdateAvailableBanner: View {
     @EnvironmentObject var language: AppLanguageStore
     let update: AvailableUpdate
+    /// Homebrew installs get a brew command; release-package installs get the
+    /// package steps, which a brew command would only fail on.
+    let homebrew: Bool
     let onDismiss: () -> Void
 
     var body: some View {
@@ -397,13 +401,18 @@ private struct UpdateAvailableBanner: View {
                 .foregroundStyle(.secondary)
                 .fixedSize(horizontal: false, vertical: true)
 
-            Text(language.text("Update with:"))
+            Text(homebrew ? language.text("Update with:")
+                          : language.text("Download the new version, then run this in its folder:"))
                 .font(.caption2)
                 .foregroundStyle(.tertiary)
                 .padding(.top, 2)
                 .fixedSize(horizontal: false, vertical: true)
 
-            Text("brew upgrade macfanpro && sudo macfanpro install")
+            // brew trust is harmless when already trusted; Homebrew 7 refuses an
+            // untrusted tap. sudo's PATH finds the installed CLI, which re-syncs
+            // from the newer Homebrew keg.
+            Text(homebrew ? "brew trust macfanpro/tap && brew upgrade macfanpro && sudo macfanpro install"
+                          : "sudo ./bin/macfanpro install")
                 .font(.system(.caption, design: .monospaced))
                 .textSelection(.enabled)
                 .fixedSize(horizontal: false, vertical: true)
@@ -418,7 +427,7 @@ private struct UpdateAvailableBanner: View {
 
             HStack {
                 if let url = URL(string: update.url) {
-                    Link(language.text("What's new"), destination: url)
+                    Link(homebrew ? language.text("What's new") : language.text("Download"), destination: url)
                         .font(.caption2)
                 }
                 Spacer()

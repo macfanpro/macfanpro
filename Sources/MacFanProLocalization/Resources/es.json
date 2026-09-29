@@ -53,5 +53,7 @@
   "{version} available": "{version} disponible",
   "Couldn't reach GitHub": "No se pudo conectar con GitHub",
   "Updates": "Actualizaciones",
-  "Check for Updates": "Buscar"
+  "Check for Updates": "Buscar",
+  "Download the new version, then run this in its folder:": "Descarga la nueva versión y ejecuta en su carpeta:",
+  "Download": "Descargar"
 }

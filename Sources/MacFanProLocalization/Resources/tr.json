@@ -53,5 +53,7 @@
   "{version} available": "{version} mevcut",
   "Couldn't reach GitHub": "GitHub'a ulaşılamadı",
   "Updates": "Güncellemeler",
-  "Check for Updates": "Denetle"
+  "Check for Updates": "Denetle",
+  "Download the new version, then run this in its folder:": "Yeni sürümü indirin, ardından klasöründe çalıştırın:",
+  "Download": "İndir"
 }

@@ -53,5 +53,7 @@
   "{version} available": "{version} tersedia",
   "Couldn't reach GitHub": "Tidak dapat menjangkau GitHub",
   "Updates": "Pembaruan",
-  "Check for Updates": "Periksa pembaruan"
+  "Check for Updates": "Periksa pembaruan",
+  "Download the new version, then run this in its folder:": "Unduh versi baru, lalu jalankan ini di foldernya:",
+  "Download": "Unduh"
 }

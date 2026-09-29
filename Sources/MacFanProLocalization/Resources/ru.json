@@ -53,5 +53,7 @@
   "{version} available": "Доступна {version}",
   "Couldn't reach GitHub": "Нет связи с GitHub",
   "Updates": "Обновления",
-  "Check for Updates": "Проверить"
+  "Check for Updates": "Проверить",
+  "Download the new version, then run this in its folder:": "Скачайте новую версию и выполните в её папке:",
+  "Download": "Скачать"
 }
