@@ -1315,7 +1315,7 @@ struct BuildApp: ParsableCommand {
                 <key>CFBundleDevelopmentRegion</key>
                 <string>en</string>
                 <key>CFBundleLocalizations</key>
-                <array><string>en</string><string>zh-Hans</string><string>zh-Hant</string></array>
+                <array>\(LocalizationCatalog.supportedLanguages.map { "<string>\($0.rawValue)</string>" }.joined())</array>
                 <key>CFBundleVersion</key>
                 <string>\(MacFanProVersion.current)</string>
                 <key>CFBundleShortVersionString</key>

@@ -6,14 +6,38 @@ public enum AppLanguage: String, CaseIterable, Identifiable {
     case english = "en"
     case simplifiedChinese = "zh-Hans"
     case traditionalChinese = "zh-Hant"
+    case japanese = "ja"
+    case korean = "ko"
+    case german = "de"
+    case french = "fr"
+    case spanish = "es"
+    case italian = "it"
+    case portugueseBrazil = "pt-BR"
+    case russian = "ru"
+    case ukrainian = "uk"
+    case polish = "pl"
+    case dutch = "nl"
+    case turkish = "tr"
+    case vietnamese = "vi"
+    case indonesian = "id"
 
     public var id: String { rawValue }
+
+    /// Languages matched by their base code alone. Portuguese of any region uses the
+    /// Brazilian translation; "in" is the legacy code for Indonesian.
+    private static let byLanguageCode: [String: AppLanguage] = [
+        "ja": .japanese, "ko": .korean, "de": .german, "fr": .french, "es": .spanish,
+        "it": .italian, "pt": .portugueseBrazil, "ru": .russian, "uk": .ukrainian,
+        "pl": .polish, "nl": .dutch, "tr": .turkish, "vi": .vietnamese,
+        "id": .indonesian, "in": .indonesian,
+    ]
 
     public static func resolve(preferredLanguages: [String]) -> AppLanguage {
         for identifier in preferredLanguages {
             let parts = identifier.replacingOccurrences(of: "_", with: "-")
                 .lowercased().split(separator: "-").map(String.init)
             if parts.first == "en" { return .english }
+            if let code = parts.first, let language = byLanguageCode[code] { return language }
             guard parts.first == "zh" else { continue }
             // An explicit script takes priority over region (e.g. zh-Hans-TW).
             if parts.contains("hans") { return .simplifiedChinese }
@@ -79,6 +103,21 @@ public final class AppLanguageStore: ObservableObject {
         case .english: return "English"
         case .simplifiedChinese: return "简体中文"
         case .traditionalChinese: return "繁體中文"
+        // Each language is listed under its own name, as macOS does.
+        case .japanese: return "日本語"
+        case .korean: return "한국어"
+        case .german: return "Deutsch"
+        case .french: return "Français"
+        case .spanish: return "Español"
+        case .italian: return "Italiano"
+        case .portugueseBrazil: return "Português (Brasil)"
+        case .russian: return "Русский"
+        case .ukrainian: return "Українська"
+        case .polish: return "Polski"
+        case .dutch: return "Nederlands"
+        case .turkish: return "Türkçe"
+        case .vietnamese: return "Tiếng Việt"
+        case .indonesian: return "Bahasa Indonesia"
         }
     }
 }

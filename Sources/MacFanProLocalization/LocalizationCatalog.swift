@@ -4,7 +4,8 @@ import Foundation
 /// therefore stays readable even before translations have been added.
 public struct LocalizationCatalog {
     public static let resourceBundleName = "MacFanPro_MacFanProLocalization.bundle"
-    public static let supportedLanguages: [AppLanguage] = [.english, .simplifiedChinese, .traditionalChinese]
+    /// Every language with a bundled table; one JSON file per language.
+    public static let supportedLanguages: [AppLanguage] = AppLanguage.allCases.filter { $0 != .system }
     private static let tokenPattern = try! NSRegularExpression(pattern: "\\{([A-Za-z][A-Za-z0-9_]*)\\}")
     public let translations: [AppLanguage: [String: String]]
 

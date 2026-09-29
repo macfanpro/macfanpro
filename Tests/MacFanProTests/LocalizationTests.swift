@@ -53,9 +53,15 @@ struct LocalizationTests {
     @Test("System preference order, regions and explicit scripts select a supported language")
     func preferredLanguages() {
         let cases: [([String], AppLanguage)] = [
-            (["ja-JP", "zh-Hans-CN"], .simplifiedChinese),
-            (["de-DE"], .english), ([], .english),
-            (["fr-FR", "en-GB", "zh-Hant"], .english),
+            // The first supported language in the system order wins.
+            (["ja-JP", "zh-Hans-CN"], .japanese), (["sv-SE", "zh-Hans-CN"], .simplifiedChinese),
+            (["de-DE"], .german), (["sv-SE", "fi-FI"], .english), ([], .english),
+            (["fr-FR", "en-GB", "zh-Hant"], .french), (["en-GB", "fr-FR"], .english),
+            (["ko-KR"], .korean), (["es-MX"], .spanish), (["it-IT"], .italian),
+            (["pt-BR"], .portugueseBrazil), (["pt-PT"], .portugueseBrazil),
+            (["ru-RU"], .russian), (["uk-UA"], .ukrainian), (["pl-PL"], .polish),
+            (["nl-BE"], .dutch), (["tr-TR"], .turkish), (["vi-VN"], .vietnamese),
+            (["id-ID"], .indonesian), (["in-ID"], .indonesian),
             (["zh-TW", "en"], .traditionalChinese),
             (["zh-HK"], .traditionalChinese), (["zh-MO"], .traditionalChinese),
             (["zh_CN"], .simplifiedChinese), (["zh-SG"], .simplifiedChinese),
@@ -74,7 +80,7 @@ struct LocalizationTests {
         defer { defaults.removePersistentDomain(forName: name) }
         let control: [String: Any] = ["selectedProfile": "smart", "useFahrenheit": true, "unrelated": "keep"]
         defaults.setPersistentDomain(control, forName: name)
-        var preferred = ["ja-JP", "zh-Hans"]
+        var preferred = ["sv-SE", "zh-Hans"] // Swedish has no table
         let store = AppLanguageStore(defaults: defaults, preferredLanguages: { preferred })
         #expect(store.selection == .system)
         #expect(store.language == .simplifiedChinese)
@@ -89,7 +95,7 @@ struct LocalizationTests {
             #expect(reopened.language == store.language)
             for (key, value) in control { #expect((defaults.object(forKey: key) as? NSObject) == value as? NSObject) }
         }
-        preferred = ["de-DE"]
+        preferred = ["sv-SE"]
         store.refreshSystemLanguage()
         #expect(store.language == .english)
         #expect(changes.contains(.english) && changes.contains(.traditionalChinese) && changes.contains(.simplifiedChinese))

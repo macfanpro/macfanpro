@@ -14,9 +14,10 @@ test "$(/usr/libexec/PlistBuddy -c 'Print CFBundleName' "$check_dir/Check.app/Co
 cmp LICENSE "$check_dir/Check.app/Contents/Resources/LICENSE"
 resource_dir="$check_dir/Check.app/Contents/Resources/$bundle"
 if [ -d "$resource_dir/Contents/Resources" ]; then resource_dir="$resource_dir/Contents/Resources"; fi
-for language in en zh-Hans zh-Hant; do
- cmp "Sources/MacFanProLocalization/Resources/$language.json" "$resource_dir/$language.json"
+for table in Sources/MacFanProLocalization/Resources/*.json; do
+ cmp "$table" "$resource_dir/$(basename "$table")"
 done
+test "$(/usr/libexec/PlistBuddy -c 'Print CFBundleLocalizations' "$check_dir/Check.app/Contents/Info.plist" | grep -c '^ ')" = "$(ls Sources/MacFanProLocalization/Resources/*.json | wc -l | tr -d ' ')"
 mkdir "$check_dir/unbundled"
 cp "$bin_dir/MacFanProApp" "$check_dir/unbundled/MacFanProApp"
 echo preserve > "$check_dir/Check.app/sentinel"
