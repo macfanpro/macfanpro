@@ -50,7 +50,7 @@ open /Applications/MacFanPro.app
 
 - Apple Silicon Mac，macOS 14 或更高版本；不支持 Intel Mac。
 - 风扇控制需要带风扇的机型，无风扇机型无法使用该功能。
-- 首次安装或更新后台服务需要管理员权限；Homebrew 和源码安装还需要 Xcode 16 或更高版本。
+- 首次安装或更新后台服务需要管理员权限；从源码构建还需要 Xcode 16 或更高版本。
 
 当前实机验证以 M4 Max MacBook Pro 为主。其他机型、macOS 版本和显示环境不应视为已验证，具体范围见 [0.2.3.29 验证记录](docs/macfanpro-0.2.3.29-validation.md)。
 
@@ -60,13 +60,13 @@ open /Applications/MacFanPro.app
 
 | 安装方式 | 适合场景 | 是否需要本机编译 |
 | --- | --- | --- |
-| Homebrew | 使用 Homebrew 安装和管理版本 | 是，需要 Xcode |
+| Homebrew | 使用 Homebrew 安装和管理版本 | 否，使用预编译版本 |
 | 下载发行包 | 直接使用已编译的应用和 CLI | 否，无需 Xcode |
 | 源码构建 | 修改代码、调试或自行构建 | 是，需要 Xcode |
 
 ### 方式一：通过 Homebrew 安装
 
-前提：已安装 [Homebrew](https://brew.sh/zh-cn/) 和 Xcode 16 或更高版本。目前配方在本机从源码构建。
+前提：已安装 [Homebrew](https://brew.sh/zh-cn/)。Homebrew 会直接安装预编译版本，无需 Xcode；只有在无法使用预编译版本时（例如 Homebrew 不在 `/opt/homebrew`），才会在本机从源码构建，此时需要 Xcode 16 或更高版本。
 
 在终端中依次执行：
 

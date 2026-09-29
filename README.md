@@ -50,7 +50,7 @@ The screenshots above are MacFanPro 0.2.3.27 running on an M4 Max MacBook Pro.
 
 - An Apple Silicon Mac with macOS 14 or later. Intel Macs are not supported.
 - Fan control needs a Mac with fans; fanless models cannot use it.
-- Installing or updating the background service needs administrator rights. Homebrew and source installs also need Xcode 16 or later.
+- Installing or updating the background service needs administrator rights. Building from source needs Xcode 16 or later.
 
 Hardware testing so far has been mainly on an M4 Max MacBook Pro. Treat other models, macOS versions and display setups as untested; see the [0.2.3.29 validation record](docs/macfanpro-0.2.3.29-validation.md) (in Chinese) for the exact scope.
 
@@ -60,13 +60,13 @@ Hardware testing so far has been mainly on an M4 Max MacBook Pro. Treat other mo
 
 | Method | Best for | Builds on your Mac? |
 | --- | --- | --- |
-| Homebrew | Installing and managing versions with Homebrew | Yes, needs Xcode |
+| Homebrew | Installing and managing versions with Homebrew | No, prebuilt |
 | Release download | Using the prebuilt app and CLI | No, no Xcode needed |
 | From source | Changing the code, debugging, or building yourself | Yes, needs Xcode |
 
 ### Option 1: Homebrew
 
-You need [Homebrew](https://brew.sh/) and Xcode 16 or later. The formula currently builds from source on your Mac.
+You need [Homebrew](https://brew.sh/). Homebrew installs a prebuilt version, so no Xcode is needed; only if Homebrew can't use it (for example, when installed outside `/opt/homebrew`) does it build from source, which needs Xcode 16 or later.
 
 Run in Terminal:
 
