@@ -1,5 +1,9 @@
 # MacFanPro changelog
 
+## 0.2.3.28
+
+- Clear the update-check result when the menu closes, so the next time it opens the row reads "Updates" again instead of an old "Up to date". A found update's banner stays. A check still running keeps its state and shows its result when it finishes.
+
 ## 0.2.3.27
 
 - Name the update button "Check for Updates" / "检查更新" / "檢查更新" in all languages instead of "Check" / "检查". A result too long to fit beside it on one line (in English, "Couldn't reach GitHub" or "0.2.3.28 available") wraps and the row grows, so no text is cut short; the button keeps its full width.
