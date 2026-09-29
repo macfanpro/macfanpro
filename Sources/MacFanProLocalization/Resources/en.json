@@ -50,8 +50,8 @@
   "Profile": "Profile",
   "Checking…": "Checking…",
   "Up to date": "Up to date",
-  "{version} available": "{version} available",
-  "Couldn't reach GitHub": "Couldn't reach GitHub",
+  "New: {version}": "New: {version}",
+  "Can't connect": "Can't connect",
   "Updates": "Updates",
-  "Check": "Check"
+  "Check for Updates": "Check for Updates"
 }
