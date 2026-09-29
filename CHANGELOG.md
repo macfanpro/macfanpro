@@ -2,7 +2,7 @@
 
 ## 0.2.3.27
 
-- Name the update button "Check for Updates" / "检查更新" / "檢查更新" in all languages instead of "Check" / "检查". To fit beside it in English, the results read "New: {version}" and "Can't connect"; the Chinese results are unchanged. The button keeps its full width if space ever runs out.
+- Name the update button "Check for Updates" / "检查更新" / "檢查更新" in all languages instead of "Check" / "检查". A result too long to fit beside it on one line (in English, "Couldn't reach GitHub" or "0.2.3.28 available") wraps and the row grows, so no text is cut short; the button keeps its full width.
 
 ## 0.2.3.26
 
