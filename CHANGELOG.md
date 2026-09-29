@@ -1,5 +1,10 @@
 # MacFanPro changelog
 
+## 0.2.3.29
+
+- Add 14 interface languages: Japanese, Korean, German, French, Spanish, Italian, Brazilian Portuguese, Russian, Ukrainian, Polish, Dutch, Turkish, Vietnamese and Indonesian, for 17 in total. Follow System picks the first supported language in your system order; the Language menu lists each language under its own name. Every language was checked in all panel states.
+- The README is now in English, with the Chinese version in `README.zh-CN.md`. Release notes are bilingual from this release.
+
 ## 0.2.3.28
 
 - Clear the update-check result when the menu closes, so the next time it opens the row reads "Updates" again instead of an old "Up to date". A found update's banner stays. A check still running keeps its state and shows its result when it finishes.
