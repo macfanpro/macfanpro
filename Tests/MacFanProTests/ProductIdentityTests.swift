@@ -6,7 +6,6 @@ import MacFanProLocalization
 struct ProductIdentityTests {
     @Test("Updates, IPC and resources use only the MacFanPro identity")
     func independentIdentity() {
-        #expect(UpdateChecker.releasesAPIURL.absoluteString == "https://api.github.com/repos/macfanpro/macfanpro/releases/latest")
         #expect(UpdateChecker.releasesPageURL == "https://github.com/macfanpro/macfanpro/releases/latest")
         #expect(MacFanProDaemon.socketPath == "/var/run/macfanpro.sock")
         #expect(MacFanProDaemon.label == "io.github.macfanpro.daemon")

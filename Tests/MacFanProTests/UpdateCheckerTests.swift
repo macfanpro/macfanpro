@@ -7,6 +7,7 @@
 //  lexical compare, malformed tags never yielding a false positive).
 //
 
+import Foundation
 import Testing
 @testable import MacFanProCore
 
@@ -90,5 +91,22 @@ struct UpdateCheckerTests {
         #expect(!MacFanProVersion.atLeast("0.1.4", MacFanProVersion.oneshotProtocolSince))
         #expect(!MacFanProVersion.atLeast("0.2.3.9", "0.3.3"))
         #expect(!MacFanProVersion.isNewerRelease("0.2.3.9", than: "0.3.3"))
+    }
+
+    @Test("The latest-release redirect yields the tag, or nothing newer, or a failure")
+    func latestTagFromRedirect() {
+        func landed(_ url: String) -> String?? { UpdateChecker.latestTag(fromFinalURL: URL(string: url)!) }
+        #expect(landed("https://github.com/macfanpro/macfanpro/releases/tag/v0.2.3.24") == .some("v0.2.3.24"))
+        // No release yet: GitHub shows the release list; nothing is newer.
+        #expect(landed("https://github.com/macfanpro/macfanpro/releases") == .some(nil))
+        // Anything else is not an answer: a login wall, a portal, another repo or host.
+        for other in ["https://github.com/login?return_to=%2Fmacfanpro",
+                      "https://portal.example.com/macfanpro/macfanpro/releases/tag/v9.9.9",
+                      "http://github.com/macfanpro/macfanpro/releases/tag/v9.9.9",
+                      "https://github.com/someone/else/releases/tag/v9.9.9",
+                      "https://github.com/macfanpro/macfanpro/releases/tag/",
+                      "https://github.com/macfanpro/macfanpro/releases/tag/v1/extra"] {
+            #expect(landed(other) == nil)
+        }
     }
 }
