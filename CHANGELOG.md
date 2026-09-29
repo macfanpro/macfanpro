@@ -1,5 +1,10 @@
 # MacFanPro changelog
 
+## 0.2.3.32
+
+- Add an **Update in Terminal** button to the "Update available" banner. It opens Terminal with the update steps for how MacFanPro was installed, so updating takes one click and your password. For a release-package install it downloads the new version, verifies its checksum and installs it; for Homebrew it trusts the tap, upgrades and syncs the background service. It uses the system proxy when no proxy is set in the shell, since Terminal tools don't follow the macOS proxy settings.
+- Homebrew releases are now published automatically: after a release is published, the tap updates its formula and prebuilt bottle, and checks that it installs, without manual steps.
+
 ## 0.2.3.31
 
 - The "Update available" banner now shows the steps for how MacFanPro was installed. Release-package installs are told to download the new version and run `sudo ./bin/macfanpro install` in its folder, with a Download link; they were previously shown a Homebrew command that fails without a Homebrew install. Homebrew installs get `brew trust macfanpro/tap && brew upgrade macfanpro && sudo macfanpro install`, which now includes the `brew trust` step Homebrew 7 requires.

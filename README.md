@@ -52,7 +52,7 @@ The screenshots above are MacFanPro 0.2.3.27 running on an M4 Max MacBook Pro.
 - Fan control needs a Mac with fans; fanless models cannot use it.
 - Installing or updating the background service needs administrator rights. Building from source needs Xcode 16 or later.
 
-Hardware testing so far has been mainly on an M4 Max MacBook Pro. Treat other models, macOS versions and display setups as untested; see the [0.2.3.31 validation record](docs/macfanpro-0.2.3.31-validation.md) (in Chinese) for the exact scope.
+Hardware testing so far has been mainly on an M4 Max MacBook Pro. Treat other models, macOS versions and display setups as untested; see the [0.2.3.32 validation record](docs/macfanpro-0.2.3.32-validation.md) (in Chinese) for the exact scope.
 
 ## Install
 
@@ -88,10 +88,10 @@ No Homebrew or Xcode needed.
 2. Double-click to extract it. Keep `MacFanPro.app` and the `bin` folder together.
 3. In Terminal, go into the extracted folder, install, and open the app.
 
-For example, with `0.2.3.31` extracted in Downloads:
+For example, with `0.2.3.32` extracted in Downloads:
 
 ```bash
-cd ~/Downloads/MacFanPro-0.2.3.31-macos-arm64
+cd ~/Downloads/MacFanPro-0.2.3.32-macos-arm64
 sudo ./bin/macfanpro install
 open /Applications/MacFanPro.app
 ```
@@ -112,7 +112,7 @@ cd macfanpro
 
 `setup.sh` builds the code, assembles the app, asks for your administrator password to install, and opens MacFanPro. No further install command is needed.
 
-This builds the repository's `main` branch, which may include unreleased changes. To build a specific release, run `git checkout v0.2.3.31` (with the version you want) before `./setup.sh`.
+This builds the repository's `main` branch, which may include unreleased changes. To build a specific release, run `git checkout v0.2.3.32` (with the version you want) before `./setup.sh`.
 
 ### After installing
 
@@ -163,7 +163,7 @@ The advanced `watch` command keeps controlling the fans by profile (it is not re
 
 ## Updating
 
-The app checks this repository's releases once a day, and you can check now with Check for Updates at the bottom of the menu. When a new version is out it shows the upgrade command; it never replaces the program by itself. The check needs access to GitHub and uses your system proxy settings; if it says it couldn't reach GitHub, check your network or proxy. Update the same way you installed, and quit the app before replacing the background service.
+The app checks this repository's releases once a day, and you can check now with Check for Updates at the bottom of the menu. When a new version is out it shows the upgrade steps for how you installed, and an **Update in Terminal** button that runs them for you: Terminal opens, downloads or upgrades, and asks for your password once. It never replaces the program without you. The check needs access to GitHub and uses your system proxy settings; if it says it couldn't reach GitHub, check your network or proxy. Update the same way you installed, and quit the app before replacing the background service.
 
 ### Homebrew
 
@@ -298,7 +298,7 @@ When opening a [Pull Request](https://github.com/macfanpro/macfanpro/pulls), des
 - [Changelog](CHANGELOG.md): the main changes in each release.
 - [GUI localization](docs/gui-localization.md): the 18 interface languages, how to add a language, and the layout and packaging checks.
 - [Release notes guide and template](docs/releases/README.md) (in Chinese): per-release notes, downloads, upgrade notes and evidence.
-- Per-release validation records (in Chinese): `docs/macfanpro-<version>-validation.md`, for example [0.2.3.31](docs/macfanpro-0.2.3.31-validation.md).
+- Per-release validation records (in Chinese): `docs/macfanpro-<version>-validation.md`, for example [0.2.3.32](docs/macfanpro-0.2.3.32-validation.md).
 - [Fan state and calibration fixes](docs/fan-state-fixes-20260927.md): the audits behind 0.2.3.20 to 0.2.3.24.
 - [Temperature changes relative to upstream](docs/upstream-divergence.md): changes to reapply when merging upstream.
 - [Menu bar label validation](docs/menu-bar-label-validation.md): minimum width, digit changes and isolated rendering tests.
