@@ -213,20 +213,19 @@ struct MenuBarView: View {
             .accessibilityElement(children: .combine)
             .accessibilityIdentifier("io.github.macfanpro.version")
             .padding(.horizontal, 12)
-            // Own row: the button beside the version doesn't fit 260 pt in English.
+            // Laid out like the Language row: a label (the check's result once there is
+            // one) and a control, in the same fonts. A longer button title with the
+            // result beside it doesn't fit 260 pt in English.
             HStack {
                 Text(updateCheckStatus)
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
                     .lineLimit(1)
                 Spacer(minLength: 8)
-                Button(language.text("Check for Updates")) { appState.checkForUpdatesNow() }
-                    .controlSize(.small)
+                Button(language.text("Check")) { appState.checkForUpdatesNow() }
                     .disabled(appState.manualUpdateCheck == .checking)
                     .accessibilityIdentifier("io.github.macfanpro.check-updates")
             }
             .padding(.horizontal, 12)
-            .padding(.top, 4)
+            .padding(.top, 6)
 
             Divider().padding(.vertical, 6)
 
@@ -265,7 +264,7 @@ struct MenuBarView: View {
 
     private var updateCheckStatus: String {
         switch appState.manualUpdateCheck {
-        case .idle: return ""
+        case .idle: return language.text("Updates")
         case .checking: return language.text("Checking…")
         case .upToDate: return language.text("Up to date")
         // Most often a network that needs a proxy for GitHub; the system proxy is used.
