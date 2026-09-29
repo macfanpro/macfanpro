@@ -6,11 +6,35 @@
 
 [English](README.md) | **简体中文**
 
-面向 Apple Silicon Mac 的免费开源风扇控制工具，在菜单栏查看温度和转速，按温度自动调节风扇，也可通过命令行控制和记录数据。
+**Apple Silicon Mac 风扇控制工具 —— 免费、开源、原生。**
 
-MacFanPro 基于 [ThermalForge](https://github.com/ProducerGuy/ThermalForge) 独立维护，使用自己的版本、安装名称和更新渠道，并非上游官方发行版。
+在菜单栏查看 CPU、GPU 温度和风扇转速，让风扇按智能曲线随温度自动调节，也可以通过命令行完全掌控。支持带风扇的 M1 至 M5 机型，macOS 14 或更高版本。
+
+<img src="docs/images/menu-bar-en.png" alt="MacFanPro menu in English: fan speeds, temperatures, profiles, language setting, version and the update check, and Quit" width="320"> <img src="docs/images/menu-bar-zh-CN.png" alt="MacFanPro 菜单（简体中文）：风扇转速、温度、控制模式、语言设置、版本与检查更新、退出按钮" width="320">
+
+### 快速安装
+
+```bash
+brew tap macfanpro/tap && brew trust macfanpro/tap
+brew install macfanpro
+sudo "$(brew --prefix macfanpro)/bin/macfanpro" install
+open /Applications/MacFanPro.app
+```
+
+也可以[直接下载应用](https://github.com/macfanpro/macfanpro/releases/latest)，全部安装方式见[安装](#安装)。
 
 [安装](#安装) · [使用](#使用) · [更新](#更新) · [卸载](#卸载) · [日志与数据](#日志与数据) · [常见问题](#常见问题) · [开发与贡献](#开发与贡献) · [参与贡献](#参与贡献)
+
+## 为什么选择 MacFanPro
+
+- **免费开源**：MIT 协议，没有付费版，也不需要激活码。
+- **不收集数据**：唯一的联网请求是每天一次向本仓库检查更新，没有统计分析，也不需要账号。
+- **原生轻量**：Swift 编写的菜单栏应用加一个小型后台服务，不是 Electron，不占 Dock。
+- **安全设计**：95°C 高温保护；后台服务自带高温兜底，应用退出后仍然生效；应用失去响应时，看门狗会把风扇交还 macOS。
+- **可脚本化**：`macfanpro` 命令行可以设置转速、输出 JSON 状态、记录 CSV 数据。
+- **17 种界面语言**，默认跟随系统语言。
+
+如果你想在 Apple Silicon 上用透明、可脚本化的方式控制风扇，它是 Macs Fan Control 等工具的开源替代品。
 
 ## 功能与界面
 
@@ -20,9 +44,7 @@ MacFanPro 基于 [ThermalForge](https://github.com/ProducerGuy/ThermalForge) 独
 - **17 种界面语言**：英语、简体中文、繁体中文、日语、韩语、德语、法语、西班牙语、意大利语、葡萄牙语（巴西）、俄语、乌克兰语、波兰语、荷兰语、土耳其语、越南语和印尼语，默认跟随系统语言；另可切换摄氏/华氏及登录时启动。
 - **命令行与后台服务**：支持指定转速、读取状态和 CSV 数据采样；正常安装后，应用和普通控制命令通过后台服务操作风扇。
 
-下面是本机运行 MacFanPro 0.2.3.27 的真实截图，依次为英文和简体中文界面：
-
-<img src="docs/images/menu-bar-en.png" alt="MacFanPro menu in English: fan speeds, temperatures, profiles, language setting, version and the update check, and Quit" width="320"> <img src="docs/images/menu-bar-zh-CN.png" alt="MacFanPro 菜单（简体中文）：风扇转速、温度、控制模式、语言设置、版本与检查更新、退出按钮" width="320">
+上方截图为 MacFanPro 0.2.3.27 在 M4 Max MacBook Pro 上的实际运行界面。
 
 ## 系统要求
 
@@ -300,7 +322,7 @@ bash Scripts/package-release.sh
 
 ## 参与贡献
 
-欢迎任何形式的贡献：
+欢迎任何形式的贡献，详见 [CONTRIBUTING.md](CONTRIBUTING.md)（英文，也欢迎用中文提交）。问题讨论和功能建议可以发在 [Discussions](https://github.com/macfanpro/macfanpro/discussions)；安全问题请按 [SECURITY.md](SECURITY.md) 私下报告。
 
 - **问题反馈**：在 [Issues](https://github.com/macfanpro/macfanpro/issues) 报告问题或提交兼容性报告，请附上机型、macOS 版本、MacFanPro 版本和 `macfanpro status` 输出。
 - **代码**：按 [开发与贡献](#开发与贡献) 中的步骤构建和验证，再通过 [Pull Request](https://github.com/macfanpro/macfanpro/pulls) 提交。
@@ -314,4 +336,4 @@ bash Scripts/package-release.sh
 
 ## 来源与许可
 
-MacFanPro 由 [@hongyukeji](https://github.com/hongyukeji) 维护，遵循 [MIT License](LICENSE)。项目完整保留 ThermalForge 上游版权与许可，衍生关系及第三方依赖说明见 [NOTICE.md](NOTICE.md) 和 [ThirdPartyNotices/](ThirdPartyNotices/)。
+MacFanPro 由 [@hongyukeji](https://github.com/hongyukeji) 维护，遵循 [MIT License](LICENSE)。MacFanPro 基于 [ThermalForge](https://github.com/ProducerGuy/ThermalForge) 独立维护，使用自己的版本、安装名称和更新渠道，并非上游官方发行版。项目完整保留 ThermalForge 上游版权与许可，衍生关系及第三方依赖说明见 [NOTICE.md](NOTICE.md) 和 [ThirdPartyNotices/](ThirdPartyNotices/)。

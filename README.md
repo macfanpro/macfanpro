@@ -6,11 +6,35 @@
 
 **English** | [简体中文](README.zh-CN.md)
 
-A free, open-source fan control tool for Apple Silicon Macs. Watch temperatures and fan speeds from the menu bar, let the fans follow the temperature automatically, or control and record them from the command line.
+**Fan control for Apple Silicon Macs — free, open source, native.**
 
-MacFanPro is independently maintained on top of [ThermalForge](https://github.com/ProducerGuy/ThermalForge), with its own versions, install names and update channel. It is not an official upstream release.
+See CPU and GPU temperatures and fan speeds in the menu bar, let the fans follow the temperature with smart curves, or take full control from the command line. Works on M1 to M5 Macs with fans, on macOS 14 or later.
+
+<img src="docs/images/menu-bar-en.png" alt="MacFanPro menu in English: fan speeds, temperatures, profiles, language setting, version and the update check, and Quit" width="320"> <img src="docs/images/menu-bar-zh-CN.png" alt="MacFanPro 菜单（简体中文）：风扇转速、温度、控制模式、语言设置、版本与检查更新、退出按钮" width="320">
+
+### Quick install
+
+```bash
+brew tap macfanpro/tap && brew trust macfanpro/tap
+brew install macfanpro
+sudo "$(brew --prefix macfanpro)/bin/macfanpro" install
+open /Applications/MacFanPro.app
+```
+
+Or [download the app](https://github.com/macfanpro/macfanpro/releases/latest) — see [Install](#install) for all options.
 
 [Install](#install) · [Usage](#usage) · [Updating](#updating) · [Uninstall](#uninstall) · [Logs and data](#logs-and-data) · [FAQ](#faq) · [Development](#development) · [Contributing](#contributing)
+
+## Why MacFanPro
+
+- **Free and open source** under the MIT license — no paid tier, no license key.
+- **Private**: the only network request is a daily update check against this GitHub repository. No analytics, no accounts.
+- **Native and light**: a Swift menu bar app and a small background service; no Electron, no Dock icon.
+- **Safe by design**: a 95°C safety override, a background thermal floor that works even if the app quits, and a watchdog that hands the fans back to macOS if the app stops responding.
+- **Scriptable**: a `macfanpro` CLI to set speeds, read JSON status and record CSV samples.
+- **17 languages**, following your system language.
+
+An open-source alternative to tools like Macs Fan Control for people who want transparent, scriptable fan control on Apple Silicon.
 
 ## Features
 
@@ -20,9 +44,7 @@ MacFanPro is independently maintained on top of [ThermalForge](https://github.co
 - **17 interface languages**: English, Simplified Chinese, Traditional Chinese, Japanese, Korean, German, French, Spanish, Italian, Brazilian Portuguese, Russian, Ukrainian, Polish, Dutch, Turkish, Vietnamese and Indonesian, following the system language by default. You can also switch between °C and °F and launch at login.
 - **Command line and background service**: set speeds, read status and record CSV samples. Once installed, the app and everyday commands control the fans through the background service.
 
-Real screenshots of MacFanPro 0.2.3.27 on this Mac, in English and Simplified Chinese:
-
-<img src="docs/images/menu-bar-en.png" alt="MacFanPro menu in English: fan speeds, temperatures, profiles, language setting, version and the update check, and Quit" width="320"> <img src="docs/images/menu-bar-zh-CN.png" alt="MacFanPro 菜单（简体中文）：风扇转速、温度、控制模式、语言设置、版本与检查更新、退出按钮" width="320">
+The screenshots above are MacFanPro 0.2.3.27 running on an M4 Max MacBook Pro.
 
 ## Requirements
 
@@ -288,7 +310,7 @@ Versions are **the upstream version plus a fourth revision number**, defined in 
 
 ## Contributing
 
-All kinds of contributions are welcome:
+All kinds of contributions are welcome — see [CONTRIBUTING.md](CONTRIBUTING.md) for details. For questions and ideas, use [Discussions](https://github.com/macfanpro/macfanpro/discussions); report security problems privately as described in [SECURITY.md](SECURITY.md).
 
 - **Bug reports**: report problems or submit a compatibility report in [Issues](https://github.com/macfanpro/macfanpro/issues), with your Mac model, macOS version, MacFanPro version and `macfanpro status` output.
 - **Code**: build and test as described in [Development](#development), then open a [Pull Request](https://github.com/macfanpro/macfanpro/pulls).
@@ -302,4 +324,4 @@ All kinds of contributions are welcome:
 
 ## Credits and license
 
-MacFanPro is maintained by [@hongyukeji](https://github.com/hongyukeji) under the [MIT License](LICENSE). The ThermalForge upstream copyright and license are kept in full; see [NOTICE.md](NOTICE.md) and [ThirdPartyNotices/](ThirdPartyNotices/) for the derivation and third-party dependencies.
+MacFanPro is maintained by [@hongyukeji](https://github.com/hongyukeji) under the [MIT License](LICENSE). It is independently maintained on top of [ThermalForge](https://github.com/ProducerGuy/ThermalForge), with its own versions, install names and update channel; it is not an official upstream release. The ThermalForge upstream copyright and license are kept in full; see [NOTICE.md](NOTICE.md) and [ThirdPartyNotices/](ThirdPartyNotices/) for the derivation and third-party dependencies.
