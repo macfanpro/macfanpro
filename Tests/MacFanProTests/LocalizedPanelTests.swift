@@ -30,6 +30,13 @@ struct LocalizedPanelTests {
             state.availableUpdate = scenario == "held-update" ? AvailableUpdate(version: "99.99.99", url: "https://github.com/macfanpro/macfanpro/releases") : nil
             state.daemonVersionMismatch = scenario == "mismatch-safety" ? "0.2.3.5" : nil
             state.daemonUnreachable = scenario == "daemon-down"
+            // The update-check row keeps one height across its states.
+            state.manualUpdateCheck = switch scenario {
+            case "held-update": .available("99.99.99")
+            case "mismatch-safety": .failed
+            case "daemon-down": .checking
+            default: .idle
+            }
             state.monitorState = scenario == "mismatch-safety" ? .safetyOverride : .active(profileName: "Smart")
             let hold = state.externalHold
             let monitor = state.monitorState

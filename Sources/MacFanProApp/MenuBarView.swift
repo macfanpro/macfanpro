@@ -213,6 +213,20 @@ struct MenuBarView: View {
             .accessibilityElement(children: .combine)
             .accessibilityIdentifier("io.github.macfanpro.version")
             .padding(.horizontal, 12)
+            // Own row: the button beside the version doesn't fit 260 pt in English.
+            HStack {
+                Text(updateCheckStatus)
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                    .lineLimit(1)
+                Spacer(minLength: 8)
+                Button(language.text("Check for Updates")) { appState.checkForUpdatesNow() }
+                    .controlSize(.small)
+                    .disabled(appState.manualUpdateCheck == .checking)
+                    .accessibilityIdentifier("io.github.macfanpro.check-updates")
+            }
+            .padding(.horizontal, 12)
+            .padding(.top, 4)
 
             Divider().padding(.vertical, 6)
 
@@ -246,6 +260,17 @@ struct MenuBarView: View {
             Label(language.text("Idle"), systemImage: "fan")
                 .font(.caption)
                 .foregroundStyle(.secondary)
+        }
+    }
+
+    private var updateCheckStatus: String {
+        switch appState.manualUpdateCheck {
+        case .idle: return ""
+        case .checking: return language.text("Checking…")
+        case .upToDate: return language.text("Up to date")
+        // Most often a network that needs a proxy for GitHub; the system proxy is used.
+        case .failed: return language.text("Couldn't reach GitHub")
+        case .available(let version): return language.text("{version} available", ["version": version])
         }
     }
 

@@ -47,5 +47,10 @@
   "GPU": "GPU",
   "RAM": "RAM",
   "SSD": "SSD",
-  "Profile": "Profile"
+  "Profile": "Profile",
+  "Check for Updates": "Check for Updates",
+  "Checking…": "Checking…",
+  "Up to date": "Up to date",
+  "{version} available": "{version} available",
+  "Couldn't reach GitHub": "Couldn't reach GitHub"
 }

@@ -4,6 +4,9 @@
   "Balanced" : "均衡",
   "Built from source? Run  git pull && ./setup.sh" : "從源碼構建？運行  git pull && ./setup.sh",
   "CPU" : "CPU",
+  "Check for Updates" : "檢查更新",
+  "Checking…" : "正在檢查…",
+  "Couldn't reach GitHub" : "無法連接 GitHub",
   "Default" : "默認",
   "FANS" : "風扇",
   "Fan control unavailable" : "風扇控制不可用",
@@ -40,6 +43,7 @@
   "Temperature unavailable" : "溫度不可用",
   "The background service is running {daemonVersion}, but the app is {appVersion}. Fan control may not match what you set until they're re-synced." : "後台服務版本為 {daemonVersion}，應用版本為 {appVersion}。同步版本前，風扇控制可能與你的設置不一致。",
   "The background service isn't responding, so profiles and Default can't change the fans right now." : "後台服務無響應，模式和“默認”操作暫時無法調整風扇。",
+  "Up to date" : "已是最新版本",
   "Update available" : "有可用更新",
   "Update needed" : "需要更新",
   "Update with:" : "更新命令：",
@@ -47,5 +51,6 @@
   "What's new" : "更新內容",
   "{rpm} RPM" : "{rpm} RPM",
   "{temperature}°{unit} instant" : "{temperature}°{unit} 即時觸發",
+  "{version} available" : "有新版本 {version}",
   "°F / °C" : "°F / °C"
 }

@@ -47,5 +47,10 @@
   "GPU": "GPU",
   "RAM": "RAM",
   "SSD": "SSD",
-  "Profile": "模式"
+  "Profile": "模式",
+  "Check for Updates": "检查更新",
+  "Checking…": "正在检查…",
+  "Up to date": "已是最新版本",
+  "{version} available": "有新版本 {version}",
+  "Couldn't reach GitHub": "无法连接 GitHub"
 }

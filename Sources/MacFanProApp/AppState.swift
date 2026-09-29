@@ -46,6 +46,13 @@ final class AppState: ObservableObject {
     /// state on launch (so it shows without waiting for a network round-trip); a
     /// dismissed version is suppressed until a newer one ships.
     @Published var availableUpdate: AvailableUpdate?
+    /// Outcome of the menu's "Check for Updates", shown beside the button.
+    @Published var manualUpdateCheck: ManualUpdateCheck = .idle
+
+    enum ManualUpdateCheck: Equatable {
+        case idle, checking, upToDate, failed
+        case available(String)
+    }
 
     private let servicesEnabled: Bool
     private var monitor: ThermalMonitor?
@@ -337,6 +344,35 @@ final class AppState: ObservableObject {
                 availableUpdate = update
             }
         }
+    }
+
+    /// "Check for Updates": check now instead of waiting for the daily check. A found
+    /// version shows even if "Later" dismissed it (the user asked); the dismissal still
+    /// applies to the daily check.
+    func checkForUpdatesNow() {
+        guard manualUpdateCheck != .checking else { return }
+        manualUpdateCheck = .checking
+        Task { [weak self] in
+            let result = await UpdateChecker.check()
+            self?.applyManualUpdateCheck(result)
+        }
+    }
+
+    func applyManualUpdateCheck(_ result: UpdateCheckResult) {
+        applyUpdateCheck(result)
+        switch result {
+        case .update(let update):
+            availableUpdate = update
+            manualUpdateCheck = .available(update.version)
+        case .upToDate:
+            manualUpdateCheck = .upToDate
+        case .failed:
+            manualUpdateCheck = .failed
+            return
+        }
+        // A completed check counts as today's; the daily one need not repeat it.
+        UserDefaults.standard.set(Date().addingTimeInterval(Self.updateCheckInterval),
+                                  forKey: Self.updateNextCheckKey)
     }
 
     /// "Later" — hide the banner for this version; it returns when a newer one ships.
