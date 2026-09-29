@@ -1,5 +1,9 @@
 # MacFanPro changelog
 
+## 0.2.3.30
+
+- Add Arabic, the 18th interface language. The panel is mirrored for right-to-left text: labels on the right, values and buttons on the left, while commands, RPM and temperatures stay left to right.
+
 ## 0.2.3.29
 
 - Add 14 interface languages: Japanese, Korean, German, French, Spanish, Italian, Brazilian Portuguese, Russian, Ukrainian, Polish, Dutch, Turkish, Vietnamese and Indonesian, for 17 in total. Follow System picks the first supported language in your system order; the Language menu lists each language under its own name. Every language was checked in all panel states.
