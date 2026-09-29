@@ -1,6 +1,8 @@
 # Check for updates: development plan
 
-Status: planned, not started (recorded 2026-09-26 against 0.2.3.19). No code has changed for this plan yet.
+Status: a reduced phase 1 shipped in 0.2.3.25 (2026-09-29): a Check for Updates button under the Version row, with an inline result. The user chose the simplest option for a single-developer project. The auto-check toggle, last-checked time, failure breakdown, release-notes window and one-click update below were not built. Networks that need a proxy for GitHub are covered by URLSession's use of the system proxy and a "Couldn't reach GitHub" message; no third-party mirror is used. During testing, the REST API returned 403 with `x-ratelimit-remaining: 0` through a shared proxy exit IP, so the check now follows the public `/releases/latest` redirect instead (a HEAD request; the tag is read from the final URL), which is not subject to the API's 60-per-hour limit.
+
+Original plan (recorded 2026-09-26 against 0.2.3.19):
 
 Goal: a user-facing "Check for Updates" feature comparable to clash-verge-rev and Macs Fan Control: a manual check button, visible check results, an automatic-check toggle and in-app release notes. The work extends the existing background check; it does not replace it.
 

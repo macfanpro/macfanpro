@@ -1,5 +1,10 @@
 # MacFanPro changelog
 
+## 0.2.3.25
+
+- Add a Check for Updates button under the Version row. It checks GitHub now instead of waiting for the daily check, and shows "Checking…", "Up to date", the new version, or "Couldn't reach GitHub". A found version shows its banner even if "Later" dismissed it; the daily check still honours the dismissal. The check uses the system proxy settings.
+- Check for updates through the public releases page (`/releases/latest` redirects to the newest tag) instead of the GitHub REST API. The unauthenticated API allows 60 requests an hour per IP; proxy exit IPs shared by many users often have none left, so every check failed. This also affects the daily automatic check.
+
 ## 0.2.3.24
 
 - While the thermal floor holds the fans at max, a fan command that fails (for example on a transient SMC read, before anything is written) no longer ends the override and hands hot fans back to auto. The background service re-asserts max and keeps the override until cooldown, falling back to auto only if max cannot be written. An explicit auto still hands control back.

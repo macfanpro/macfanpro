@@ -11,7 +11,7 @@
 public enum MacFanProVersion {
     /// Change the base only after integrating the corresponding upstream release.
     public static let upstream = "0.2.3"
-    public static let revision = 24
+    public static let revision = 25
     public static let current = "\(upstream).\(revision)"
 
     /// Strict dotted-numeric release ordering, with no version-specific exceptions.
