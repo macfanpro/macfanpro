@@ -50,8 +50,8 @@
   "Profile": "模式",
   "Checking…": "正在检查…",
   "Up to date": "已是最新版本",
-  "New: {version}": "有新版本 {version}",
-  "Can't connect": "无法连接 GitHub",
+  "{version} available": "有新版本 {version}",
+  "Couldn't reach GitHub": "无法连接 GitHub",
   "Updates": "更新",
   "Check for Updates": "检查更新"
 }

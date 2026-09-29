@@ -4,9 +4,9 @@
   "Balanced" : "均衡",
   "Built from source? Run  git pull && ./setup.sh" : "從源碼構建？運行  git pull && ./setup.sh",
   "CPU" : "CPU",
-  "Can't connect" : "無法連接 GitHub",
   "Check for Updates" : "檢查更新",
   "Checking…" : "正在檢查…",
+  "Couldn't reach GitHub" : "無法連接 GitHub",
   "Default" : "默認",
   "FANS" : "風扇",
   "Fan control unavailable" : "風扇控制不可用",
@@ -26,7 +26,6 @@
   "MacFanPro {version} is available. You have {appVersion}." : "MacFanPro {version} 已發佈，當前版本為 {appVersion}。",
   "MacFanPro: {reading}" : "MacFanPro：{reading}",
   "Max" : "最大轉速",
-  "New: {version}" : "有新版本 {version}",
   "PROFILE" : "模式",
   "Performance" : "性能",
   "Press Default below (or pick a profile) to release." : "點擊下方“默認”或選擇模式，即可解除接管。",
@@ -53,5 +52,6 @@
   "What's new" : "更新內容",
   "{rpm} RPM" : "{rpm} RPM",
   "{temperature}°{unit} instant" : "{temperature}°{unit} 即時觸發",
+  "{version} available" : "有新版本 {version}",
   "°F / °C" : "°F / °C"
 }
