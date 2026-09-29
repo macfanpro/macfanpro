@@ -23,4 +23,7 @@
 
 ## 公开发行
 
-待发行包验收后填写。
+- 发行源提交：`36bfe11`，标签 `v0.2.3.32`。[源码 CI](https://github.com/macfanpro/macfanpro/actions/runs/36613535045)、[发行 CI](https://github.com/macfanpro/macfanpro/actions/runs/36613538929) 通过。
+- 下载草稿附件，`SHA256SUMS` 校验通过，与 GitHub asset digest 一致：`MacFanPro-0.2.3.32-macos-arm64.tar.gz` 为 `1f1464c2b5f71d06af04f4eb492b0677b0552e6b959811886cff7b6288eeba2c`。CLI 版本为 0.2.3.32，严格代码签名校验通过；安装后二进制与发行包逐字节一致。
+- **Homebrew 自动化首次完整运行**：发布后手动触发 tap 的 Update formula 工作流（[运行记录](https://github.com/macfanpro/homebrew-tap/actions/runs/36614158983)），全部步骤成功——配方指向 v0.2.3.32，在 GitHub 的 macOS 15 机器上构建预编译包并确认两个二进制最低系统为 macOS 14，上传到 tap Release `macfanpro-0.2.3.32`，验证直接安装（Pouring）与 `brew test`，最后由 github-actions 提交配方（`0acd22b`）。未做任何手动 Homebrew 操作。
+- **用“在终端中更新”按钮完成本机升级**：临时写入“最新版本 99.99.99”使提示出现，按下按钮后“终端”打开生成的 `MacFanPro Update.command`；脚本将 Homebrew 从 0.2.3.31 升级到 0.2.3.32（使用上述 CI 生成的预编译包），用户输入一次密码后同步后台服务并重新打开应用，约 4 分钟完成。结束后三者版本均为 0.2.3.32，与 Homebrew 版逐字节一致，无版本不一致提示；测试用的偏好值已删除，Smart 模式与“跟随系统”语言保留。
