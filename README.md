@@ -18,7 +18,7 @@ MacFanPro 基于 [ThermalForge](https://github.com/ProducerGuy/ThermalForge) 独
 - **语言与显示设置**：支持英语、简体中文、繁体中文、跟随系统、摄氏/华氏切换及登录时启动。
 - **命令行与后台服务**：支持指定转速、读取状态和 CSV 数据采样；正常安装后，应用和普通控制命令通过后台服务操作风扇。
 
-下面是本机运行 MacFanPro 0.2.3.26 的真实截图，依次为英文和简体中文界面：
+下面是本机运行 MacFanPro 0.2.3.27 的真实截图，依次为英文和简体中文界面：
 
 <img src="docs/images/menu-bar-en.png" alt="MacFanPro menu in English: fan speeds, temperatures, profiles, language setting, version and the update check, and Quit" width="320"> <img src="docs/images/menu-bar-zh-CN.png" alt="MacFanPro 菜单（简体中文）：风扇转速、温度、控制模式、语言设置、版本与检查更新、退出按钮" width="320">
 
@@ -28,7 +28,7 @@ MacFanPro 基于 [ThermalForge](https://github.com/ProducerGuy/ThermalForge) 独
 - 风扇控制需要带风扇的机型，无风扇机型无法使用该功能。
 - 首次安装或更新后台服务需要管理员权限；Homebrew 和源码安装还需要 Xcode 16 或更高版本。
 
-当前实机验证以 M4 Max MacBook Pro 为主。其他机型、macOS 版本和显示环境不应视为已验证，具体范围见 [0.2.3.26 验证记录](docs/macfanpro-0.2.3.26-validation.md)。
+当前实机验证以 M4 Max MacBook Pro 为主。其他机型、macOS 版本和显示环境不应视为已验证，具体范围见 [0.2.3.27 验证记录](docs/macfanpro-0.2.3.27-validation.md)。
 
 ## 安装
 
@@ -64,10 +64,10 @@ Homebrew 7 起默认不加载第三方 tap 的配方，需要先用 `brew trust`
 2. 双击解压，保留文件夹内的 `MacFanPro.app` 和 `bin` 目录。
 3. 在终端中进入解压后的文件夹，执行安装并打开应用。
 
-例如，`0.2.3.26` 解压在“下载”目录时：
+例如，`0.2.3.27` 解压在“下载”目录时：
 
 ```bash
-cd ~/Downloads/MacFanPro-0.2.3.26-macos-arm64
+cd ~/Downloads/MacFanPro-0.2.3.27-macos-arm64
 sudo ./bin/macfanpro install
 open /Applications/MacFanPro.app
 ```
@@ -88,7 +88,7 @@ cd macfanpro
 
 `setup.sh` 会编译源码、组装应用、请求管理员权限完成安装，并打开 MacFanPro，无需再执行其他安装命令。
 
-此方式默认构建仓库的 `main` 分支，可能包含尚未发行的修改。如需构建指定发行版，可在运行 `./setup.sh` 前执行 `git checkout v0.2.3.26`，版本号按需替换。
+此方式默认构建仓库的 `main` 分支，可能包含尚未发行的修改。如需构建指定发行版，可在运行 `./setup.sh` 前执行 `git checkout v0.2.3.27`，版本号按需替换。
 
 ### 安装完成后
 
@@ -139,7 +139,7 @@ cd macfanpro
 
 ## 更新
 
-应用每天自动检查一次本仓库的发行版，也可以在菜单底部“更新”一行点“检查”立即检查；发现新版本时显示升级命令，不会自动替换程序。检查需要访问 GitHub，并使用系统代理设置；若显示“无法连接 GitHub”，请检查网络或代理。请沿用原安装方式更新，并在替换后台服务前退出应用。
+应用每天自动检查一次本仓库的发行版，也可以在菜单底部“更新”一行点“检查更新”立即检查；发现新版本时显示升级命令，不会自动替换程序。检查需要访问 GitHub，并使用系统代理设置；若显示“无法连接 GitHub”，请检查网络或代理。请沿用原安装方式更新，并在替换后台服务前退出应用。
 
 ### Homebrew 更新
 
@@ -284,6 +284,7 @@ bash Scripts/package-release.sh
 - [0.2.3.24 验证记录](docs/macfanpro-0.2.3.24-validation.md)：高温保护期间指令失败时保持满速。
 - [0.2.3.25 验证记录](docs/macfanpro-0.2.3.25-validation.md)：菜单中的“检查更新”。
 - [0.2.3.26 验证记录](docs/macfanpro-0.2.3.26-validation.md)：“更新”一行与其他行统一字体。
+- [0.2.3.27 验证记录](docs/macfanpro-0.2.3.27-validation.md)：中文按钮改为“检查更新”。
 - [相对上游的温度改动](docs/upstream-divergence.md)：合并上游时需要重新施加的改动。
 - [GUI 本地化](docs/gui-localization.md)：英语键名、简体翻译、繁体字形转换及资源校验流程。
 - [菜单栏标签验证](docs/menu-bar-label-validation.md)：最小宽度、位数变化和隔离显示测试。

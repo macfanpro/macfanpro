@@ -1,5 +1,9 @@
 # MacFanPro changelog
 
+## 0.2.3.27
+
+- Name the update button "Check for Updates" / "检查更新" / "檢查更新" in all languages instead of "Check" / "检查". To fit beside it in English, the results read "New: {version}" and "Can't connect"; the Chinese results are unchanged. The button keeps its full width if space ever runs out.
+
 ## 0.2.3.26
 
 - Lay out the update row like the Language row, in the same font and control size: an "Updates" label that shows the check's result once there is one, and a Check button. The 0.2.3.25 row used small text and a small button.

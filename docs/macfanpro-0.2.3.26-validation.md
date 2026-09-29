@@ -15,4 +15,8 @@
 
 ## 公开发行
 
-待发行包验收后填写。
+- 发行源提交：`4d98c67`，标签 `v0.2.3.26`。[源码 CI](https://github.com/macfanpro/macfanpro/actions/runs/36524309959)、[发行 CI](https://github.com/macfanpro/macfanpro/actions/runs/36524312580) 通过。
+- 下载草稿附件，`SHA256SUMS` 校验通过，与 GitHub asset digest 一致：`MacFanPro-0.2.3.26-macos-arm64.tar.gz` 为 `adfe45b251c831202e37ee4cd1f86dc9b3314b01d01eaf450fe8626dd8afbc26`。CLI 版本为 0.2.3.26，严格代码签名校验通过。
+- 安装下载产物后，二进制与发行包逐字节一致，实际按下“检查”显示“已是最新版本”。
+- Homebrew 从 0.2.3.25 升级到 0.2.3.26，`brew test` 通过；同步后三者版本均为 0.2.3.26，无版本不一致提示。
+- 发布后用户要求中文按钮使用“检查更新”，已在 0.2.3.27 调整，README 截图随 0.2.3.27 更新。
