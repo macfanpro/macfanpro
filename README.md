@@ -28,7 +28,7 @@ MacFanPro 基于 [ThermalForge](https://github.com/ProducerGuy/ThermalForge) 独
 - 风扇控制需要带风扇的机型，无风扇机型无法使用该功能。
 - 首次安装或更新后台服务需要管理员权限；Homebrew 和源码安装还需要 Xcode 16 或更高版本。
 
-当前实机验证以 M4 Max MacBook Pro 为主。其他机型、macOS 版本和显示环境不应视为已验证，具体范围见 [0.2.3.23 验证记录](docs/macfanpro-0.2.3.23-validation.md)。
+当前实机验证以 M4 Max MacBook Pro 为主。其他机型、macOS 版本和显示环境不应视为已验证，具体范围见 [0.2.3.24 验证记录](docs/macfanpro-0.2.3.24-validation.md)。
 
 ## 安装
 
@@ -64,10 +64,10 @@ Homebrew 7 起默认不加载第三方 tap 的配方，需要先用 `brew trust`
 2. 双击解压，保留文件夹内的 `MacFanPro.app` 和 `bin` 目录。
 3. 在终端中进入解压后的文件夹，执行安装并打开应用。
 
-例如，`0.2.3.23` 解压在“下载”目录时：
+例如，`0.2.3.24` 解压在“下载”目录时：
 
 ```bash
-cd ~/Downloads/MacFanPro-0.2.3.23-macos-arm64
+cd ~/Downloads/MacFanPro-0.2.3.24-macos-arm64
 sudo ./bin/macfanpro install
 open /Applications/MacFanPro.app
 ```
@@ -88,7 +88,7 @@ cd macfanpro
 
 `setup.sh` 会编译源码、组装应用、请求管理员权限完成安装，并打开 MacFanPro，无需再执行其他安装命令。
 
-此方式默认构建仓库的 `main` 分支，可能包含尚未发行的修改。如需构建指定发行版，可在运行 `./setup.sh` 前执行 `git checkout v0.2.3.23`，版本号按需替换。
+此方式默认构建仓库的 `main` 分支，可能包含尚未发行的修改。如需构建指定发行版，可在运行 `./setup.sh` 前执行 `git checkout v0.2.3.24`，版本号按需替换。
 
 ### 安装完成后
 
@@ -281,6 +281,7 @@ bash Scripts/package-release.sh
 - [0.2.3.20 验证记录](docs/macfanpro-0.2.3.20-validation.md)：默认按钮、睡眠唤醒与校准修复；逐项分析见 [风扇状态与校准修复](docs/fan-state-fixes-20260927.md)。
 - [0.2.3.21 验证记录](docs/macfanpro-0.2.3.21-validation.md)：校准文件的安全写入与复核发现的时序问题。
 - [0.2.3.23 验证记录](docs/macfanpro-0.2.3.23-validation.md)：第三轮审计的风扇状态、失败恢复、校准与安装修复。
+- [0.2.3.24 验证记录](docs/macfanpro-0.2.3.24-validation.md)：高温保护期间指令失败时保持满速。
 - [相对上游的温度改动](docs/upstream-divergence.md)：合并上游时需要重新施加的改动。
 - [GUI 本地化](docs/gui-localization.md)：英语键名、简体翻译、繁体字形转换及资源校验流程。
 - [菜单栏标签验证](docs/menu-bar-label-validation.md)：最小宽度、位数变化和隔离显示测试。

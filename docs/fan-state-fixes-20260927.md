@@ -158,3 +158,11 @@ Compiler logs for the final Debug/Release runs contain zero warnings or errors. 
 - Older daemon responses remain decodable. The new CLI reports unknown all-fan targets if a daemon supplies only the old scalar, rather than claiming that scalar was applied to every fan.
 - The all-fan direct path now clamps each fan independently, matching the daemon; per-fan direct requests still validate their requested RPM.
 - The table above contains source/build/simulated-failure checks. Release 0.2.3.23 was subsequently published and installed through Homebrew. A later [hardware acceptance](macfanpro-0.2.3.23-hardware-validation.md) verified one real Smart safety-trigger/cooldown cycle and CLI hold restoration after full sleep/wake. It does not cover every profile, long sustained load or physical write-failure injection. Earlier hardware and release evidence in this document applies to its named historical versions.
+
+## Follow-up in 0.2.3.24: failures during thermal suspension
+
+A review of 0.2.3.23 found one remaining gap. `releaseAfterFailedWrite` now runs for any failed hardware command, and it cleared `safetySuspended` and reset to auto unconditionally. A max/set/setfan failing during a thermal suspension therefore ended the override, even when the failure was a read that happened before anything was written. That broke the floor's rule of never dropping fans while hot.
+
+Fix: if the floor is suspended and the failed verb is not an explicit auto, the daemon re-asserts max and keeps the suspension. The failed command leaves no hold, so cooldown resets to auto. Only if max cannot be written does the existing tracked release take over.
+
+Test: `DaemonRecoveryTests.failureDuringSuspension` injects a single failed fan-count read into a `set` during suspension. It fails against the 0.2.3.23 code: the fans went to auto and the suspension was cleared. It passes with the fix.

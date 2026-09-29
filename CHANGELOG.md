@@ -1,5 +1,9 @@
 # MacFanPro changelog
 
+## 0.2.3.24
+
+- While the thermal floor holds the fans at max, a fan command that fails (for example on a transient SMC read, before anything is written) no longer ends the override and hands hot fans back to auto. The background service re-asserts max and keeps the override until cooldown, falling back to auto only if max cannot be written. An explicit auto still hands control back.
+
 ## 0.2.3.23
 
 - Recover failed fan writes even when a previous CLI or app hold exists. A partly applied low-speed command can no longer leave an old max label suppressing recovery. Failed releases remain pending until they succeed, and new writes cannot discard that recovery.
