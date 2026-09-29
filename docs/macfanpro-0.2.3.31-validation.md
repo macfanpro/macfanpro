@@ -22,4 +22,8 @@
 
 ## 公开发行
 
-待发行包验收后填写。
+- 发行源提交：`6ddd1ed`，标签 `v0.2.3.31`。[源码 CI](https://github.com/macfanpro/macfanpro/actions/runs/36610462956)、[发行 CI](https://github.com/macfanpro/macfanpro/actions/runs/36610465996) 通过。
+- 下载草稿附件，`SHA256SUMS` 校验通过，与 GitHub asset digest 一致：`MacFanPro-0.2.3.31-macos-arm64.tar.gz` 为 `48ac2ec437b509bb24eea2df441aba7fb40f38ea8c04871b8e7df734a4cd667b`。CLI 版本为 0.2.3.31，严格代码签名校验通过。
+- 安装下载产物后，二进制与发行包逐字节一致。
+- 实机横幅：临时写入“最新版本 99.99.99”后重启应用，横幅显示“更新命令：”与 `brew trust macfanpro/tap && brew upgrade macfanpro && sudo macfanpro install`；临时改名 `/opt/homebrew/opt/macfanpro` 后重启，横幅改为“下载新版本，然后在它的文件夹中运行：”与 `sudo ./bin/macfanpro install`。测试后已恢复链接并删除测试用的偏好值。
+- Homebrew：配方指向 v0.2.3.31，生成并上传 `arm64_sonoma` 预编译包（tap Release `macfanpro-0.2.3.31`），重新安装输出 “Pouring”，`brew test` 通过。同步后三者版本均为 0.2.3.31，与 Homebrew 版逐字节一致，无版本不一致提示，Smart 模式与“跟随系统”语言保留。
