@@ -18,4 +18,8 @@
 
 ## 公开发行
 
-待发行包验收后填写。
+- 发行源提交：`70d477f`，标签 `v0.2.3.28`。[源码 CI](https://github.com/macfanpro/macfanpro/actions/runs/36526608971)、[发行 CI](https://github.com/macfanpro/macfanpro/actions/runs/36526611024) 通过。
+- 下载草稿附件，`SHA256SUMS` 校验通过，与 GitHub asset digest 一致：`MacFanPro-0.2.3.28-macos-arm64.tar.gz` 为 `ccdd90414366d978e03250316b7931ec3084506c181202a915db209b19de0d33`。CLI 版本为 0.2.3.28，严格代码签名校验通过。
+- 安装下载产物后，二进制与发行包逐字节一致；检查后显示“已是最新版本”，关闭再打开菜单恢复为“更新”。
+- Homebrew 从 0.2.3.27 升级到 0.2.3.28，`brew test` 通过；同步后三者版本均为 0.2.3.28，无版本不一致提示，Smart 模式与“跟随系统”语言保留。
+- 菜单外观与 0.2.3.27 相同，README 截图沿用 0.2.3.27。
