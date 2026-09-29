@@ -18,9 +18,9 @@ MacFanPro 基于 [ThermalForge](https://github.com/ProducerGuy/ThermalForge) 独
 - **语言与显示设置**：支持英语、简体中文、繁体中文、跟随系统、摄氏/华氏切换及登录时启动。
 - **命令行与后台服务**：支持指定转速、读取状态和 CSV 数据采样；正常安装后，应用和普通控制命令通过后台服务操作风扇。
 
-下面是本机运行 MacFanPro 0.2.3.19 的真实截图，依次为英文和简体中文界面：
+下面是本机运行 MacFanPro 0.2.3.25 的真实截图，依次为英文和简体中文界面：
 
-<img src="docs/images/menu-bar-en.png" alt="MacFanPro menu in English: fan speeds, temperatures, profiles, language setting and Quit" width="320"> <img src="docs/images/menu-bar-zh-CN.png" alt="MacFanPro 菜单（简体中文）：风扇转速、温度、控制模式、语言设置与退出按钮" width="320">
+<img src="docs/images/menu-bar-en.png" alt="MacFanPro menu in English: fan speeds, temperatures, profiles, language setting, version with Check for Updates, and Quit" width="320"> <img src="docs/images/menu-bar-zh-CN.png" alt="MacFanPro 菜单（简体中文）：风扇转速、温度、控制模式、语言设置、版本与检查更新、退出按钮" width="320">
 
 ## 系统要求
 
