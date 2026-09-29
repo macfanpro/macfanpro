@@ -241,6 +241,12 @@ struct MenuBarView: View {
         .frame(width: 260)
         // Measure the content's ideal height, including any temporary banners.
         .fixedSize(horizontal: false, vertical: true)
+        // An update-check result belongs to this opening of the menu only. The panel
+        // stays alive between openings (onDisappear doesn't fire), but it resigns key
+        // when it closes; the app has no other window.
+        .onReceive(NotificationCenter.default.publisher(for: NSWindow.didResignKeyNotification)) { _ in
+            appState.clearManualUpdateResult()
+        }
     }
 
     // MARK: - Helpers

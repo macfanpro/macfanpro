@@ -358,6 +358,12 @@ final class AppState: ObservableObject {
         }
     }
 
+    /// The menu closed: a shown result is stale next time, so return the row to its
+    /// label. A check still in flight keeps its state and reports when it finishes.
+    func clearManualUpdateResult() {
+        if manualUpdateCheck != .checking { manualUpdateCheck = .idle }
+    }
+
     func applyManualUpdateCheck(_ result: UpdateCheckResult) {
         applyUpdateCheck(result)
         switch result {
