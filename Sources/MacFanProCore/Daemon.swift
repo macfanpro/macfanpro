@@ -888,6 +888,17 @@ public final class DaemonServer {
         }
         stateLock.lock()
         hold = .none
+        let suspended = safetySuspended
+        stateLock.unlock()
+        // While the thermal floor holds max, a manual command's failure (possibly a
+        // read, before any write) must not drop hot fans to auto. Re-assert max and
+        // keep the suspension; its cooldown resets to auto, as there is no hold left.
+        // Explicit auto still hands control back.
+        if suspended, verb != .auto, verb != .autoIfApp, (try? fanControl.setMax()) != nil {
+            NSLog("MacFanPro daemon: fan write failed during thermal suspension — max re-asserted")
+            return
+        }
+        stateLock.lock()
         safetySuspended = false
         releasePending = true
         stateLock.unlock()

@@ -48,6 +48,7 @@ final class SimulatedSMC: @unchecked Sendable {
     private let lock = NSLock()
     private var keys: [String: [UInt8]]
     private var writeHook: ((String, [UInt8]) -> Bool)?
+    private var readHook: ((String) -> Bool)?
 
     init(maxima: [Float]) {
         keys = ["FNum": [UInt8(maxima.count)], "Ftst": [0], "TCDX": floatToSMCBytes(70)]
@@ -64,6 +65,11 @@ final class SimulatedSMC: @unchecked Sendable {
         get { lock.lock(); defer { lock.unlock() }; return writeHook }
         set { lock.lock(); writeHook = newValue; lock.unlock() }
     }
+    /// Returning false makes that read fail, as a busy SMC does.
+    var onRead: ((String) -> Bool)? {
+        get { lock.lock(); defer { lock.unlock() }; return readHook }
+        set { lock.lock(); readHook = newValue; lock.unlock() }
+    }
     func bytes(_ key: String) -> [UInt8]? { lock.lock(); defer { lock.unlock() }; return keys[key] }
     func set(_ key: String, _ value: [UInt8]) { lock.lock(); keys[key] = value; lock.unlock() }
     func float(_ key: String) -> Float { smcBytesToFloat(bytes(key) ?? [], size: 4) }
@@ -74,7 +80,10 @@ final class SimulatedSMC: @unchecked Sendable {
 
     lazy var connection = SMCConnection { [unowned self] input, output in
         let key = String(decoding: (0..<4).map { UInt8((input.key >> (24 - 8 * $0)) & 0xFF) }, as: UTF8.self)
-        guard let value = self.bytes(key) else { output.result = 0x84; return kIOReturnSuccess }
+        guard let value = self.bytes(key), self.onRead?(key) != false else {
+            output.result = 0x84
+            return kIOReturnSuccess
+        }
         output.result = 0
         switch input.data8 {
         case SMCCommand.readKeyInfo.rawValue:
@@ -218,6 +227,31 @@ struct DaemonRecoveryTests {
         f.daemon.thermalTick()
         #expect(!f.state.safetySuspended && f.state.command == "set 2000")
         #expect(f.smc.float("F0Tg") == 2000 && f.smc.float("F1Tg") == 2000)
+    }
+
+    @Test("A command failing during thermal suspension keeps the fans at max until cooldown")
+    func failureDuringSuspension() {
+        let f = ControlFixture()
+        #expect(f.send(.init(verb: .set, rpm: 3000, oneshot: true)).ok)
+        f.smc.temperature = 96
+        f.daemon.thermalTick()
+        #expect(f.state.safetySuspended)
+        // One failed fan-count read: the request fails before writing anything.
+        var failures = 1
+        f.smc.onRead = { key in
+            guard key == "FNum", failures > 0 else { return true }
+            failures -= 1
+            return false
+        }
+        #expect(!f.send(.init(verb: .set, rpm: 2000, oneshot: true)).ok)
+        f.smc.onRead = nil
+        #expect(f.state.safetySuspended && f.state.command == nil)
+        #expect(f.smc.float("F0Tg") == 6000 && f.smc.float("F1Tg") == 6000)
+        #expect(f.smc.bytes("F0Md") == [1])
+        // Cooldown then hands the fans back, since the failed request left no hold.
+        f.smc.temperature = 89
+        f.daemon.thermalTick()
+        #expect(!f.state.safetySuspended && f.smc.bytes("F0Md") == [0])
     }
 
     @Test("A low-speed request during suspension changes only the cooldown target")
