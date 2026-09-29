@@ -241,6 +241,9 @@ struct MenuBarView: View {
         .frame(width: 260)
         // Measure the content's ideal height, including any temporary banners.
         .fixedSize(horizontal: false, vertical: true)
+        // The language is chosen in the app, not taken from the system locale, so
+        // mirror the panel for right-to-left languages here.
+        .environment(\.layoutDirection, language.language.isRightToLeft ? .rightToLeft : .leftToRight)
         // An update-check result belongs to this opening of the menu only. The panel
         // stays alive between openings (onDisappear doesn't fire), but it resigns key
         // when it closes; the app has no other window.

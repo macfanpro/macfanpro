@@ -38,7 +38,7 @@ MacFanPro follows upstream [ThermalForge](https://github.com/ProducerGuy/Thermal
 
 ## Improve a translation
 
-The menu bar app has 17 languages. The translations were made by the maintainer, so corrections from native speakers are very welcome. Edit `Sources/MacFanProLocalization/Resources/<language>.json`, keeping `{placeholders}` unchanged, and check the layout as described in [docs/gui-localization.md](docs/gui-localization.md); the panel is only 260 pt wide. The same guide explains how to add a language.
+The menu bar app has 18 languages. The translations were made by the maintainer, so corrections from native speakers are very welcome. Edit `Sources/MacFanProLocalization/Resources/<language>.json`, keeping `{placeholders}` unchanged, and check the layout as described in [docs/gui-localization.md](docs/gui-localization.md); the panel is only 260 pt wide. The same guide explains how to add a language.
 
 ## License
 

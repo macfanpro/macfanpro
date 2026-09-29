@@ -32,7 +32,7 @@ Or [download the app](https://github.com/macfanpro/macfanpro/releases/latest) �
 - **Native and light**: a Swift menu bar app and a small background service; no Electron, no Dock icon.
 - **Safe by design**: a 95°C safety override, a background thermal floor that works even if the app quits, and a watchdog that hands the fans back to macOS if the app stops responding.
 - **Scriptable**: a `macfanpro` CLI to set speeds, read JSON status and record CSV samples.
-- **17 languages**, following your system language.
+- **18 languages**, following your system language, including right-to-left Arabic.
 
 An open-source alternative to tools like Macs Fan Control for people who want transparent, scriptable fan control on Apple Silicon.
 
@@ -41,7 +41,7 @@ An open-source alternative to tools like Macs Fan Control for people who want tr
 - **Temperature and fan monitoring**: CPU, GPU, memory, SSD and ambient temperatures, and each fan's actual speed. Which readings appear depends on the sensors your Mac provides.
 - **Automatic fan control**: Smart, Silent, Balanced, Performance and Max profiles, plus a one-click return to Apple's automatic control.
 - **Native menu bar app**: the panel sizes itself to its content; the temperature label reserves room for "icon + two digits + °", stays centered, and widens for three digits.
-- **17 interface languages**: English, Simplified Chinese, Traditional Chinese, Japanese, Korean, German, French, Spanish, Italian, Brazilian Portuguese, Russian, Ukrainian, Polish, Dutch, Turkish, Vietnamese and Indonesian, following the system language by default. You can also switch between °C and °F and launch at login.
+- **18 interface languages**: English, Simplified Chinese, Traditional Chinese, Japanese, Korean, German, French, Spanish, Italian, Brazilian Portuguese, Russian, Ukrainian, Polish, Dutch, Turkish, Vietnamese, Indonesian and Arabic (laid out right to left), following the system language by default. You can also switch between °C and °F and launch at login.
 - **Command line and background service**: set speeds, read status and record CSV samples. Once installed, the app and everyday commands control the fans through the background service.
 
 The screenshots above are MacFanPro 0.2.3.27 running on an M4 Max MacBook Pro.
@@ -52,7 +52,7 @@ The screenshots above are MacFanPro 0.2.3.27 running on an M4 Max MacBook Pro.
 - Fan control needs a Mac with fans; fanless models cannot use it.
 - Installing or updating the background service needs administrator rights. Building from source needs Xcode 16 or later.
 
-Hardware testing so far has been mainly on an M4 Max MacBook Pro. Treat other models, macOS versions and display setups as untested; see the [0.2.3.29 validation record](docs/macfanpro-0.2.3.29-validation.md) (in Chinese) for the exact scope.
+Hardware testing so far has been mainly on an M4 Max MacBook Pro. Treat other models, macOS versions and display setups as untested; see the [0.2.3.30 validation record](docs/macfanpro-0.2.3.30-validation.md) (in Chinese) for the exact scope.
 
 ## Install
 
@@ -88,10 +88,10 @@ No Homebrew or Xcode needed.
 2. Double-click to extract it. Keep `MacFanPro.app` and the `bin` folder together.
 3. In Terminal, go into the extracted folder, install, and open the app.
 
-For example, with `0.2.3.29` extracted in Downloads:
+For example, with `0.2.3.30` extracted in Downloads:
 
 ```bash
-cd ~/Downloads/MacFanPro-0.2.3.29-macos-arm64
+cd ~/Downloads/MacFanPro-0.2.3.30-macos-arm64
 sudo ./bin/macfanpro install
 open /Applications/MacFanPro.app
 ```
@@ -112,7 +112,7 @@ cd macfanpro
 
 `setup.sh` builds the code, assembles the app, asks for your administrator password to install, and opens MacFanPro. No further install command is needed.
 
-This builds the repository's `main` branch, which may include unreleased changes. To build a specific release, run `git checkout v0.2.3.29` (with the version you want) before `./setup.sh`.
+This builds the repository's `main` branch, which may include unreleased changes. To build a specific release, run `git checkout v0.2.3.30` (with the version you want) before `./setup.sh`.
 
 ### After installing
 
@@ -296,9 +296,9 @@ When opening a [Pull Request](https://github.com/macfanpro/macfanpro/pulls), des
 ### Documentation
 
 - [Changelog](CHANGELOG.md): the main changes in each release.
-- [GUI localization](docs/gui-localization.md): the 17 interface languages, how to add a language, and the layout and packaging checks.
+- [GUI localization](docs/gui-localization.md): the 18 interface languages, how to add a language, and the layout and packaging checks.
 - [Release notes guide and template](docs/releases/README.md) (in Chinese): per-release notes, downloads, upgrade notes and evidence.
-- Per-release validation records (in Chinese): `docs/macfanpro-<version>-validation.md`, for example [0.2.3.29](docs/macfanpro-0.2.3.29-validation.md).
+- Per-release validation records (in Chinese): `docs/macfanpro-<version>-validation.md`, for example [0.2.3.30](docs/macfanpro-0.2.3.30-validation.md).
 - [Fan state and calibration fixes](docs/fan-state-fixes-20260927.md): the audits behind 0.2.3.20 to 0.2.3.24.
 - [Temperature changes relative to upstream](docs/upstream-divergence.md): changes to reapply when merging upstream.
 - [Menu bar label validation](docs/menu-bar-label-validation.md): minimum width, digit changes and isolated rendering tests.

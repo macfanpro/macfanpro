@@ -20,8 +20,12 @@ public enum AppLanguage: String, CaseIterable, Identifiable {
     case turkish = "tr"
     case vietnamese = "vi"
     case indonesian = "id"
+    case arabic = "ar"
 
     public var id: String { rawValue }
+
+    /// Written right to left: the panel is laid out mirrored.
+    public var isRightToLeft: Bool { self == .arabic }
 
     /// Languages matched by their base code alone. Portuguese of any region uses the
     /// Brazilian translation; "in" is the legacy code for Indonesian.
@@ -29,7 +33,7 @@ public enum AppLanguage: String, CaseIterable, Identifiable {
         "ja": .japanese, "ko": .korean, "de": .german, "fr": .french, "es": .spanish,
         "it": .italian, "pt": .portugueseBrazil, "ru": .russian, "uk": .ukrainian,
         "pl": .polish, "nl": .dutch, "tr": .turkish, "vi": .vietnamese,
-        "id": .indonesian, "in": .indonesian,
+        "id": .indonesian, "in": .indonesian, "ar": .arabic,
     ]
 
     public static func resolve(preferredLanguages: [String]) -> AppLanguage {
@@ -118,6 +122,7 @@ public final class AppLanguageStore: ObservableObject {
         case .turkish: return "Türkçe"
         case .vietnamese: return "Tiếng Việt"
         case .indonesian: return "Bahasa Indonesia"
+        case .arabic: return "العربية"
         }
     }
 }

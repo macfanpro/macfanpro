@@ -61,7 +61,7 @@ struct LocalizationTests {
             (["pt-BR"], .portugueseBrazil), (["pt-PT"], .portugueseBrazil),
             (["ru-RU"], .russian), (["uk-UA"], .ukrainian), (["pl-PL"], .polish),
             (["nl-BE"], .dutch), (["tr-TR"], .turkish), (["vi-VN"], .vietnamese),
-            (["id-ID"], .indonesian), (["in-ID"], .indonesian),
+            (["id-ID"], .indonesian), (["in-ID"], .indonesian), (["ar-SA"], .arabic), (["ar-EG"], .arabic),
             (["zh-TW", "en"], .traditionalChinese),
             (["zh-HK"], .traditionalChinese), (["zh-MO"], .traditionalChinese),
             (["zh_CN"], .simplifiedChinese), (["zh-SG"], .simplifiedChinese),

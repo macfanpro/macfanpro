@@ -32,7 +32,7 @@ open /Applications/MacFanPro.app
 - **原生轻量**：Swift 编写的菜单栏应用加一个小型后台服务，不是 Electron，不占 Dock。
 - **安全设计**：95°C 高温保护；后台服务自带高温兜底，应用退出后仍然生效；应用失去响应时，看门狗会把风扇交还 macOS。
 - **可脚本化**：`macfanpro` 命令行可以设置转速、输出 JSON 状态、记录 CSV 数据。
-- **17 种界面语言**，默认跟随系统语言。
+- **18 种界面语言**，默认跟随系统语言，包括从右往左书写的阿拉伯语。
 
 如果你想在 Apple Silicon 上用透明、可脚本化的方式控制风扇，它是 Macs Fan Control 等工具的开源替代品。
 
@@ -41,7 +41,7 @@ open /Applications/MacFanPro.app
 - **温度与转速监测**：查看 CPU、GPU、内存、SSD、环境温度及各风扇实际转速，具体读数取决于机型提供的传感器。
 - **自动风扇控制**：提供智能、静音、均衡、性能和最大转速模式，也可恢复 Apple 自动控制。
 - **原生菜单栏界面**：弹窗高度随内容调整；温度标签按“图标＋两位数字＋°”预留最小宽度，内容整体居中，三位数时扩展。
-- **17 种界面语言**：英语、简体中文、繁体中文、日语、韩语、德语、法语、西班牙语、意大利语、葡萄牙语（巴西）、俄语、乌克兰语、波兰语、荷兰语、土耳其语、越南语和印尼语，默认跟随系统语言；另可切换摄氏/华氏及登录时启动。
+- **18 种界面语言**：英语、简体中文、繁体中文、日语、韩语、德语、法语、西班牙语、意大利语、葡萄牙语（巴西）、俄语、乌克兰语、波兰语、荷兰语、土耳其语、越南语、印尼语和阿拉伯语（从右往左排版），默认跟随系统语言；另可切换摄氏/华氏及登录时启动。
 - **命令行与后台服务**：支持指定转速、读取状态和 CSV 数据采样；正常安装后，应用和普通控制命令通过后台服务操作风扇。
 
 上方截图为 MacFanPro 0.2.3.27 在 M4 Max MacBook Pro 上的实际运行界面。
@@ -52,7 +52,7 @@ open /Applications/MacFanPro.app
 - 风扇控制需要带风扇的机型，无风扇机型无法使用该功能。
 - 首次安装或更新后台服务需要管理员权限；从源码构建还需要 Xcode 16 或更高版本。
 
-当前实机验证以 M4 Max MacBook Pro 为主。其他机型、macOS 版本和显示环境不应视为已验证，具体范围见 [0.2.3.29 验证记录](docs/macfanpro-0.2.3.29-validation.md)。
+当前实机验证以 M4 Max MacBook Pro 为主。其他机型、macOS 版本和显示环境不应视为已验证，具体范围见 [0.2.3.30 验证记录](docs/macfanpro-0.2.3.30-validation.md)。
 
 ## 安装
 
@@ -88,10 +88,10 @@ Homebrew 7 起默认不加载第三方 tap 的配方，需要先用 `brew trust`
 2. 双击解压，保留文件夹内的 `MacFanPro.app` 和 `bin` 目录。
 3. 在终端中进入解压后的文件夹，执行安装并打开应用。
 
-例如，`0.2.3.29` 解压在“下载”目录时：
+例如，`0.2.3.30` 解压在“下载”目录时：
 
 ```bash
-cd ~/Downloads/MacFanPro-0.2.3.29-macos-arm64
+cd ~/Downloads/MacFanPro-0.2.3.30-macos-arm64
 sudo ./bin/macfanpro install
 open /Applications/MacFanPro.app
 ```
@@ -112,7 +112,7 @@ cd macfanpro
 
 `setup.sh` 会编译源码、组装应用、请求管理员权限完成安装，并打开 MacFanPro，无需再执行其他安装命令。
 
-此方式默认构建仓库的 `main` 分支，可能包含尚未发行的修改。如需构建指定发行版，可在运行 `./setup.sh` 前执行 `git checkout v0.2.3.29`，版本号按需替换。
+此方式默认构建仓库的 `main` 分支，可能包含尚未发行的修改。如需构建指定发行版，可在运行 `./setup.sh` 前执行 `git checkout v0.2.3.30`，版本号按需替换。
 
 ### 安装完成后
 
@@ -311,8 +311,9 @@ bash Scripts/package-release.sh
 - [0.2.3.27 验证记录](docs/macfanpro-0.2.3.27-validation.md)：中文按钮改为“检查更新”。
 - [0.2.3.28 验证记录](docs/macfanpro-0.2.3.28-validation.md)：关闭菜单后清除检查结果。
 - [0.2.3.29 验证记录](docs/macfanpro-0.2.3.29-validation.md)：新增 14 种界面语言，README 与发布说明中英双语。
+- [0.2.3.30 验证记录](docs/macfanpro-0.2.3.30-validation.md)：新增阿拉伯语及从右往左排版。
 - [相对上游的温度改动](docs/upstream-divergence.md)：合并上游时需要重新施加的改动。
-- [GUI 本地化](docs/gui-localization.md)：17 种界面语言、新增语言与排版检查步骤、资源校验流程（英文）。
+- [GUI 本地化](docs/gui-localization.md)：18 种界面语言、新增语言与排版检查步骤、资源校验流程（英文）。
 - [菜单栏标签验证](docs/menu-bar-label-validation.md)：最小宽度、位数变化和隔离显示测试。
 - [M4 风扇接管修复](docs/m4-handoff-repair.md)：相关硬件行为与修复依据。
 
