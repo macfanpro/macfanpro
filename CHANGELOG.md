@@ -1,5 +1,9 @@
 # MacFanPro changelog
 
+## 0.2.3.26
+
+- Lay out the update row like the Language row, in the same font and control size: an "Updates" label that shows the check's result once there is one, and a Check button. The 0.2.3.25 row used small text and a small button.
+
 ## 0.2.3.25
 
 - Add a Check for Updates button under the Version row. It checks GitHub now instead of waiting for the daily check, and shows "Checking…", "Up to date", the new version, or "Couldn't reach GitHub". A found version shows its banner even if "Later" dismissed it; the daily check still honours the dismissal. The check uses the system proxy settings.
