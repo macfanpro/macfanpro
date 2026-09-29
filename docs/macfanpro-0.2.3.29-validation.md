@@ -22,4 +22,8 @@
 
 ## 公开发行
 
-待发行包验收后填写。
+- 发行源提交：`9992062`，标签 `v0.2.3.29`。[源码 CI](https://github.com/macfanpro/macfanpro/actions/runs/36544482919)、[发行 CI](https://github.com/macfanpro/macfanpro/actions/runs/36544486859) 通过。
+- 下载草稿附件，`SHA256SUMS` 校验通过，与 GitHub asset digest 一致：`MacFanPro-0.2.3.29-macos-arm64.tar.gz` 为 `515299268fcfe73ed850c8cf43d0ac401217c0344934788222249c3c600c6ea2`。CLI 版本为 0.2.3.29，严格代码签名校验通过；包内 17 个语言文件，`CFBundleLocalizations` 17 项。
+- 安装下载产物后，二进制与发行包逐字节一致。将已安装的应用切换为日语：面板各行均为日语、排版正常，“アップデートを確認”显示“最新です”；之后恢复为“跟随系统”。
+- Homebrew 从 0.2.3.28 升级到 0.2.3.29（配方描述改为 “multilingual menu bar app”），`brew test` 通过；同步后三者版本均为 0.2.3.29，无版本不一致提示，Smart 模式与“跟随系统”语言保留。
+- 发布说明首次采用中英双语模板。
