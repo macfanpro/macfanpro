@@ -1,5 +1,9 @@
 # MacFanPro changelog
 
+## 0.2.3.31
+
+- The "Update available" banner now shows the steps for how MacFanPro was installed. Release-package installs are told to download the new version and run `sudo ./bin/macfanpro install` in its folder, with a Download link; they were previously shown a Homebrew command that fails without a Homebrew install. Homebrew installs get `brew trust macfanpro/tap && brew upgrade macfanpro && sudo macfanpro install`, which now includes the `brew trust` step Homebrew 7 requires.
+
 ## 0.2.3.30
 
 - Add Arabic, the 18th interface language. The panel is mirrored for right-to-left text: labels on the right, values and buttons on the left, while commands, RPM and temperatures stay left to right.
