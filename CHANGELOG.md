@@ -1,5 +1,9 @@
 # MacFanPro changelog
 
+## 0.2.3.36
+
+- New app icon in a tech palette: the fan now has a cyan to violet gradient and a soft glow, on a deep navy tile with a thin cyan edge. It shows in the Dock, Finder and Launchpad. The social preview images use the same style. Menu bar and panel colors are unchanged.
+
 ## 0.2.3.35
 
 - The update banner now shows two labelled options. **Option 1 (recommended)** is the one-click **Update in Terminal** for how you installed, Homebrew or the release package, with its command. **Option 2** is building from source, for developers. Commands stay left to right in Arabic.
