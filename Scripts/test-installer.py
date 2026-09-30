@@ -27,6 +27,7 @@ scutil() { printf 'HTTPSEnable : 1\nHTTPSProxy : proxy.test\nHTTPSPort : 8080\n'
 installed_versions() { printf '%s' "${INSTALLED:-}"; }
 find_brew() { if [ "${BREW_FIXTURE:-0}" = 1 ]; then echo "$FIXTURE/brew"; fi; }
 codesign() { echo codesign >> "$EVENTS"; [ "${BAD_SIGN:-0}" = 0 ]; }
+git() { echo "git $*" >> "$EVENTS"; [ "${BAD_GIT:-0}" = 0 ]; }
 curl() {
     echo "curl $* proxy=${https_proxy:-}" >> "$EVENTS"
     [ "${BAD_DOWNLOAD:-0}" = 0 ] || return 22
@@ -67,12 +68,13 @@ case "$1" in
 esac
 '''
 BREW = '''#!/bin/bash
-echo "brew $*" >> "$EVENTS"
+echo "brew $* no_ask=${HOMEBREW_NO_ASK:-} no_auto_update=${HOMEBREW_NO_AUTO_UPDATE:-}" >> "$EVENTS"
 case "$1" in
  trust) exit "${BAD_TRUST:-0}" ;;
  update) [ "${BAD_UPDATE:-0}" = 0 ] ;;
  upgrade) [ "${BAD_BREW:-0}" = 0 ] ;;
  --prefix) echo "$FIXTURE/keg" ;;
+ --repository) echo "$FIXTURE/tap" ;;
  *) exit 2 ;;
 esac
 '''
@@ -210,10 +212,15 @@ class InstallerTests(unittest.TestCase):
         self.assertIn('install install', events)
         self.assertNotIn('curl ', events)
         self.assertLess(events.index('brew trust macfanpro/tap'), events.index('brew upgrade macfanpro'))
+        # Only this tap is refreshed, and the upgrade never stops at Homebrew's y/n prompt.
+        self.assertIn('git -C %s/tap pull --ff-only' % self.root, events)
+        self.assertNotIn('brew update', events)
+        self.assertIn('brew upgrade macfanpro no_ask=1 no_auto_update=1', events)
 
     def test_homebrew_tolerates_trust_and_update_failures(self):
         # Older Homebrew has no trust command; one unreachable tap fails update.
-        _, events = self.run_installer('--homebrew', BREW_FIXTURE='1', BAD_TRUST='1', BAD_UPDATE='1')
+        _, events = self.run_installer('--homebrew', BREW_FIXTURE='1', BAD_TRUST='1', BAD_GIT='1', BAD_UPDATE='1')
+        self.assertIn('brew update', events)
         self.assertIn('brew upgrade macfanpro', events)
         self.assertIn('install install', events)
 

@@ -176,7 +176,10 @@ struct Auto: ParsableCommand {
         // Route through the daemon (coordinates its state, no sudo) when running;
         // resetAuto isn't a hold, so oneshot doesn't apply.
         let (route, _, _, _) = try FanCommandRouter.apply(.resetAuto, oneshot: false)
-        reportRoute(route)
+        // --stop-app is the step just before `sudo macfanpro install` during an
+        // update, where a newer CLI reaching the old daemon is expected; the plain
+        // mismatch nudge there reads like a failure. Other routes still report.
+        if case .daemon = route, stopApp {} else { reportRoute(route) }
         print(stopApp
             ? "Menu bar app stopped; fans reset to Apple defaults"
             : "Fans reset to Apple defaults")

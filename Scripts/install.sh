@@ -141,11 +141,16 @@ main() {
         # Homebrew 7 refuses an untrusted tap; trusting is a no-op when already
         # trusted and unknown to older Homebrew.
         "$brew" trust macfanpro/tap >/dev/null 2>&1 || true
-        # One unreachable tap must not block this upgrade; the version check below
-        # still refuses a stale formula.
-        "$brew" update || printf 'brew update failed; continuing with the current tap.\n' >&2
+        # Refresh only this tap: brew update fetches every tap (slow, noisy when an
+        # unrelated tap or mirror is broken) and HOMEBREW_NO_AUTO_UPDATE users skip
+        # it. Fall back to it; the version check below still refuses a stale formula.
+        if ! git -C "$("$brew" --repository macfanpro/tap)" pull --ff-only --quiet; then
+            "$brew" update || printf 'brew update failed; continuing with the current tap.\n' >&2
+        fi
+        # Running this script is the confirmation; Homebrew 7 would otherwise wait
+        # at a y/n prompt in Terminal. The tap is fresh, so skip auto-update too.
         # brew upgrade is a successful no-op for an already-current formula.
-        "$brew" upgrade macfanpro
+        HOMEBREW_NO_ASK=1 HOMEBREW_NO_AUTO_UPDATE=1 HOMEBREW_NO_ENV_HINTS=1 "$brew" upgrade macfanpro
         root=$("$brew" --prefix macfanpro)
         local brew_version
         brew_version=$("$root/bin/macfanpro" --version)
