@@ -138,7 +138,12 @@ main() {
     if [ "$require_brew" = 1 ] && [ -z "$brew" ]; then fail 'No Homebrew-managed MacFanPro installation found.'; fi
     if [ -n "$brew" ] && [ "$check" = 0 ]; then
         printf 'Updating the Homebrew-managed installation…\n'
-        "$brew" update
+        # Homebrew 7 refuses an untrusted tap; trusting is a no-op when already
+        # trusted and unknown to older Homebrew.
+        "$brew" trust macfanpro/tap >/dev/null 2>&1 || true
+        # One unreachable tap must not block this upgrade; the version check below
+        # still refuses a stale formula.
+        "$brew" update || printf 'brew update failed; continuing with the current tap.\n' >&2
         # brew upgrade is a successful no-op for an already-current formula.
         "$brew" upgrade macfanpro
         root=$("$brew" --prefix macfanpro)

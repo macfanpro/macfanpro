@@ -69,7 +69,9 @@ esac
 BREW = '''#!/bin/bash
 echo "brew $*" >> "$EVENTS"
 case "$1" in
- update|upgrade) [ "${BAD_BREW:-0}" = 0 ] ;;
+ trust) exit "${BAD_TRUST:-0}" ;;
+ update) [ "${BAD_UPDATE:-0}" = 0 ] ;;
+ upgrade) [ "${BAD_BREW:-0}" = 0 ] ;;
  --prefix) echo "$FIXTURE/keg" ;;
  *) exit 2 ;;
 esac
@@ -207,6 +209,13 @@ class InstallerTests(unittest.TestCase):
         self.assertIn('brew upgrade macfanpro', events)
         self.assertIn('install install', events)
         self.assertNotIn('curl ', events)
+        self.assertLess(events.index('brew trust macfanpro/tap'), events.index('brew upgrade macfanpro'))
+
+    def test_homebrew_tolerates_trust_and_update_failures(self):
+        # Older Homebrew has no trust command; one unreachable tap fails update.
+        _, events = self.run_installer('--homebrew', BREW_FIXTURE='1', BAD_TRUST='1', BAD_UPDATE='1')
+        self.assertIn('brew upgrade macfanpro', events)
+        self.assertIn('install install', events)
 
     def test_homebrew_unavailable_or_behind(self):
         for override in ({}, {'BREW_FIXTURE':'1','CLI_VERSION':'1.2.3.3'}, {'BREW_FIXTURE':'1','BAD_BREW':'1'}):
