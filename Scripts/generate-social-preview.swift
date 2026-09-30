@@ -32,11 +32,9 @@ func text(_ s: String, _ font: NSFont, _ color: NSColor, _ x: CGFloat, _ y: CGFl
     NSAttributedString(string: s, attributes: [.font: font, .foregroundColor: color, .kern: kern]).draw(at: NSPoint(x: x, y: y))
 }
 
-// Icon with a cyan halo.
-let halo = NSShadow(); halo.shadowBlurRadius = 36; halo.shadowColor = cyan.withAlphaComponent(0.45); halo.shadowOffset = .zero
-NSGraphicsContext.saveGraphicsState(); halo.set()
+// Keep the project icon sharp at social-preview size.
+NSGraphicsContext.current?.imageInterpolation = .high
 icon.draw(in: NSRect(x: 72, y: 430, width: 120, height: 120))
-NSGraphicsContext.restoreGraphicsState()
 text("MacFanPro", .systemFont(ofSize: 74, weight: .bold), .white, 214, 440)
 
 // Gradient accent line under the title.
