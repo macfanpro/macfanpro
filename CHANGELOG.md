@@ -1,5 +1,11 @@
 # MacFanPro changelog
 
+## 0.2.3.34
+
+- Homebrew updates from **Update in Terminal** or the online installer no longer stop at Homebrew 7's y/n confirmation, which was easy to miss among the update output. Running the update is the confirmation.
+- They refresh only the MacFanPro tap instead of running `brew update`, which fetched every tap. That was slower, printed errors from unrelated taps or mirrors, and was skipped by people who set `HOMEBREW_NO_AUTO_UPDATE`. If the tap can't be refreshed, `brew update` is still used.
+- `macfanpro auto --stop-app` no longer shows the "Version mismatch" warning. It runs right before `sudo macfanpro install` during an update, where that mismatch is expected. Other commands still warn.
+
 ## 0.2.3.33
 
 - Add a one-command online installer: `curl -fsSL https://github.com/macfanpro/macfanpro/releases/latest/download/install.sh | bash`. It downloads the release package, verifies its checksum, archive contents, app identity, version and code signature, then asks for your password once to install. Homebrew installs stay with Homebrew. Downgrades are refused, and configuration and calibration are kept. Each release now also attaches `install.sh` and `install.sh.sha256`.
