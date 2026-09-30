@@ -26,4 +26,15 @@
 
 ## 公开发行
 
-待发行包验收后填写。
+- 发行源提交：`a49ad07`，标签 `v0.2.3.35`。[源码 CI](https://github.com/macfanpro/macfanpro/actions/runs/36667988931)、[发行 CI](https://github.com/macfanpro/macfanpro/actions/runs/36667989067) 通过。
+- 草稿附件 4 个，两个校验文件通过，与 GitHub asset digest 一致：
+  - 发行包 `dc11552c4ec22290fd348a07d616cd4d55fd01342bcfca45e504e8861d8eece7`
+  - `install.sh` `93a85a7c818315e7996e03228229a27ba5bea8c1ea586a043b7d4795343f86a8`
+- CLI 为 0.2.3.35，严格签名通过，最低系统 macOS 14；`install.sh` 与 App 内脚本逐字节一致；发行包的 Info.plist 没有 `MacFanProSourceDirectory`。
+- 公开发布后，release 事件自动启动 tap 更新（[运行记录](https://github.com/macfanpro/homebrew-tap/actions/runs/36668371693)），配方与预编译包提交为 `e11a6de`。
+- **从 0.2.3.34 点“在终端中更新”升级（首次实跑 0.2.3.34 的无确认 Homebrew 路径）**：
+  - 版本检测显示 0.2.3.35，按下按钮；
+  - 进程检查显示 Homebrew 已升级到 0.2.3.35（预编译包安装），脚本停在 `sudo -v` 等待密码，此前无人操作，说明升级没有停在 y/n 确认；
+  - 本机 tap 已是 `e11a6de`；
+  - 输入密码后完成：后台服务 pid 47411，二进制与 keg 一致；`/Applications` 应用与 keg 一致，严格签名通过；无版本不一致；私有临时目录已清理；Smart 模式保留；
+  - 终端输出未留存，“只刷新本 tap、不再显示全量 `brew update` 输出”只经集成测试与上述状态间接确认。
