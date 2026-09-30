@@ -95,7 +95,7 @@ less install.sh
 bash install.sh
 ```
 
-`bash install.sh --check` 只下载和校验，不安装；`--no-open` 安装后不打开应用；`--version 0.2.3.36` 指定发行包版本（在 Homebrew 路径中表示最低版本）。每个发行附件中的脚本默认固定到所属版本。更多说明见[安装器与验证](docs/online-installer.md)。
+`bash install.sh --check` 只下载和校验，不安装；`--no-open` 安装后不打开应用；`--version 0.2.3.37` 指定发行包版本（在 Homebrew 路径中表示最低版本）。每个发行附件中的脚本默认固定到所属版本。更多说明见[安装器与验证](docs/online-installer.md)。
 
 ### 方式一：通过 Homebrew 安装
 
@@ -121,10 +121,10 @@ Homebrew 7 起默认不加载第三方 tap 的配方，需要先用 `brew trust`
 2. 双击解压，保留文件夹内的 `MacFanPro.app` 和 `bin` 目录。
 3. 在终端中进入解压后的文件夹，执行安装并打开应用。
 
-例如，`0.2.3.36` 解压在“下载”目录时：
+例如，`0.2.3.37` 解压在“下载”目录时：
 
 ```bash
-cd ~/Downloads/MacFanPro-0.2.3.36-macos-arm64
+cd ~/Downloads/MacFanPro-0.2.3.37-macos-arm64
 sudo ./bin/macfanpro install
 open /Applications/MacFanPro.app
 ```
@@ -145,7 +145,7 @@ cd macfanpro
 
 `setup.sh` 会编译源码、组装应用、请求管理员权限完成安装，并打开 MacFanPro，无需再执行其他安装命令。
 
-此方式默认构建仓库的 `main` 分支，可能包含尚未发行的修改。如需构建指定发行版，可在运行 `./setup.sh` 前执行 `git checkout v0.2.3.36`，版本号按需替换。
+此方式默认构建仓库的 `main` 分支，可能包含尚未发行的修改。如需构建指定发行版，可在运行 `./setup.sh` 前执行 `git checkout v0.2.3.37`，版本号按需替换。
 
 ### 安装完成后
 

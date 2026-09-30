@@ -1,5 +1,10 @@
 # MacFanPro changelog
 
+## 0.2.3.37
+
+- Installation and updates can use a local HTTP or SOCKS5 proxy. The online installer detects macOS system proxy settings, while the README gives a command that also proxies the initial script download. The in-app update flow explains how to handle GitHub connectivity problems; Homebrew refreshes only the MacFanPro tap where possible.
+- Remove the soft glow from the fan logo and its extra halo in the repository previews. The app icon keeps its cyan-to-violet gradient and smooth outline. Fan control and protection thresholds are unchanged.
+
 ## 0.2.3.36
 
 - New app icon in a tech palette: the fan now has a cyan to violet gradient and a soft glow, on a deep navy tile with a thin cyan edge. It shows in the Dock, Finder and Launchpad. The social preview images use the same style. Menu bar and panel colors are unchanged.
