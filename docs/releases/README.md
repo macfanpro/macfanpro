@@ -7,7 +7,7 @@ README 面向安装和使用，CHANGELOG 汇总版本历史，GitHub Release 描
 - 每个版本使用独立文件，例如 `0.2.3.15.md` 对应标签 `v0.2.3.15`。
 - 从 [TEMPLATE.md](TEMPLATE.md) 复制新文件，填写实际变化并删除没有内容的可选分类；不要发布占位符或未经验证的结论。
 - 发布标题统一为 `MacFanPro 版本号`，正文无需重复一级标题。
-- Homebrew 配方与预编译包（bottle）已自动化：在网页上公开发布后，tap 仓库的 [Update formula](https://github.com/macfanpro/homebrew-tap/blob/main/.github/workflows/update-formula.yml) 工作流会在一小时内（或执行 `gh workflow run update-formula.yml -R macfanpro/homebrew-tap` 立即）把配方指向新标签、构建并上传 `arm64_sonoma` 预编译包、确认 Homebrew 直接安装预编译包且 `brew test` 通过，然后才提交配方。草稿不会触发。工作流失败时查看其运行日志，必要时按工作流中的步骤手动处理。
+- Homebrew 配方与预编译包（bottle）已自动化：在网页上公开发布后，tap 仓库的 [Update formula](https://github.com/macfanpro/homebrew-tap/blob/main/.github/workflows/update-formula.yml) 工作流由主仓库的 [Update Homebrew tap](https://github.com/macfanpro/macfanpro/blob/main/.github/workflows/notify-tap.yml) 在发布后立即启动（使用 `TAP_DISPATCH_TOKEN` 这个只授权 tap 仓库 Actions 读写的 fine-grained 令牌；令牌缺失或过期时该运行失败提醒续期，tap 仍会在一小时内自行更新，也可执行 `gh workflow run update-formula.yml -R macfanpro/homebrew-tap`），把配方指向新标签、构建并上传 `arm64_sonoma` 预编译包、确认 Homebrew 直接安装预编译包且 `brew test` 通过，然后才提交配方。草稿不会触发。工作流失败时查看其运行日志，必要时按工作流中的步骤手动处理。
 - 自 0.2.3.29 起，发布说明中英双语：英文在前，`## 中文说明` 之后为中文，两部分内容一致；安装链接分别指向 `README.md`（英文）与 `README.zh-CN.md`（中文）的对应章节。已发布的旧版本不回改。
 - 发布工作流先检查对应说明文件，再执行既有测试和打包，最后以该文件创建草稿；不再把整个 CHANGELOG 放入单个发行页。
 - 下载草稿附件、完成相应验证后，再填写准确的验证结果并更新草稿正文，最后公开发布。不要提前把预计完成的测试写成“已通过”。

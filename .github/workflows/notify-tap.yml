@@ -1,0 +1,29 @@
+name: Update Homebrew tap
+
+# Starts the tap's Update formula workflow as soon as a release is published, so
+# Homebrew gets the new version in minutes instead of at the tap's next hourly run.
+# GITHUB_TOKEN cannot start workflows in another repository, so this uses
+# TAP_DISPATCH_TOKEN: a fine-grained token limited to macfanpro/homebrew-tap with
+# Actions read and write. Without it (or once it expires) the hourly run still
+# picks the release up; this run then fails as a reminder to renew the token.
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+
+permissions: {}
+
+jobs:
+  dispatch:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Start the tap's Update formula workflow
+        env:
+          GH_TOKEN: ${{ secrets.TAP_DISPATCH_TOKEN }}
+        run: |
+          if [ -z "$GH_TOKEN" ]; then
+            echo "::error::TAP_DISPATCH_TOKEN is not set; Homebrew will update at the tap's next hourly run."
+            exit 1
+          fi
+          gh workflow run update-formula.yml -R macfanpro/homebrew-tap
+          echo "Started: https://github.com/macfanpro/homebrew-tap/actions/workflows/update-formula.yml"
