@@ -6,7 +6,7 @@
 curl -fsSL https://github.com/macfanpro/macfanpro/releases/latest/download/install.sh | bash
 ```
 
-此入口在首次包含 `install.sh` 附件的新版本公开发布后可用。本次实现不修改已发布标签或 0.2.3.32 的资产。
+此入口自 0.2.3.33 起可用；更早的版本没有 `install.sh` 附件。
 
 `Scripts/install.sh` 是唯一实现。源码中的 `@MACFANPRO_VERSION@` 在 `build-app` 组装时替换为当前版本，脚本进入 App 签名范围。`package-release.sh` 从 App 中复制完全相同的脚本作为发行附件。图形界面的“在终端更新”复制包内脚本到用户私有临时目录，通过 Terminal 传入目标版本，完成或失败后清理临时文件。
 

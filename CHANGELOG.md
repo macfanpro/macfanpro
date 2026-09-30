@@ -1,5 +1,12 @@
 # MacFanPro changelog
 
+## 0.2.3.33
+
+- Add a one-command online installer: `curl -fsSL https://github.com/macfanpro/macfanpro/releases/latest/download/install.sh | bash`. It downloads the release package, verifies its checksum, archive contents, app identity, version and code signature, then asks for your password once to install. Homebrew installs stay with Homebrew. Downgrades are refused, and configuration and calibration are kept. Each release now also attaches `install.sh` and `install.sh.sha256`.
+- **Update in Terminal** now runs the same installer, bundled inside the app, so updates get the same checks. It confirms the new background service is running before reopening the app.
+- `sudo macfanpro install` now asks the running background service for its version and fails if it is not the one just installed, instead of reporting success for a stale service.
+- The "Built from source?" hint in the update banner shows `git pull && ./setup.sh` as a separate, selectable command.
+
 ## 0.2.3.32
 
 - Add an **Update in Terminal** button to the "Update available" banner. It opens Terminal with the update steps for how MacFanPro was installed, so updating takes one click and your password. For a release-package install it downloads the new version, verifies its checksum and installs it; for Homebrew it trusts the tap, upgrades and syncs the background service. It uses the system proxy when no proxy is set in the shell, since Terminal tools don't follow the macOS proxy settings.
