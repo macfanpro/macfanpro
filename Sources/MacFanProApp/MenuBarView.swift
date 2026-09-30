@@ -429,7 +429,8 @@ private struct UpdateAvailableBanner: View {
                 .foregroundStyle(.tertiary)
                 .fixedSize(horizontal: false, vertical: true)
 
-            commandBlock("git pull && ./setup.sh")
+            commandBlock(UpdateScript.sourceCommand(
+                directory: Bundle.main.object(forInfoDictionaryKey: "MacFanProSourceDirectory") as? String))
 
             HStack {
                 if let url = URL(string: update.url) {

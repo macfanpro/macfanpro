@@ -211,6 +211,8 @@ git pull --ff-only
 ./setup.sh
 ```
 
+用 `setup.sh` 构建的应用，会在更新提示中把上面两步合成一条以 `cd` 进入源码目录开头的完整命令，可直接复制执行。
+
 若之前检出了指定版本标签，请先 `git fetch origin --tags`，再检出需要的新标签并运行 `./setup.sh`。
 
 ## 卸载

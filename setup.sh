@@ -9,7 +9,7 @@ if [ ! -f MacFanPro.icns ]; then
     iconutil -c icns MacFanPro.iconset -o MacFanPro.icns
 fi
 "$bin_dir/macfanpro" build-app --binary "$bin_dir/MacFanProApp" \
-    --icon MacFanPro.icns --dest "$bin_dir/MacFanPro.app"
+    --icon MacFanPro.icns --dest "$bin_dir/MacFanPro.app" --source-dir "$PWD"
 codesign --force --deep --sign - "$bin_dir/MacFanPro.app"
 sudo "$bin_dir/macfanpro" install "$@"
 open /Applications/MacFanPro.app

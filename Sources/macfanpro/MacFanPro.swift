@@ -1274,6 +1274,9 @@ struct BuildApp: ParsableCommand {
     @Option(name: .long, help: "Online installer script to bundle with the app")
     var installerScript: String = "Scripts/install.sh"
 
+    @Option(name: .long, help: "Source checkout this app was built from (setup.sh), for the update banner")
+    var sourceDir: String?
+
     func run() throws {
         let fm = FileManager.default
         let installer = try String(contentsOfFile: installerScript, encoding: .utf8)
@@ -1316,6 +1319,14 @@ struct BuildApp: ParsableCommand {
         try fm.copyItem(at: resourceSource,
                         to: URL(fileURLWithPath: resources).appendingPathComponent(LocalizationCatalog.resourceBundleName))
 
+        // Only setup.sh passes it: release and Homebrew builds come from temporary
+        // directories that are gone after the build.
+        let sourceDirEntry = sourceDir.map { dir in
+            let escaped = dir.replacingOccurrences(of: "&", with: "&amp;")
+                .replacingOccurrences(of: "<", with: "&lt;").replacingOccurrences(of: ">", with: "&gt;")
+            return "<key>MacFanProSourceDirectory</key><string>\(escaped)</string>"
+        } ?? ""
+
         let plist = """
             <?xml version="1.0" encoding="UTF-8"?>
             <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" \
@@ -1348,6 +1359,7 @@ struct BuildApp: ParsableCommand {
                 <true/>
                 <key>NSHighResolutionCapable</key>
                 <true/>
+                \(sourceDirEntry)
             </dict>
             </plist>
             """

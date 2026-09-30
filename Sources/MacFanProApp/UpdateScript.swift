@@ -9,6 +9,17 @@ enum UpdateScript {
         "'" + value.replacingOccurrences(of: "'", with: "'\\''") + "'"
     }
 
+    /// The complete from-source update command. setup.sh records its checkout in
+    /// the app; without one (release or Homebrew app) use ~/macfanpro, cloning it
+    /// first when missing.
+    static func sourceCommand(directory: String?) -> String {
+        guard let directory, !directory.isEmpty else {
+            return "git clone https://github.com/macfanpro/macfanpro.git ~/macfanpro 2>/dev/null; cd ~/macfanpro && git pull --ff-only && ./setup.sh"
+        }
+        let plain = directory.range(of: #"^[A-Za-z0-9/._+-]+$"#, options: .regularExpression) != nil
+        return "cd \(plain ? directory : quote(directory)) && git pull --ff-only && ./setup.sh"
+    }
+
     static func contents(version: String, homebrew: Bool, installerPath: String) throws -> String {
         guard version.range(of: #"^[0-9]+(\.[0-9]+){2,3}$"#, options: .regularExpression) != nil,
               !version.contains("\n") else { throw ScriptError.invalidVersion }

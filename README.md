@@ -211,6 +211,8 @@ git pull --ff-only
 ./setup.sh
 ```
 
+For an app built with `setup.sh`, the update banner shows this as one command that starts with `cd` into your source folder, ready to copy.
+
 If you checked out a release tag, run `git fetch origin --tags`, check out the new tag, and run `./setup.sh`.
 
 ## Uninstall

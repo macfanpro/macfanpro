@@ -31,6 +31,18 @@ struct UpdateScriptTests {
         }
     }
 
+    @Test("The from-source command is complete and quotes unusual checkout paths")
+    func sourceCommand() {
+        #expect(UpdateScript.sourceCommand(directory: "/Users/me/Code/macfanpro")
+                == "cd /Users/me/Code/macfanpro && git pull --ff-only && ./setup.sh")
+        #expect(UpdateScript.sourceCommand(directory: "/Users/me/My Code/it's")
+                == "cd '/Users/me/My Code/it'\\''s' && git pull --ff-only && ./setup.sh")
+        for missing in [nil, ""] as [String?] {
+            #expect(UpdateScript.sourceCommand(directory: missing)
+                    == "git clone https://github.com/macfanpro/macfanpro.git ~/macfanpro 2>/dev/null; cd ~/macfanpro && git pull --ff-only && ./setup.sh")
+        }
+    }
+
     @Test("Versions cannot inject shell commands")
     func invalidVersion() {
         for version in ["1.2.3; touch bad", "$(id)", "1.2.3\n", "", "v1.2.3"] {
