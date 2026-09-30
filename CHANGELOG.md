@@ -1,5 +1,9 @@
 # MacFanPro changelog
 
+## 0.2.3.35
+
+- The "Built from source?" line in the update banner now shows a complete command you can copy and run. An app built with `setup.sh` remembers its source folder and shows `cd <folder> && git pull --ff-only && ./setup.sh`. Apps from a release package or Homebrew show a command that clones the source into `~/macfanpro` if needed, then pulls and runs `setup.sh`.
+
 ## 0.2.3.34
 
 - Homebrew updates from **Update in Terminal** or the online installer no longer stop at Homebrew 7's y/n confirmation, which was easy to miss among the update output. Running the update is the confirmation.
