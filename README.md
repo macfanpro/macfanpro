@@ -95,7 +95,7 @@ less install.sh
 bash install.sh
 ```
 
-Use `bash install.sh --check` to download and validate without installing, `--no-open` to leave the app closed, or `--version 0.2.3.36` to select a package version (a minimum version on Homebrew). The script bundled in each release defaults to that exact release. See [installer details and verification](docs/online-installer.md).
+Use `bash install.sh --check` to download and validate without installing, `--no-open` to leave the app closed, or `--version 0.2.3.37` to select a package version (a minimum version on Homebrew). The script bundled in each release defaults to that exact release. See [installer details and verification](docs/online-installer.md).
 
 ### Option 1: Homebrew
 
@@ -121,10 +121,10 @@ No Homebrew or Xcode needed.
 2. Double-click to extract it. Keep `MacFanPro.app` and the `bin` folder together.
 3. In Terminal, go into the extracted folder, install, and open the app.
 
-For example, with `0.2.3.36` extracted in Downloads:
+For example, with `0.2.3.37` extracted in Downloads:
 
 ```bash
-cd ~/Downloads/MacFanPro-0.2.3.36-macos-arm64
+cd ~/Downloads/MacFanPro-0.2.3.37-macos-arm64
 sudo ./bin/macfanpro install
 open /Applications/MacFanPro.app
 ```
@@ -145,7 +145,7 @@ cd macfanpro
 
 `setup.sh` builds the code, assembles the app, asks for your administrator password to install, and opens MacFanPro. No further install command is needed.
 
-This builds the repository's `main` branch, which may include unreleased changes. To build a specific release, run `git checkout v0.2.3.36` (with the version you want) before `./setup.sh`.
+This builds the repository's `main` branch, which may include unreleased changes. To build a specific release, run `git checkout v0.2.3.37` (with the version you want) before `./setup.sh`.
 
 ### After installing
 
