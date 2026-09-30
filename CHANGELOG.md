@@ -2,6 +2,7 @@
 
 ## 0.2.3.35
 
+- The update banner now shows two labelled options. **Option 1 (recommended)** is the one-click **Update in Terminal** for how you installed, Homebrew or the release package, with its command. **Option 2** is building from source, for developers. Commands stay left to right in Arabic.
 - The "Built from source?" line in the update banner now shows a complete command you can copy and run. An app built with `setup.sh` remembers its source folder and shows `cd <folder> && git pull --ff-only && ./setup.sh`. Apps from a release package or Homebrew show a command that clones the source into `~/macfanpro` if needed, then pulls and runs `setup.sh`.
 
 ## 0.2.3.34

@@ -401,12 +401,17 @@ private struct UpdateAvailableBanner: View {
                 .foregroundStyle(.secondary)
                 .fixedSize(horizontal: false, vertical: true)
 
-            Text(homebrew ? language.text("Update with:")
-                          : language.text("Download the new version, then run this in its folder:"))
-                .font(.caption2)
-                .foregroundStyle(.tertiary)
+            // Option 1 is the one-click path for how MacFanPro was installed;
+            // building from source is for developers.
+            optionTitle(homebrew ? "Option 1 (recommended): Homebrew" : "Option 1 (recommended): Release package")
                 .padding(.top, 2)
-                .fixedSize(horizontal: false, vertical: true)
+
+            if !homebrew {
+                Text(language.text("Download the new version, then run this in its folder:"))
+                    .font(.caption2)
+                    .foregroundStyle(.tertiary)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
 
             // brew trust is harmless when already trusted; Homebrew 7 refuses an
             // untrusted tap. sudo's PATH finds the installed CLI, which re-syncs
@@ -424,10 +429,8 @@ private struct UpdateAvailableBanner: View {
             .padding(.top, 2)
             .accessibilityIdentifier("io.github.macfanpro.update-in-terminal")
 
-            Text(language.text("Built from source? Run:"))
-                .font(.caption2)
-                .foregroundStyle(.tertiary)
-                .fixedSize(horizontal: false, vertical: true)
+            optionTitle("Option 2: Build from source")
+                .padding(.top, 4)
 
             commandBlock(UpdateScript.sourceCommand(
                 directory: Bundle.main.object(forInfoDictionaryKey: "MacFanProSourceDirectory") as? String))
@@ -451,8 +454,17 @@ private struct UpdateAvailableBanner: View {
         .background(Color.blue.opacity(0.12))
     }
 
+    private func optionTitle(_ key: String) -> some View {
+        Text(language.text(key))
+            .font(.caption2.weight(.semibold))
+            .foregroundStyle(.secondary)
+            .fixedSize(horizontal: false, vertical: true)
+    }
+
     private func commandBlock(_ command: String) -> some View {
         Text(command)
+            // Shell commands read left to right even in a right-to-left panel.
+            .environment(\.layoutDirection, .leftToRight)
             .font(.system(.caption, design: .monospaced))
             .textSelection(.enabled)
             .fixedSize(horizontal: false, vertical: true)
