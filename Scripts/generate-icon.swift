@@ -9,6 +9,8 @@ func renderIcon(size: Int, scale: Int = 1) -> NSImage {
     let px = size * scale
     let image = NSImage(size: NSSize(width: px, height: px))
     image.lockFocus()
+    NSGraphicsContext.current?.shouldAntialias = true
+    NSGraphicsContext.current?.imageInterpolation = .high
 
     let rect = NSRect(x: 0, y: 0, width: px, height: px)
 
@@ -32,7 +34,7 @@ func renderIcon(size: Int, scale: Int = 1) -> NSImage {
         path.stroke()
     }
 
-    // Fan symbol with a cyan → blue → violet gradient and a soft glow
+    // Fan symbol with a cyan → blue → violet gradient and a crisp, antialiased outline
     let symbolSize = CGFloat(px) * 0.55
     let config = NSImage.SymbolConfiguration(pointSize: symbolSize, weight: .medium)
     if let symbol = NSImage(systemSymbolName: "fan.fill", accessibilityDescription: nil)?
@@ -49,14 +51,7 @@ func renderIcon(size: Int, scale: Int = 1) -> NSImage {
         NSGradient(colors: [cyan, blue, violet])!.draw(in: NSRect(origin: .zero, size: symbolRect), angle: -45)
         tinted.unlockFocus()
 
-        let glow = NSShadow()
-        glow.shadowBlurRadius = CGFloat(px) * 0.06
-        glow.shadowColor = cyan.withAlphaComponent(0.6)
-        glow.shadowOffset = .zero
-        NSGraphicsContext.saveGraphicsState()
-        glow.set()
         tinted.draw(in: NSRect(x: x, y: y, width: symbolRect.width, height: symbolRect.height))
-        NSGraphicsContext.restoreGraphicsState()
     }
 
     image.unlockFocus()
