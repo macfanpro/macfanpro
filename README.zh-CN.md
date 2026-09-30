@@ -6,6 +6,8 @@
 
 [English](README.md) | **简体中文**
 
+<img src="docs/images/social-preview-zh-CN.png" alt="MacFanPro：Apple Silicon Mac 风扇控制。免费开源（MIT 协议），菜单栏应用与命令行，一键更新，支持 M1–M5、macOS 14 及以上，18 种语言" width="100%">
+
 **Apple Silicon Mac 风扇控制工具 —— 免费、开源、原生。**
 
 在菜单栏查看 CPU、GPU 温度和风扇转速，让风扇按智能曲线随温度自动调节，也可以通过命令行完全掌控。支持带风扇的 M1 至 M5 机型，macOS 14 或更高版本。
@@ -44,7 +46,7 @@ open /Applications/MacFanPro.app
 - **18 种界面语言**：英语、简体中文、繁体中文、日语、韩语、德语、法语、西班牙语、意大利语、葡萄牙语（巴西）、俄语、乌克兰语、波兰语、荷兰语、土耳其语、越南语、印尼语和阿拉伯语（从右往左排版），默认跟随系统语言；另可切换摄氏/华氏及登录时启动。
 - **命令行与后台服务**：支持指定转速、读取状态和 CSV 数据采样；正常安装后，应用和普通控制命令通过后台服务操作风扇。
 
-上方截图为 MacFanPro 0.2.3.27 在 M4 Max MacBook Pro 上的实际运行界面。
+上方截图为 MacFanPro 0.2.3.36 在 M4 Max MacBook Pro 上的实际运行界面。
 
 ## 系统要求
 
