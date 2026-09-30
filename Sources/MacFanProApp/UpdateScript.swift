@@ -5,6 +5,12 @@ import MacFanProCore
 enum UpdateScript {
     enum ScriptError: Error { case invalidVersion, missingInstaller }
 
+    /// Copyable counterpart to the Terminal button. The installed app bundles
+    /// the same installer for Homebrew and release-package installations.
+    static func installCommand(version: String) -> String {
+        "bash /Applications/MacFanPro.app/Contents/Resources/install.sh --version \(version)"
+    }
+
     private static func quote(_ value: String) -> String {
         "'" + value.replacingOccurrences(of: "'", with: "'\\''") + "'"
     }

@@ -57,5 +57,6 @@
   "Check for Updates": "Periksa pembaruan",
   "Download the new version, then run this in its folder:": "Unduh versi baru, lalu jalankan ini di foldernya:",
   "Download": "Unduh",
+  "If downloads fail, enable your system proxy and retry.": "Jika unduhan gagal, aktifkan proksi sistem lalu coba lagi.",
   "Update in Terminal": "Perbarui di Terminal"
 }

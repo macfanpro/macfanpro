@@ -49,6 +49,7 @@
   "The background service isn't responding, so profiles and Default can't change the fans right now." : "後台服務無響應，模式和“默認”操作暫時無法調整風扇。",
   "Up to date" : "已是最新版本",
   "Update available" : "有可用更新",
+  "If downloads fail, enable your system proxy and retry.": "如果下載失敗，請開啓系統代理後重試。",
   "Update in Terminal" : "在終端中更新",
   "Update needed" : "需要更新",
   "Updates" : "更新",

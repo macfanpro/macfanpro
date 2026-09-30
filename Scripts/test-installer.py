@@ -23,13 +23,20 @@ source "$SCRIPT"
 uname() { if [ "$1" = -s ]; then echo "${OS:-Darwin}"; else echo "${ARCH:-arm64}"; fi; }
 sw_vers() { echo "${MACOS:-14.0}"; }
 id() { echo "${UID_FIXTURE:-501}"; }
-scutil() { printf 'HTTPSEnable : 1\nHTTPSProxy : proxy.test\nHTTPSPort : 8080\n'; }
+scutil() {
+    case "${SYSTEM_PROXY:-https}" in
+        https) printf 'HTTPSEnable : 1\nHTTPSProxy : proxy.test\nHTTPSPort : 8080\n' ;;
+        socks) printf 'SOCKSEnable : 1\nSOCKSProxy : socks.test\nSOCKSPort : 1080\n' ;;
+        both) printf 'SOCKSEnable : 1\nSOCKSProxy : socks.test\nSOCKSPort : 1080\nHTTPSEnable : 1\nHTTPSProxy : proxy.test\nHTTPSPort : 8080\n' ;;
+        none) : ;;
+    esac
+}
 installed_versions() { printf '%s' "${INSTALLED:-}"; }
 find_brew() { if [ "${BREW_FIXTURE:-0}" = 1 ]; then echo "$FIXTURE/brew"; fi; }
 codesign() { echo codesign >> "$EVENTS"; [ "${BAD_SIGN:-0}" = 0 ]; }
-git() { echo "git $*" >> "$EVENTS"; [ "${BAD_GIT:-0}" = 0 ]; }
+git() { echo "git $* proxy=${https_proxy:-${all_proxy:-}}" >> "$EVENTS"; [ "${BAD_GIT:-0}" = 0 ]; }
 curl() {
-    echo "curl $* proxy=${https_proxy:-}" >> "$EVENTS"
+    echo "curl $* proxy=${https_proxy:-${all_proxy:-}}" >> "$EVENTS"
     [ "${BAD_DOWNLOAD:-0}" = 0 ] || return 22
     local dest='' url=''
     while [ "$#" -gt 0 ]; do
@@ -68,7 +75,7 @@ case "$1" in
 esac
 '''
 BREW = '''#!/bin/bash
-echo "brew $* no_ask=${HOMEBREW_NO_ASK:-} no_auto_update=${HOMEBREW_NO_AUTO_UPDATE:-}" >> "$EVENTS"
+echo "brew $* no_ask=${HOMEBREW_NO_ASK:-} no_auto_update=${HOMEBREW_NO_AUTO_UPDATE:-} proxy=${https_proxy:-${all_proxy:-}}" >> "$EVENTS"
 case "$1" in
  trust) exit "${BAD_TRUST:-0}" ;;
  update) [ "${BAD_UPDATE:-0}" = 0 ] ;;
@@ -217,6 +224,12 @@ class InstallerTests(unittest.TestCase):
         self.assertNotIn('brew update', events)
         self.assertIn('brew upgrade macfanpro no_ask=1 no_auto_update=1', events)
 
+    def test_proxy_reaches_homebrew_and_git(self):
+        _, events = self.run_installer('--homebrew', BREW_FIXTURE='1',
+                                       all_proxy='socks5h://custom.test:1080')
+        self.assertIn('git -C %s/tap pull --ff-only --quiet proxy=socks5h://custom.test:1080' % self.root, events)
+        self.assertIn('brew upgrade macfanpro no_ask=1 no_auto_update=1 proxy=socks5h://custom.test:1080', events)
+
     def test_homebrew_tolerates_trust_and_update_failures(self):
         # Older Homebrew has no trust command; one unreachable tap fails update.
         _, events = self.run_installer('--homebrew', BREW_FIXTURE='1', BAD_TRUST='1', BAD_GIT='1', BAD_UPDATE='1')
@@ -241,10 +254,17 @@ class InstallerTests(unittest.TestCase):
         self.run_installer('--version', success=False)
 
     def test_proxy_respects_environment(self):
-        for proxy in ('http://custom.test:1234', ''):
+        cases = [
+            ({'https_proxy': 'http://custom.test:1234'}, 'http://custom.test:1234'),
+            ({'all_proxy': 'socks5h://custom.test:1080'}, 'socks5h://custom.test:1080'),
+            ({'SYSTEM_PROXY': 'https'}, 'http://proxy.test:8080'),
+            ({'SYSTEM_PROXY': 'socks'}, 'socks5h://socks.test:1080'),
+            ({'SYSTEM_PROXY': 'both'}, 'http://proxy.test:8080'),
+        ]
+        for override, expected in cases:
             self.events.unlink(missing_ok=True)
-            _, events = self.run_installer('--check', https_proxy=proxy)
-            self.assertIn('proxy=' + (proxy or 'http://proxy.test:8080'), events)
+            _, events = self.run_installer('--check', **override)
+            self.assertIn('proxy=' + expected, events)
 
     def test_piped_and_file_entrypoints(self):
         source = SCRIPT.read_text()

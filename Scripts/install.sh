@@ -44,8 +44,24 @@ find_brew() {
 setup_proxy() {
     if [ -z "${https_proxy:-}${HTTPS_PROXY:-}${all_proxy:-}${ALL_PROXY:-}" ]; then
         local proxy
-        proxy=$(scutil --proxy | awk '/HTTPSEnable : 1/{e=1} /HTTPSProxy :/{h=$3} /HTTPSPort :/{p=$3} END{if(e && h && p) print "http://" h ":" p}')
-        if [ -n "$proxy" ]; then export https_proxy="$proxy" http_proxy="$proxy"; fi
+        proxy=$(scutil --proxy | awk '
+            /HTTPSEnable : 1/ {https=1}
+            /HTTPSProxy :/ {https_host=$3}
+            /HTTPSPort :/ {https_port=$3}
+            /SOCKSEnable : 1/ {socks=1}
+            /SOCKSProxy :/ {socks_host=$3}
+            /SOCKSPort :/ {socks_port=$3}
+            END {
+                if (https && https_host && https_port)
+                    print "http://" https_host ":" https_port
+                else if (socks && socks_host && socks_port)
+                    print "socks5h://" socks_host ":" socks_port
+            }
+        ')
+        if [ -n "$proxy" ]; then
+            if [[ "$proxy" == socks5h://* ]]; then export all_proxy="$proxy"
+            else export https_proxy="$proxy"; fi
+        fi
     fi
 }
 download() {

@@ -57,5 +57,6 @@
   "Check for Updates": "Buscar atualizações",
   "Download the new version, then run this in its folder:": "Baixe a nova versão e execute na pasta dela:",
   "Download": "Baixar",
+  "If downloads fail, enable your system proxy and retry.": "Se o download falhar, ative o proxy do sistema e tente novamente.",
   "Update in Terminal": "Atualizar no Terminal"
 }

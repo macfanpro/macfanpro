@@ -57,5 +57,6 @@
   "Check for Updates": "تحقق",
   "Download the new version, then run this in its folder:": "نزّل الإصدار الجديد، ثم شغّل هذا في مجلده:",
   "Download": "تنزيل",
+  "If downloads fail, enable your system proxy and retry.": "إذا فشل التنزيل، فعّل وكيل النظام ثم أعد المحاولة.",
   "Update in Terminal": "التحديث في Terminal"
 }

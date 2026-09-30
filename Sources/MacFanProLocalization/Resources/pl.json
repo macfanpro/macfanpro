@@ -57,5 +57,6 @@
   "Check for Updates": "Sprawdź aktualizacje",
   "Download the new version, then run this in its folder:": "Pobierz nową wersję, a potem uruchom w jej folderze:",
   "Download": "Pobierz",
+  "If downloads fail, enable your system proxy and retry.": "Jeśli pobieranie się nie powiedzie, włącz systemowe proxy i spróbuj ponownie.",
   "Update in Terminal": "Aktualizuj w Terminalu"
 }

@@ -22,7 +22,7 @@ curl -fsSL https://github.com/macfanpro/macfanpro/releases/latest/download/insta
 ## 行为
 
 1. 检查 macOS 14+、arm64 和普通登录用户；Rosetta shell、root shell 拒绝执行。
-2. 优先使用已有代理环境变量，否则读取系统 HTTPS 代理。
+2. 优先使用已有 `https_proxy` / `HTTPS_PROXY` / `all_proxy` / `ALL_PROXY`；否则读取系统 HTTPS 代理，未启用时再读取系统 SOCKS5 代理。
 3. 已安装 Homebrew formula 时继续通过 brew 更新，从 keg 安装；tap 落后于请求版本则报错，绝不悄悄切换到手工发行包。
 4. 其他安装从 GitHub HTTPS 下载发行包和校验文件。检查唯一匹配的 SHA256、归档成员路径与类型；禁止越界路径、符号链接、硬链接和特殊文件。检查 App 身份、两个版本字段、严格代码签名以及 CLI 版本。
 5. 拒绝覆盖更新的已安装版本；下载完成后再次检查。先取得 sudo 凭据，再恢复自动风扇控制并停止应用，调用既有 CLI install。
@@ -44,6 +44,22 @@ SHA256 检查下载完整性；脚本与校验文件来自同一 GitHub Release�
 | `--migrate-thermalforge` | 显式授权既有 CLI 的 ThermalForge 迁移流程 |
 
 从源码运行必须传入 `--version`；发行附件已写入默认版本，不需用户指定。
+
+## 代理更新
+
+中国大陆网络若无法直连 GitHub，请先启动本地代理，再确认软件显示的是 HTTP 还是 SOCKS5 端口。示例 `7890` 只是占位，必须替换成实际端口。完整命令见[中文 README 的“使用代理更新”](../README.zh-CN.md#使用代理更新)。
+
+代理要覆盖管道两侧：`curl` 下载入口脚本，`bash` 运行的安装器随后还会访问 GitHub、Homebrew tap 和瓶装包。只把 `https_proxy=...` 写在 `curl` 前面，安装器进程不会继承该变量。示例用括号建立临时环境，退出括号后不改变当前终端的代理设置。HTTP 代理使用 `https_proxy=http://127.0.0.1:端口`；SOCKS5 使用 `all_proxy=socks5h://127.0.0.1:端口`。如果终端原本已设置另一种代理变量，请先移除冲突变量，或打开一个新终端运行示例。
+
+只想检查下载和签名、不安装时，在括号内把管道结尾改为 `bash -s -- --check`。公开发行脚本可直接运行；即使已经安装 Homebrew 版本，`--check` 也仅验证发行包。
+
+应用内更新检查使用 macOS 系统代理；安装器会自动读取系统 HTTPS 或 SOCKS5 代理，但不会解析 PAC 自动代理脚本。PAC、仅代理软件“规则模式”或未开启系统代理时，请在终端用上述显式环境变量。先确认本地代理可用：
+
+```bash
+curl --proxy http://127.0.0.1:7890 -I https://github.com
+```
+
+SOCKS5 端口则将 `--proxy` 的值改为 `socks5h://127.0.0.1:端口`；`curl` 连接成功仅说明代理可访问 GitHub，后续 `--check` 才会验证实际发行包。
 
 ## 验证
 

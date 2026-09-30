@@ -57,5 +57,6 @@
   "Check for Updates": "Перевірити",
   "Download the new version, then run this in its folder:": "Завантажте нову версію й виконайте в її папці:",
   "Download": "Завантажити",
+  "If downloads fail, enable your system proxy and retry.": "Якщо завантаження не вдалося, увімкніть системний проксі та спробуйте ще раз.",
   "Update in Terminal": "Оновити в Терміналі"
 }

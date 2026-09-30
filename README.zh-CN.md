@@ -73,7 +73,19 @@ open /Applications/MacFanPro.app
 curl -fsSL https://github.com/macfanpro/macfanpro/releases/latest/download/install.sh | bash
 ```
 
-以普通登录用户运行。脚本会下载并校验预编译包，然后请求管理员密码，安装应用和后台服务。已有 Homebrew 安装会通过 `brew update` / `brew upgrade` 更新，继续由 Homebrew 管理；需要等待软件源提供所请求的版本。其他安装使用发行包。保留配置和校准数据，拒绝降级；重复运行可重新安装并检查所选版本。
+首次安装时若 GitHub 无法直连，打开代理软件，确认其本地 HTTP 代理端口，然后复制以下整段命令。`7890` 仅为示例，换成实际端口；这条命令以后也能用于更新：
+
+```bash
+(
+  export https_proxy=http://127.0.0.1:7890
+  set -o pipefail
+  curl -fsSL https://github.com/macfanpro/macfanpro/releases/latest/download/install.sh | bash
+)
+```
+
+如果只有 SOCKS5 端口，把 `export` 一行改为 `export all_proxy=socks5h://127.0.0.1:实际端口`。[代理说明与连接检查](docs/online-installer.md#代理更新)
+
+以普通登录用户运行。脚本会下载并校验预编译包，然后请求管理员密码，安装应用和后台服务。已有 Homebrew 安装会刷新本软件源并通过 Homebrew 升级，继续由 Homebrew 管理；需要等待软件源提供所请求的版本。其他安装使用发行包。保留配置和校准数据，拒绝降级；重复运行可重新安装并检查所选版本。
 
 如需先检查脚本，从**同一个发行版本**下载 `install.sh` 和 `install.sh.sha256`，然后运行：
 
@@ -187,6 +199,22 @@ cd macfanpro
 上述在线安装脚本也可用于升级；菜单中的“在终端中更新”复用应用内附带的同一份安装脚本。
 
 应用每天自动检查一次本仓库的发行版，也可以在菜单底部“更新”一行点“检查更新”立即检查；发现新版本时，按你的安装方式显示升级步骤，并提供“在终端中更新”按钮：点一下会打开终端，自动下载或升级，只需输入一次电脑密码。不会在你不知情时替换程序。检查需要访问 GitHub，并使用系统代理设置；若显示“无法连接 GitHub”，请检查网络或代理。请沿用原安装方式更新，并在替换后台服务前退出应用。
+
+### 使用代理更新
+
+如果在中国大陆访问 GitHub 失败，先打开你信任的代理软件，确认它的**本地 HTTP 代理端口**。以下以 `127.0.0.1:7890` 为例，请换成软件显示的实际端口。在终端复制整段执行；括号使代理设置仅对这次更新生效：
+
+```bash
+(
+  export https_proxy=http://127.0.0.1:7890
+  set -o pipefail
+  curl -fsSL https://github.com/macfanpro/macfanpro/releases/latest/download/install.sh | bash
+)
+```
+
+这会让下载入口脚本、安装包、Homebrew 的 tap 更新和预编译包下载使用同一个代理；已有 Homebrew 安装仍由 Homebrew 管理。普通登录用户运行即可，安装后台服务时会再请求管理员密码。若只有 SOCKS5 端口，把上面的 `export` 一行换成 `export all_proxy=socks5h://127.0.0.1:7890`。`socks5h` 让代理服务器解析 GitHub 域名。[代理工作方式和检查命令](docs/online-installer.md#代理更新)
+
+菜单里的更新检查使用 macOS 系统代理；“在终端中更新”会读取系统 HTTPS 代理，或在未设置 HTTPS 代理时读取系统 SOCKS5 代理。如果代理软件没有开启 macOS 系统代理，直接使用上面的终端命令。这个命令在连接失败时不会调用安装步骤。
 
 ### Homebrew 更新
 

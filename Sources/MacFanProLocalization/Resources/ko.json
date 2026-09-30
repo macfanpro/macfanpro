@@ -57,5 +57,6 @@
   "Check for Updates": "업데이트 확인",
   "Download the new version, then run this in its folder:": "새 버전을 다운로드한 뒤 해당 폴더에서 실행:",
   "Download": "다운로드",
+  "If downloads fail, enable your system proxy and retry.": "다운로드가 실패하면 시스템 프록시를 켜고 다시 시도하세요.",
   "Update in Terminal": "터미널에서 업데이트"
 }

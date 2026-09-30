@@ -73,7 +73,19 @@ Hardware testing so far has been mainly on an M4 Max MacBook Pro. Treat other mo
 curl -fsSL https://github.com/macfanpro/macfanpro/releases/latest/download/install.sh | bash
 ```
 
-Run as your normal login user. The script downloads and verifies the prebuilt package, then asks for your administrator password to install the app and background service. Existing Homebrew installations use `brew update` / `brew upgrade` and keep Homebrew ownership; the requested version must be available in the tap. Other installations use the release package. Configuration and calibration data are retained; downgrades are refused. Running it again reinstalls/checks the selected version.
+For a first install when GitHub cannot be reached directly, start a proxy and find its local HTTP proxy port. Replace the example port `7890` below and run the complete block. The same command works for later updates:
+
+```bash
+(
+  export https_proxy=http://127.0.0.1:7890
+  set -o pipefail
+  curl -fsSL https://github.com/macfanpro/macfanpro/releases/latest/download/install.sh | bash
+)
+```
+
+For a SOCKS5-only port, replace the `export` line with `export all_proxy=socks5h://127.0.0.1:YOUR_PORT`. [Proxy details and connection check](docs/online-installer.md#代理更新).
+
+Run as your normal login user. The script downloads and verifies the prebuilt package, then asks for your administrator password to install the app and background service. Existing Homebrew installations refresh the project tap and upgrade through Homebrew, retaining Homebrew ownership; the requested version must be available in the tap. Other installations use the release package. Configuration and calibration data are retained; downgrades are refused. Running it again reinstalls/checks the selected version.
 
 To inspect the script first, download `install.sh` and `install.sh.sha256` from the **same release**, then run:
 
@@ -187,6 +199,22 @@ The advanced `watch` command keeps controlling the fans by profile (it is not re
 The online installer above also upgrades existing installations. The app’s “Update in Terminal” uses the same bundled installer.
 
 The app checks this repository's releases once a day, and you can check now with Check for Updates at the bottom of the menu. When a new version is out it shows the upgrade steps for how you installed, and an **Update in Terminal** button that runs them for you: Terminal opens, downloads or upgrades, and asks for your password once. It never replaces the program without you. The check needs access to GitHub and uses your system proxy settings; if it says it couldn't reach GitHub, check your network or proxy. Update the same way you installed, and quit the app before replacing the background service.
+
+### Update through a proxy
+
+If GitHub is unreachable, start a trusted proxy and find its **local HTTP proxy port**. Replace `7890` below with that port, then run the complete block in Terminal. The parentheses limit the setting to this update:
+
+```bash
+(
+  export https_proxy=http://127.0.0.1:7890
+  set -o pipefail
+  curl -fsSL https://github.com/macfanpro/macfanpro/releases/latest/download/install.sh | bash
+)
+```
+
+This covers the initial script download, release assets, the Homebrew tap and its bottle downloads. Homebrew installations remain managed by Homebrew. Run as your normal login user; the background service install asks for an administrator password later. If your proxy offers only SOCKS5, use `export all_proxy=socks5h://127.0.0.1:7890` instead of the `export` line above; `socks5h` resolves GitHub names through the proxy. [Proxy details and a read-only check](docs/online-installer.md#代理更新).
+
+The in-app update check uses the macOS system proxy. “Update in Terminal” reads the system HTTPS proxy, or the system SOCKS5 proxy when HTTPS proxy is disabled. If your proxy app does not enable the macOS system proxy, use the Terminal command above. A failed connection stops before installation.
 
 ### Homebrew
 

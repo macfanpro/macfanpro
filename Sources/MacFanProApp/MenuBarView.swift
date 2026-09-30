@@ -406,18 +406,9 @@ private struct UpdateAvailableBanner: View {
             optionTitle(homebrew ? "Option 1 (recommended): Homebrew" : "Option 1 (recommended): Release package")
                 .padding(.top, 2)
 
-            if !homebrew {
-                Text(language.text("Download the new version, then run this in its folder:"))
-                    .font(.caption2)
-                    .foregroundStyle(.tertiary)
-                    .fixedSize(horizontal: false, vertical: true)
-            }
-
-            // brew trust is harmless when already trusted; Homebrew 7 refuses an
-            // untrusted tap. sudo's PATH finds the installed CLI, which re-syncs
-            // from the newer Homebrew keg.
-            commandBlock(homebrew ? "brew trust macfanpro/tap && brew upgrade macfanpro && sudo macfanpro install"
-                                  : "sudo ./bin/macfanpro install")
+            // The copyable command and Terminal button use the same bundled
+            // installer, which respects explicit or macOS system proxies.
+            commandBlock(UpdateScript.installCommand(version: update.version))
 
             // Runs the steps above in Terminal: download (or brew), then the
             // password prompt for the background service.
@@ -428,6 +419,11 @@ private struct UpdateAvailableBanner: View {
             .controlSize(.small)
             .padding(.top, 2)
             .accessibilityIdentifier("io.github.macfanpro.update-in-terminal")
+
+            Text(language.text("If downloads fail, enable your system proxy and retry."))
+                .font(.caption2)
+                .foregroundStyle(.tertiary)
+                .fixedSize(horizontal: false, vertical: true)
 
             optionTitle("Option 2: Build from source")
                 .padding(.top, 4)
