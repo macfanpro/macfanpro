@@ -31,4 +31,4 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           RELEASE_TAG: ${{ github.ref_name }}
         # Publish only after the downloaded artifact has passed local acceptance.
-        run: gh release create "$RELEASE_TAG" dist/*.tar.gz dist/SHA256SUMS --verify-tag --draft --title "MacFanPro ${RELEASE_TAG#v}" --notes-file "docs/releases/${RELEASE_TAG#v}.md"
+        run: gh release create "$RELEASE_TAG" dist/*.tar.gz dist/SHA256SUMS dist/install.sh dist/install.sh.sha256 --verify-tag --draft --title "MacFanPro ${RELEASE_TAG#v}" --notes-file "docs/releases/${RELEASE_TAG#v}.md"

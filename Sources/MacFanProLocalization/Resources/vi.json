@@ -29,7 +29,7 @@
   "Update available": "Có bản cập nhật",
   "MacFanPro {version} is available. You have {appVersion}.": "Đã có MacFanPro {version}. Bạn đang dùng {appVersion}.",
   "Update with:": "Cập nhật bằng:",
-  "Built from source? Run  git pull && ./setup.sh": "Tự build từ mã nguồn? Chạy  git pull && ./setup.sh",
+  "Built from source? Run:": "Tự build từ mã nguồn? Chạy:",
   "What's new": "Có gì mới",
   "Later": "Để sau",
   "Fan control unavailable": "Không thể điều khiển quạt",

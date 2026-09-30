@@ -29,7 +29,7 @@
   "Update available": "Update verfügbar",
   "MacFanPro {version} is available. You have {appVersion}.": "MacFanPro {version} ist verfügbar. Installiert ist {appVersion}.",
   "Update with:": "Aktualisieren mit:",
-  "Built from source? Run  git pull && ./setup.sh": "Aus dem Quellcode gebaut? Ausführen:  git pull && ./setup.sh",
+  "Built from source? Run:": "Aus dem Quellcode gebaut? Ausführen:",
   "What's new": "Neuerungen",
   "Later": "Später",
   "Fan control unavailable": "Lüftersteuerung nicht verfügbar",

@@ -29,7 +29,7 @@
   "Update available": "Güncelleme var",
   "MacFanPro {version} is available. You have {appVersion}.": "MacFanPro {version} yayımlandı. Sizdeki sürüm {appVersion}.",
   "Update with:": "Güncellemek için:",
-  "Built from source? Run  git pull && ./setup.sh": "Kaynaktan mı derlediniz? Çalıştırın:  git pull && ./setup.sh",
+  "Built from source? Run:": "Kaynaktan mı derlediniz? Çalıştırın:",
   "What's new": "Yenilikler",
   "Later": "Sonra",
   "Fan control unavailable": "Fan kontrolü kullanılamıyor",

@@ -411,14 +411,8 @@ private struct UpdateAvailableBanner: View {
             // brew trust is harmless when already trusted; Homebrew 7 refuses an
             // untrusted tap. sudo's PATH finds the installed CLI, which re-syncs
             // from the newer Homebrew keg.
-            Text(homebrew ? "brew trust macfanpro/tap && brew upgrade macfanpro && sudo macfanpro install"
-                          : "sudo ./bin/macfanpro install")
-                .font(.system(.caption, design: .monospaced))
-                .textSelection(.enabled)
-                .fixedSize(horizontal: false, vertical: true)
-                .padding(.horizontal, 6)
-                .padding(.vertical, 3)
-                .background(RoundedRectangle(cornerRadius: 4).fill(Color.secondary.opacity(0.15)))
+            commandBlock(homebrew ? "brew trust macfanpro/tap && brew upgrade macfanpro && sudo macfanpro install"
+                                  : "sudo ./bin/macfanpro install")
 
             // Runs the steps above in Terminal: download (or brew), then the
             // password prompt for the background service.
@@ -430,10 +424,12 @@ private struct UpdateAvailableBanner: View {
             .padding(.top, 2)
             .accessibilityIdentifier("io.github.macfanpro.update-in-terminal")
 
-            Text(language.text("Built from source? Run  git pull && ./setup.sh"))
+            Text(language.text("Built from source? Run:"))
                 .font(.caption2)
                 .foregroundStyle(.tertiary)
                 .fixedSize(horizontal: false, vertical: true)
+
+            commandBlock("git pull && ./setup.sh")
 
             HStack {
                 if let url = URL(string: update.url) {
@@ -452,6 +448,16 @@ private struct UpdateAvailableBanner: View {
         .padding(.vertical, 8)
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(Color.blue.opacity(0.12))
+    }
+
+    private func commandBlock(_ command: String) -> some View {
+        Text(command)
+            .font(.system(.caption, design: .monospaced))
+            .textSelection(.enabled)
+            .fixedSize(horizontal: false, vertical: true)
+            .padding(.horizontal, 6)
+            .padding(.vertical, 3)
+            .background(RoundedRectangle(cornerRadius: 4).fill(Color.secondary.opacity(0.15)))
     }
 }
 

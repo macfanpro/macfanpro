@@ -6,3 +6,5 @@ cd "$(dirname "$0")/.."
 # test still exercises concurrent server connections with its original deadlines.
 swift test --no-parallel "$@"
 bash Scripts/test-disconnected-clients.sh
+
+python3 Scripts/test-installer.py

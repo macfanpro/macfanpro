@@ -29,7 +29,7 @@
   "Update available": "Update available",
   "MacFanPro {version} is available. You have {appVersion}.": "MacFanPro {version} is available. You have {appVersion}.",
   "Update with:": "Update with:",
-  "Built from source? Run  git pull && ./setup.sh": "Built from source? Run  git pull && ./setup.sh",
+  "Built from source? Run:": "Built from source? Run:",
   "What's new": "What's new",
   "Later": "Later",
   "Fan control unavailable": "Fan control unavailable",

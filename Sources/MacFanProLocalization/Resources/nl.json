@@ -29,7 +29,7 @@
   "Update available": "Update beschikbaar",
   "MacFanPro {version} is available. You have {appVersion}.": "MacFanPro {version} is beschikbaar. Je hebt {appVersion}.",
   "Update with:": "Bijwerken met:",
-  "Built from source? Run  git pull && ./setup.sh": "Zelf gebouwd? Voer uit:  git pull && ./setup.sh",
+  "Built from source? Run:": "Zelf gebouwd? Voer uit:",
   "What's new": "Wat is er nieuw",
   "Later": "Later",
   "Fan control unavailable": "Ventilatorregeling niet beschikbaar",

@@ -23,5 +23,9 @@ cp -R ThirdPartyNotices "$stage/$name/"
 codesign --force --deep --sign - "$stage/$name/MacFanPro.app"
 codesign --verify --deep --strict "$stage/$name/MacFanPro.app"
 COPYFILE_DISABLE=1 tar -czf "$output_dir/$name.tar.gz" -C "$stage" "$name"
+# Keep SHA256SUMS archive-only: already deployed updaters check every entry.
+cp "$stage/$name/MacFanPro.app/Contents/Resources/install.sh" "$output_dir/install.sh"
+bash -n "$output_dir/install.sh"
+(cd "$output_dir" && shasum -a 256 install.sh > install.sh.sha256)
 (cd "$output_dir" && shasum -a 256 "$name.tar.gz" > SHA256SUMS)
 printf 'Packaged %s\n' "$output_dir/$name.tar.gz"

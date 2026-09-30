@@ -32,3 +32,5 @@ Release 正文中的文件链接应使用完整 GitHub URL。对会随时间变�
 - [Stats v3.0.17](https://github.com/exelban/stats/releases/tag/v3.0.17)：按修复、功能和本地化分组。
 - [GitHub CLI v2.101.0](https://github.com/cli/cli/releases/tag/v2.101.0)：突出升级影响，按变化类型组织条目并链接 PR。
 - [GitHub 自动生成发布说明文档](https://docs.github.com/en/repositories/releasing-projects-on-github/automatically-generated-release-notes)：完整变更与贡献者信息仍需人工检查是否适合该次发行。
+
+在线安装器：打包时把 `Scripts/install.sh` 固定到当前发行版本，同时嵌入 App 并生成 `install.sh` / `install.sh.sha256` 两个附件。`SHA256SUMS` 必须继续只含发行包，以兼容已部署的 0.2.3.32 更新器。草稿验收需检查附件脚本与包内脚本一致、两个校验文件正确，并按 [安装器验证](../online-installer.md) 检查。首次上线要发布新版本，不能覆盖既有标签或向旧版本上传其他源码构建的产物。

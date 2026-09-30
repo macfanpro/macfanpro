@@ -2,7 +2,7 @@
   "Ambient" : "環境",
   "Asks for your password once. If it doesn't come back right away, it will keep retrying on its own." : "需要一次管理員授權。如果沒有立即恢復，應用會繼續自動重試。",
   "Balanced" : "均衡",
-  "Built from source? Run  git pull && ./setup.sh" : "從源碼構建？運行  git pull && ./setup.sh",
+  "Built from source? Run:" : "從源碼構建？運行：",
   "CPU" : "CPU",
   "Check for Updates" : "檢查更新",
   "Checking…" : "正在檢查…",

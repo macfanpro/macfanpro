@@ -1003,6 +1003,13 @@ struct Install: ParsableCommand {
                 """)
         }
 
+        // A registered process/socket alone can belong to a stale daemon. Confirm
+        // the live protocol reports the version we just installed before success.
+        let liveDaemon = try DaemonClient().request(DaemonRequest(verb: .version))
+        guard liveDaemon.ok, liveDaemon.version == installVersion else {
+            throw ValidationError("The live daemon did not confirm installed version \(installVersion). Re-run the installer; the service may still be restarting.")
+        }
+
         // Copy the menu bar app into /Applications. Homebrew's post_install is
         // sandboxed and can't write outside its prefix (EPERM on mkdir under
         // /Applications), so the copy lives here instead — we're root under sudo,
@@ -1261,8 +1268,13 @@ struct BuildApp: ParsableCommand {
     @Option(name: .long, help: "MIT license file to include in the application")
     var licenseFile: String = "LICENSE"
 
+    @Option(name: .long, help: "Online installer script to bundle with the app")
+    var installerScript: String = "Scripts/install.sh"
+
     func run() throws {
         let fm = FileManager.default
+        let installer = try String(contentsOfFile: installerScript, encoding: .utf8)
+            .replacingOccurrences(of: "@MACFANPRO_VERSION@", with: MacFanProVersion.current)
 
         guard fm.fileExists(atPath: binary) else {
             throw ValidationError("App binary not found: \(binary)")
@@ -1297,6 +1309,7 @@ struct BuildApp: ParsableCommand {
         try fm.copyItem(atPath: binary, toPath: "\(macOSDir)/MacFanProApp")
         try fm.copyItem(atPath: icon, toPath: "\(resources)/AppIcon.icns")
         try fm.copyItem(atPath: licenseFile, toPath: "\(resources)/LICENSE")
+        try installer.write(toFile: "\(resources)/install.sh", atomically: true, encoding: .utf8)
         try fm.copyItem(at: resourceSource,
                         to: URL(fileURLWithPath: resources).appendingPathComponent(LocalizationCatalog.resourceBundleName))
 

@@ -23,6 +23,8 @@ Requires **an Apple Silicon Mac with macOS 14 or later**. Check the system requi
 | File | Purpose |
 | --- | --- |
 | [MacFanPro-VERSION-macos-arm64.tar.gz](https://github.com/macfanpro/macfanpro/releases/download/vVERSION/MacFanPro-VERSION-macos-arm64.tar.gz) | Complete app and CLI; extract and install, no Xcode needed |
+| [install.sh](https://github.com/macfanpro/macfanpro/releases/download/vVERSION/install.sh) | One-command installer |
+| [install.sh.sha256](https://github.com/macfanpro/macfanpro/releases/download/vVERSION/install.sh.sha256) | Installer integrity check |
 | [SHA256SUMS](https://github.com/macfanpro/macfanpro/releases/download/vVERSION/SHA256SUMS) | Download integrity check |
 
 Choose one install method: [Homebrew](https://github.com/macfanpro/macfanpro#option-1-homebrew) · [Release download](https://github.com/macfanpro/macfanpro#option-2-release-download) · [From source](https://github.com/macfanpro/macfanpro#option-3-from-source). Homebrew 7 needs `brew trust macfanpro/tap` once.

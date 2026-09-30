@@ -29,7 +29,7 @@
   "Update available": "Pembaruan tersedia",
   "MacFanPro {version} is available. You have {appVersion}.": "MacFanPro {version} tersedia. Anda memakai {appVersion}.",
   "Update with:": "Perbarui dengan:",
-  "Built from source? Run  git pull && ./setup.sh": "Dibangun dari sumber? Jalankan  git pull && ./setup.sh",
+  "Built from source? Run:": "Dibangun dari sumber? Jalankan:",
   "What's new": "Yang baru",
   "Later": "Nanti",
   "Fan control unavailable": "Kontrol kipas tidak tersedia",

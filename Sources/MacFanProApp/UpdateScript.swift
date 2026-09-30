@@ -1,81 +1,53 @@
-//
-//  UpdateScript.swift
-//  MacFanPro
-//
-//  "Update in Terminal": writes the update steps for this install to a .command
-//  file and opens it in Terminal, so the user only enters their password once.
-//  The steps stay visible in Terminal; nothing runs without the user watching.
-//
-
+// The menu bar and the online entry point share the bundled installer.
 import AppKit
 import MacFanProCore
 
 enum UpdateScript {
-    /// Terminal's curl and Homebrew ignore the macOS proxy settings, so networks
-    /// that need a proxy for GitHub would fail. Use the system HTTPS proxy unless
-    /// the user already set one.
-    private static let proxySetup = """
-        if [ -z "${https_proxy:-}${HTTPS_PROXY:-}${all_proxy:-}${ALL_PROXY:-}" ]; then
-          proxy=$(scutil --proxy | awk '/HTTPSEnable : 1/{e=1} /HTTPSProxy :/{h=$3} /HTTPSPort :/{p=$3} END{if (e && h) print "http://" h ":" p}')
-          if [ -n "$proxy" ]; then export https_proxy="$proxy" http_proxy="$proxy"; echo "Using the system proxy $proxy"; fi
-        fi
-        """
+    enum ScriptError: Error { case invalidVersion, missingInstaller }
 
-    static func contents(version: String, homebrew: Bool) -> String {
-        let steps: String
-        if homebrew {
-            steps = """
-                BREW=/opt/homebrew/bin/brew
-                [ -x "$BREW" ] || BREW=/usr/local/bin/brew
-                echo "Updating MacFanPro with Homebrew…"
-                "$BREW" trust macfanpro/tap 2>/dev/null || true
-                "$BREW" update || true
-                "$BREW" upgrade macfanpro
-                CLI="$("$BREW" --prefix macfanpro)/bin/macfanpro"
-                """
-        } else {
-            let name = "MacFanPro-\(version)-macos-arm64"
-            steps = """
-                BASE="https://github.com/macfanpro/macfanpro/releases/download/v\(version)"
-                WORK=$(mktemp -d)
-                cd "$WORK"
-                echo "Downloading MacFanPro \(version)…"
-                curl -fL --progress-bar -O "$BASE/\(name).tar.gz"
-                curl -fsSL -O "$BASE/SHA256SUMS"
-                shasum -a 256 -c SHA256SUMS
-                tar -xzf "\(name).tar.gz"
-                CLI="$WORK/\(name)/bin/macfanpro"
-                """
-        }
+    private static func quote(_ value: String) -> String {
+        "'" + value.replacingOccurrences(of: "'", with: "'\\''") + "'"
+    }
+
+    static func contents(version: String, homebrew: Bool, installerPath: String) throws -> String {
+        guard version.range(of: #"^[0-9]+(\.[0-9]+){2,3}$"#, options: .regularExpression) != nil,
+              !version.contains("\n") else { throw ScriptError.invalidVersion }
         return """
-            #!/bin/zsh
-            # MacFanPro update to \(version). Created by the MacFanPro menu bar app.
-            set -e
-            trap 'echo; echo "The update did not finish. See the message above, or update manually: https://github.com/macfanpro/macfanpro#updating"' ERR
-            \(proxySetup)
-            \(steps)
-            "$CLI" auto --stop-app
-            echo
-            echo "Enter your Mac password to install the background service (nothing is shown while you type):"
-            sudo "$CLI" install
-            open /Applications/MacFanPro.app
-            echo
+            #!/bin/bash
+            set -euo pipefail
+            WORK=\(quote(URL(fileURLWithPath: installerPath).deletingLastPathComponent().path))
+            trap 'rm -rf -- "$WORK"' EXIT
+            trap 'echo "The update did not finish. See the error above." >&2' ERR
+            /bin/bash \(quote(installerPath)) --version \(quote(version))\(homebrew ? " --homebrew" : "")
             echo "MacFanPro is up to date. You can close this window."
 
             """
     }
 
-    /// Write the script to the user's temporary folder and open it in Terminal.
     static func open(version: String, homebrew: Bool) {
-        let url = FileManager.default.temporaryDirectory.appendingPathComponent("MacFanPro Update.command")
+        let fm = FileManager.default
+        let directory = fm.temporaryDirectory.appendingPathComponent("macfanpro-update-\(UUID().uuidString)")
         do {
-            try contents(version: version, homebrew: homebrew).write(to: url, atomically: true, encoding: .utf8)
-            try FileManager.default.setAttributes([.posixPermissions: 0o700], ofItemAtPath: url.path)
+            guard let source = Bundle.main.url(forResource: "install", withExtension: "sh") else {
+                throw ScriptError.missingInstaller
+            }
+            try fm.createDirectory(at: directory, withIntermediateDirectories: false, attributes: [.posixPermissions: 0o700])
+            let installer = directory.appendingPathComponent("install.sh")
+            try fm.copyItem(at: source, to: installer)
+            let command = directory.appendingPathComponent("MacFanPro Update.command")
+            try contents(version: version, homebrew: homebrew, installerPath: installer.path)
+                .write(to: command, atomically: true, encoding: .utf8)
+            try fm.setAttributes([.posixPermissions: 0o700], ofItemAtPath: command.path)
+            let terminal = URL(fileURLWithPath: "/System/Applications/Utilities/Terminal.app")
+            NSWorkspace.shared.open([command], withApplicationAt: terminal, configuration: NSWorkspace.OpenConfiguration()) { _, error in
+                if let error {
+                    try? fm.removeItem(at: directory)
+                    TFLogger.shared.error("Could not open the update script: \(error)")
+                }
+            }
         } catch {
+            try? fm.removeItem(at: directory)
             TFLogger.shared.error("Could not write the update script: \(error)")
-            return
         }
-        let terminal = URL(fileURLWithPath: "/System/Applications/Utilities/Terminal.app")
-        NSWorkspace.shared.open([url], withApplicationAt: terminal, configuration: NSWorkspace.OpenConfiguration())
     }
 }

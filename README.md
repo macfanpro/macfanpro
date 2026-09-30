@@ -56,13 +56,34 @@ Hardware testing so far has been mainly on an M4 Max MacBook Pro. Treat other mo
 
 ## Install
 
-**Pick one of the three methods below; you don't need more than one.** If MacFanPro is already running, choose Quit in its menu first.
+**Pick one of the methods below; you don't need more than one.** If MacFanPro is already running, choose Quit in its menu first.
 
 | Method | Best for | Builds on your Mac? |
 | --- | --- | --- |
+| Online installer | One command; downloads and verifies a release | No, no Xcode needed |
 | Homebrew | Installing and managing versions with Homebrew | No, prebuilt |
 | Release download | Using the prebuilt app and CLI | No, no Xcode needed |
 | From source | Changing the code, debugging, or building yourself | Yes, needs Xcode |
+
+### Online installer
+
+Available after the next release includes the `install.sh` attachment. Existing releases without that attachment use the methods below.
+
+```bash
+curl -fsSL https://github.com/macfanpro/macfanpro/releases/latest/download/install.sh | bash
+```
+
+Run as your normal login user. The script downloads and verifies the prebuilt package, then asks for your administrator password to install the app and background service. Existing Homebrew installations use `brew update` / `brew upgrade` and keep Homebrew ownership; the requested version must be available in the tap. Other installations use the release package. Configuration and calibration data are retained; downgrades are refused. Running it again reinstalls/checks the selected version.
+
+To inspect the script first, download `install.sh` and `install.sh.sha256` from the **same release**, then run:
+
+```bash
+shasum -a 256 -c install.sh.sha256
+less install.sh
+bash install.sh
+```
+
+Use `bash install.sh --check` to download and validate without installing, `--no-open` to leave the app closed, or `--version 0.2.3.32` to select a package version (a minimum version on Homebrew). The script bundled in each release defaults to that exact release. See [installer details and verification](docs/online-installer.md).
 
 ### Option 1: Homebrew
 
@@ -162,6 +183,8 @@ Run these individually as needed. With a normal install and the background servi
 The advanced `watch` command keeps controlling the fans by profile (it is not read-only), and `calibrate` runs a load while changing fan speeds. Both need administrator rights; read their `--help` first. Neither is needed for everyday use.
 
 ## Updating
+
+Once published, the online installer above also upgrades existing installations. The app’s “Update in Terminal” uses the same bundled installer.
 
 The app checks this repository's releases once a day, and you can check now with Check for Updates at the bottom of the menu. When a new version is out it shows the upgrade steps for how you installed, and an **Update in Terminal** button that runs them for you: Terminal opens, downloads or upgrades, and asks for your password once. It never replaces the program without you. The check needs access to GitHub and uses your system proxy settings; if it says it couldn't reach GitHub, check your network or proxy. Update the same way you installed, and quit the app before replacing the background service.
 

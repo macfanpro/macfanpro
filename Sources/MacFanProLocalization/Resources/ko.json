@@ -29,7 +29,7 @@
   "Update available": "업데이트 있음",
   "MacFanPro {version} is available. You have {appVersion}.": "MacFanPro {version}이(가) 출시되었습니다. 현재 버전은 {appVersion}입니다.",
   "Update with:": "업데이트 명령:",
-  "Built from source? Run  git pull && ./setup.sh": "소스에서 빌드했다면:  git pull && ./setup.sh",
+  "Built from source? Run:": "소스에서 빌드했다면:",
   "What's new": "새로운 기능",
   "Later": "나중에",
   "Fan control unavailable": "팬 제어를 사용할 수 없음",
