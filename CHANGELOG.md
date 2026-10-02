@@ -1,5 +1,9 @@
 # MacFanPro changelog
 
+## 0.2.3.38
+
+- The background service no longer writes a log line for every step of a fan ramp. Smart mode adjusts fan speed in small steps about ten times a second, and each step was logged, about 100,000 lines in five hours. That filled the daily log within hours and triggered macOS disk-write reports for `macfanpro`. Each fan now logs at most one line every 5 seconds, noting how many ramp steps were skipped; a reset to Apple defaults is still logged immediately. Fan control is unchanged.
+
 ## 0.2.3.37
 
 - Installation and updates can use a local HTTP or SOCKS5 proxy. The online installer detects macOS system proxy settings, while the README gives a command that also proxies the initial script download. The in-app update flow explains how to handle GitHub connectivity problems; Homebrew refreshes only the MacFanPro tap where possible.

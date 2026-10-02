@@ -54,7 +54,7 @@ open /Applications/MacFanPro.app
 - 风扇控制需要带风扇的机型，无风扇机型无法使用该功能。
 - 首次安装或更新后台服务需要管理员权限；从源码构建还需要 Xcode 16 或更高版本。
 
-当前实机验证以 M4 Max MacBook Pro 为主。其他机型、macOS 版本和显示环境不应视为已验证，具体范围见 [0.2.3.36 验证记录](docs/macfanpro-0.2.3.36-validation.md)。
+当前实机验证以 M4 Max MacBook Pro 为主。其他机型、macOS 版本和显示环境不应视为已验证，具体范围见 [0.2.3.38 验证记录](docs/macfanpro-0.2.3.38-validation.md)。
 
 ## 安装
 
@@ -95,7 +95,7 @@ less install.sh
 bash install.sh
 ```
 
-`bash install.sh --check` 只下载和校验，不安装；`--no-open` 安装后不打开应用；`--version 0.2.3.37` 指定发行包版本（在 Homebrew 路径中表示最低版本）。每个发行附件中的脚本默认固定到所属版本。更多说明见[安装器与验证](docs/online-installer.md)。
+`bash install.sh --check` 只下载和校验，不安装；`--no-open` 安装后不打开应用；`--version 0.2.3.38` 指定发行包版本（在 Homebrew 路径中表示最低版本）。每个发行附件中的脚本默认固定到所属版本。更多说明见[安装器与验证](docs/online-installer.md)。
 
 ### 方式一：通过 Homebrew 安装
 
@@ -121,10 +121,10 @@ Homebrew 7 起默认不加载第三方 tap 的配方，需要先用 `brew trust`
 2. 双击解压，保留文件夹内的 `MacFanPro.app` 和 `bin` 目录。
 3. 在终端中进入解压后的文件夹，执行安装并打开应用。
 
-例如，`0.2.3.37` 解压在“下载”目录时：
+例如，`0.2.3.38` 解压在“下载”目录时：
 
 ```bash
-cd ~/Downloads/MacFanPro-0.2.3.37-macos-arm64
+cd ~/Downloads/MacFanPro-0.2.3.38-macos-arm64
 sudo ./bin/macfanpro install
 open /Applications/MacFanPro.app
 ```
@@ -145,7 +145,7 @@ cd macfanpro
 
 `setup.sh` 会编译源码、组装应用、请求管理员权限完成安装，并打开 MacFanPro，无需再执行其他安装命令。
 
-此方式默认构建仓库的 `main` 分支，可能包含尚未发行的修改。如需构建指定发行版，可在运行 `./setup.sh` 前执行 `git checkout v0.2.3.37`，版本号按需替换。
+此方式默认构建仓库的 `main` 分支，可能包含尚未发行的修改。如需构建指定发行版，可在运行 `./setup.sh` 前执行 `git checkout v0.2.3.38`，版本号按需替换。
 
 ### 安装完成后
 
@@ -366,6 +366,7 @@ bash Scripts/package-release.sh
 - [0.2.3.29 验证记录](docs/macfanpro-0.2.3.29-validation.md)：新增 14 种界面语言，README 与发布说明中英双语。
 - [0.2.3.30 验证记录](docs/macfanpro-0.2.3.30-validation.md)：新增阿拉伯语及从右往左排版。
 - [0.2.3.31 验证记录](docs/macfanpro-0.2.3.31-validation.md)：更新提示按安装方式给出步骤。
+- [0.2.3.38 验证记录](docs/macfanpro-0.2.3.38-validation.md)：后台服务风扇日志限流，避免过量写盘。
 - [0.2.3.36 验证记录](docs/macfanpro-0.2.3.36-validation.md)：科技配色的新应用图标。
 - [0.2.3.35 验证记录](docs/macfanpro-0.2.3.35-validation.md)：更新提示中完整可复制的源码更新命令。
 - [0.2.3.34 验证记录](docs/macfanpro-0.2.3.34-validation.md)：Homebrew 更新不再停在确认提示，只刷新本软件源。

@@ -54,7 +54,7 @@ The screenshots above are MacFanPro 0.2.3.36 running on an M4 Max MacBook Pro.
 - Fan control needs a Mac with fans; fanless models cannot use it.
 - Installing or updating the background service needs administrator rights. Building from source needs Xcode 16 or later.
 
-Hardware testing so far has been mainly on an M4 Max MacBook Pro. Treat other models, macOS versions and display setups as untested; see the [0.2.3.36 validation record](docs/macfanpro-0.2.3.36-validation.md) (in Chinese) for the exact scope.
+Hardware testing so far has been mainly on an M4 Max MacBook Pro. Treat other models, macOS versions and display setups as untested; see the [0.2.3.38 validation record](docs/macfanpro-0.2.3.38-validation.md) (in Chinese) for the exact scope.
 
 ## Install
 
@@ -95,7 +95,7 @@ less install.sh
 bash install.sh
 ```
 
-Use `bash install.sh --check` to download and validate without installing, `--no-open` to leave the app closed, or `--version 0.2.3.37` to select a package version (a minimum version on Homebrew). The script bundled in each release defaults to that exact release. See [installer details and verification](docs/online-installer.md).
+Use `bash install.sh --check` to download and validate without installing, `--no-open` to leave the app closed, or `--version 0.2.3.38` to select a package version (a minimum version on Homebrew). The script bundled in each release defaults to that exact release. See [installer details and verification](docs/online-installer.md).
 
 ### Option 1: Homebrew
 
@@ -121,10 +121,10 @@ No Homebrew or Xcode needed.
 2. Double-click to extract it. Keep `MacFanPro.app` and the `bin` folder together.
 3. In Terminal, go into the extracted folder, install, and open the app.
 
-For example, with `0.2.3.37` extracted in Downloads:
+For example, with `0.2.3.38` extracted in Downloads:
 
 ```bash
-cd ~/Downloads/MacFanPro-0.2.3.37-macos-arm64
+cd ~/Downloads/MacFanPro-0.2.3.38-macos-arm64
 sudo ./bin/macfanpro install
 open /Applications/MacFanPro.app
 ```
@@ -145,7 +145,7 @@ cd macfanpro
 
 `setup.sh` builds the code, assembles the app, asks for your administrator password to install, and opens MacFanPro. No further install command is needed.
 
-This builds the repository's `main` branch, which may include unreleased changes. To build a specific release, run `git checkout v0.2.3.37` (with the version you want) before `./setup.sh`.
+This builds the repository's `main` branch, which may include unreleased changes. To build a specific release, run `git checkout v0.2.3.38` (with the version you want) before `./setup.sh`.
 
 ### After installing
 
@@ -351,7 +351,7 @@ When opening a [Pull Request](https://github.com/macfanpro/macfanpro/pulls), des
 - [Changelog](CHANGELOG.md): the main changes in each release.
 - [GUI localization](docs/gui-localization.md): the 18 interface languages, how to add a language, and the layout and packaging checks.
 - [Release notes guide and template](docs/releases/README.md) (in Chinese): per-release notes, downloads, upgrade notes and evidence.
-- Per-release validation records (in Chinese): `docs/macfanpro-<version>-validation.md`, for example [0.2.3.36](docs/macfanpro-0.2.3.36-validation.md).
+- Per-release validation records (in Chinese): `docs/macfanpro-<version>-validation.md`, for example [0.2.3.38](docs/macfanpro-0.2.3.38-validation.md).
 - [Fan state and calibration fixes](docs/fan-state-fixes-20260927.md): the audits behind 0.2.3.20 to 0.2.3.24.
 - [Temperature changes relative to upstream](docs/upstream-divergence.md): changes to reapply when merging upstream.
 - [Menu bar label validation](docs/menu-bar-label-validation.md): minimum width, digit changes and isolated rendering tests.

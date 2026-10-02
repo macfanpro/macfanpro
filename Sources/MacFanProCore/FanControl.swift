@@ -92,9 +92,33 @@ public struct DiscoveredKey {
 
 // MARK: - Fan Control
 
+/// Ramps write about ten targets a second per fan. Logging every one made the daemon
+/// append ~100k lines in five hours and trip macOS's disk-write report, so keep at most
+/// one line per fan per interval and count the ramp steps in between.
+struct FanSetLogThrottle {
+    static let interval: TimeInterval = 5
+    private var last: [Int: (time: Date, skipped: Int)] = [:]
+
+    /// The line to log for this write, or nil while the fan's interval is still open.
+    mutating func line(fan: Int, rpm: Int, at now: Date) -> String? {
+        if let entry = last[fan], now.timeIntervalSince(entry.time) < Self.interval {
+            last[fan] = (entry.time, entry.skipped + 1)
+            return nil
+        }
+        let skipped = last[fan]?.skipped ?? 0
+        last[fan] = (now, 0)
+        return "Set fan \(fan) to \(rpm) RPM" + (skipped > 0 ? " (\(skipped) ramp steps since the last line)" : "")
+    }
+
+    /// After a reset the next target is a new decision, so log it at once.
+    mutating func reset() { last.removeAll() }
+}
+
 public final class FanControl {
     private let smc: SMCConnection
     private let logger: TFLogger?
+    private var setLog = FanSetLogThrottle()
+    private let setLogLock = NSLock()
     /// Which mode key works on this hardware (detected at init)
     private let modeKeyTemplate: String
     /// Whether Ftst unlock is available (M1-M4) or not (M5+)
@@ -254,7 +278,7 @@ public final class FanControl {
         guard smc.writeKey(targetKey, bytes: floatToSMCBytes(rpm)) else {
             throw MacFanProError.writeFailed(targetKey)
         }
-        log("Set fan \(index) to \(Int(rpm)) RPM")
+        logSet(index, rpm)
     }
 
     /// Resolve each fan independently; fan 0's limits do not constrain other fans.
@@ -281,7 +305,7 @@ public final class FanControl {
             guard smc.writeKey(targetKey, bytes: floatToSMCBytes(target.rpm)) else {
                 throw MacFanProError.writeFailed(targetKey)
             }
-            log("Set fan \(target.index) to \(Int(target.rpm)) RPM")
+            logSet(target.index, target.rpm)
         }
         return targets.map { FanRPM(index: $0.index, rpm: Int($0.rpm)) }
     }
@@ -300,6 +324,7 @@ public final class FanControl {
             },
             write: { self.smc.writeKey($0, bytes: $1) }
         )
+        setLogLock.lock(); setLog.reset(); setLogLock.unlock()
         log("Reset to Apple defaults")
     }
 
@@ -439,5 +464,13 @@ public final class FanControl {
 
     private func log(_ message: String) {
         logger?.fan(message)
+    }
+
+    private func logSet(_ index: Int, _ rpm: Float) {
+        guard logger != nil else { return }
+        setLogLock.lock()
+        let line = setLog.line(fan: index, rpm: Int(rpm), at: Date())
+        setLogLock.unlock()
+        if let line { log(line) }
     }
 }
