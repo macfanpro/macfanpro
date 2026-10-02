@@ -39,3 +39,20 @@ key, including `TCDX`/`TCMb`/`Tp06`.
 4. Run `Scripts/test.sh` and `Scripts/test.sh -c release`, then compare the CPU
    and GPU rows with Stats under CPU and GPU load
    (`Scripts/thermal-calibration/`).
+
+## Kept as upstream on purpose
+
+### Per-step fan logging
+
+Smart mode ramps the fans about ten steps a second, and `FanControl` logs
+every write (`Set fan N to N RPM`), as upstream does. On an M4 Max the daemon
+log reached about 100,000 lines in five hours, filling a 5 MB file within
+hours. macOS also recorded `disk writes` diagnostic reports for `macfanpro`
+(about 2 GB of dirtied file pages in 6 to 17 hours). Actual disk writes are
+only a few MB a day, so in October 2026 `main` kept upstream's behavior.
+
+A ready change is on branch
+[`proposal/fan-log-throttle`](https://github.com/macfanpro/macfanpro/tree/proposal/fan-log-throttle):
+at most one line per fan every 5 seconds, counting the skipped ramp steps;
+max and reset still log at once. Merge it if the step lines get in the way of
+diagnosing problems, or if upstream changes its fan logging.
