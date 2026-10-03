@@ -22,13 +22,13 @@ You need an Apple Silicon Mac with Xcode 16 or later.
 ```bash
 git clone https://github.com/macfanpro/macfanpro.git
 cd macfanpro
-swift build
-bash Scripts/test.sh
-bash Scripts/test.sh -c release
+bash Scripts/test.sh --all-configurations
 bash Scripts/check-localization-package.sh
 ```
 
-These build and test without installing anything. Run `./setup.sh` to install your build on your own Mac.
+These build and test without installing anything. The combined command runs Swift tests in Debug and Release, then runs the configuration-independent disconnect and installer checks once. For routine development, `bash Scripts/test.sh` runs Debug only; `bash Scripts/test.sh -c release` selects Release. Run `./setup.sh` to install your build on your own Mac.
+
+Group related input cases in readable tables with failure messages identifying the case. Keep distinct safety, ownership and concurrency regressions independently diagnosable. Remove a duplicate check only when its replacement exercises the same behavior; a smaller test-function count alone does not mean fewer scenarios or faster execution.
 
 In your pull request, describe the problem, the scope of the change and how you verified it. Keep automated tests, rendering tests and real-hardware results distinct, and say which Mac you tested on. Changes to fan control, the background service or its protocol need tests; `Tests/MacFanProTests/ControlLoopRecoveryTests.swift` drives the real control loops against a simulated SMC, so most failure cases can be tested without touching your fans.
 

@@ -6,37 +6,31 @@ import Testing
 struct SMCSensorFilterTests {
     private let m4MaxBattery: Set<String> = ["TG0B", "TG0C", "TG0H", "TG0V", "TG1B", "TG2B"]
 
-    @Test("Keys the machine publishes as battery sensors never reach the GPU row")
-    func batteryKeysRejected() {
-        for key in ["TG0B", "TG0H", "TG0V"] {
-            #expect(!SMCSensorFilter.accepts(key, 27.1, batteryKeys: m4MaxBattery))
-        }
-        // Where the same keys are not battery sensors (upstream verified them as
-        // GPU on M5 Max), nothing changes.
-        #expect(SMCSensorFilter.accepts("TG0B", 61.0, batteryKeys: []))
-    }
-
-    @Test("Real GPU and CPU keys pass unchanged")
-    func dieSensorsAccepted() {
-        for (key, value) in [("Tg05", 90.0), ("TCDX", 38.5), ("TCMb", 45.3), ("Tp06", 63.9)] as [(String, Float)] {
-            #expect(SMCSensorFilter.accepts(key, value, batteryKeys: m4MaxBattery))
-        }
-    }
-
-    @Test("Die placeholders below the floor are rejected; 40.0 is kept")
-    func diePlaceholders() {
-        for value: Float in [1.5, 1.9, 5.2] {
-            #expect(!SMCSensorFilter.accepts("Tp01", value, batteryKeys: []))
-        }
-        // Indistinguishable from a real reading, so deliberately accepted.
-        #expect(SMCSensorFilter.accepts("Tp01", 40.0, batteryKeys: []))
-        #expect(SMCSensorFilter.accepts("Tp01", SMCSensorFilter.minimumDieTemperature, batteryKeys: []))
-    }
-
-    @Test("Non-die sensors may legitimately read cold")
-    func coldAmbientAccepted() {
-        for key in ["TAOL", "TB0T", "TH0x", "TN0n"] {
-            #expect(SMCSensorFilter.accepts(key, 4.0, batteryKeys: []))
+    @Test("Sensor acceptance distinguishes battery keys, die placeholders and cold ambient readings")
+    func sensorAcceptance() {
+        let cases: [(key: String, value: Float, batteryKeys: Set<String>, accepted: Bool)] = [
+            ("TG0B", 27.1, m4MaxBattery, false),
+            ("TG0H", 27.1, m4MaxBattery, false),
+            ("TG0V", 27.1, m4MaxBattery, false),
+            // Upstream verified TG0B as a GPU sensor on M5 Max, where it is not a battery key.
+            ("TG0B", 61.0, [], true),
+            ("Tg05", 90.0, m4MaxBattery, true),
+            ("TCDX", 38.5, m4MaxBattery, true),
+            ("TCMb", 45.3, m4MaxBattery, true),
+            ("Tp06", 63.9, m4MaxBattery, true),
+            ("Tp01", 1.5, [], false),
+            ("Tp01", 1.9, [], false),
+            ("Tp01", 5.2, [], false),
+            ("Tp01", 40.0, [], true), // indistinguishable from a real reading
+            ("Tp01", SMCSensorFilter.minimumDieTemperature, [], true),
+            ("TAOL", 4.0, [], true),
+            ("TB0T", 4.0, [], true),
+            ("TH0x", 4.0, [], true),
+            ("TN0n", 4.0, [], true),
+        ]
+        for row in cases {
+            #expect(SMCSensorFilter.accepts(row.key, row.value, batteryKeys: row.batteryKeys) == row.accepted,
+                    "\(row.key) at \(row.value)°C, battery=\(row.batteryKeys.contains(row.key))")
         }
     }
 

@@ -12,14 +12,8 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Build
-        run: swift build
-
-      - name: Test Debug
-        run: bash Scripts/test.sh
-
-      - name: Test Release
-        run: bash Scripts/test.sh -c release
+      - name: Build and test Debug and Release
+        run: bash Scripts/test.sh --all-configurations
 
       - name: Check localization packaging
         run: bash Scripts/check-localization-package.sh

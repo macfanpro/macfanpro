@@ -25,20 +25,16 @@ struct DisplayedTemperatureTests {
         #expect(s.safetyPeakTemp == 75.2)
     }
 
-    @Test("Without a key table the per-core prefixes are used")
-    func prefixFallback() {
-        #expect(status(m4GPULoad).cpuTemp(coreKeys: []) == 75.2)
-    }
-
-    @Test("A table whose keys are all absent falls back rather than going empty")
-    func tableKeysAbsent() {
-        let s = status(["Tp0X": 58.0, "TCDX": 70.0])
-        #expect(s.cpuTemp(coreKeys: ThermalStatus.m4CoreKeys) == 58.0)
-    }
-
-    @Test("A Mac with only aggregate TC keys still shows a CPU value")
-    func aggregateOnly() {
-        #expect(status(["TCDX": 55.0, "Tg05": 50.0]).cpuTemp(coreKeys: ThermalStatus.m4CoreKeys) == 55.0)
+    @Test("CPU display falls back through prefixes and aggregates when core keys are unavailable")
+    func cpuFallbacks() {
+        let cases: [(reason: String, temps: [String: Float], coreKeys: Set<String>, expected: Float)] = [
+            ("No key table", m4GPULoad, [], 75.2),
+            ("Table keys absent", ["Tp0X": 58.0, "TCDX": 70.0], ThermalStatus.m4CoreKeys, 58.0),
+            ("Only aggregate CPU keys", ["TCDX": 55.0, "Tg05": 50.0], ThermalStatus.m4CoreKeys, 55.0),
+        ]
+        for row in cases {
+            #expect(status(row.temps).cpuTemp(coreKeys: row.coreKeys) == row.expected, "\(row.reason)")
+        }
     }
 
     @Test("Headline is the hotter displayed row")

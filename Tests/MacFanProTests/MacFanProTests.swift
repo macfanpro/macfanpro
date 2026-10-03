@@ -10,7 +10,7 @@ import Testing
 @Suite("Data Conversion")
 struct DataConversionTests {
 
-    @Test("Float round-trips through SMC byte encoding")
+    @Test("Float encoding round-trips RPM values and represents zero with zero bytes")
     func floatRoundTrip() {
         let values: [Float] = [0.0, 1200.0, 2317.0, 3500.5, 5900.0, 7826.0]
         for original in values {
@@ -19,25 +19,18 @@ struct DataConversionTests {
             let decoded = smcBytesToFloat(bytes, size: 4)
             #expect(decoded == original, "Round-trip failed for \(original)")
         }
+        #expect(floatToSMCBytes(0) == [0, 0, 0, 0])
     }
 
-    @Test("Zero RPM encodes to all zeros")
-    func zeroRPM() {
-        let bytes = floatToSMCBytes(0.0)
-        #expect(bytes == [0, 0, 0, 0])
-    }
-
-    @Test("Undersized byte array returns zero")
-    func undersizedBytes() {
-        let result = smcBytesToFloat([0x00, 0x00], size: 2)
-        #expect(result == 0.0)
-    }
-
-    @Test("Wrong size parameter returns zero")
-    func wrongSize() {
-        let bytes = floatToSMCBytes(1200.0)
-        let result = smcBytesToFloat(bytes, size: 2)
-        #expect(result == 0.0)
+    @Test("Invalid size or undersized storage returns zero")
+    func invalidFloatStorage() {
+        let cases: [(bytes: [UInt8], size: UInt32)] = [
+            ([0, 0], 2), (floatToSMCBytes(1200), 2), ([0, 0], 4),
+        ]
+        for row in cases {
+            #expect(smcBytesToFloat(row.bytes, size: row.size) == 0,
+                    "\(row.bytes.count) bytes, reported size \(row.size)")
+        }
     }
 
     @Test("ioft 16.16 fixed-point decoding")
@@ -58,27 +51,19 @@ struct DataConversionTests {
 @Suite("Fan Key Formatting")
 struct FanKeyTests {
 
-    @Test("Fan key templates produce correct key names")
+    @Test("Fan keys preserve RPM, hardware mode variants and static names")
     func keyFormatting() {
         #expect(SMCFanKey.key(SMCFanKey.actual, fan: 0) == "F0Ac")
         #expect(SMCFanKey.key(SMCFanKey.actual, fan: 1) == "F1Ac")
         #expect(SMCFanKey.key(SMCFanKey.target, fan: 0) == "F0Tg")
         #expect(SMCFanKey.key(SMCFanKey.minimum, fan: 0) == "F0Mn")
         #expect(SMCFanKey.key(SMCFanKey.maximum, fan: 0) == "F0Mx")
-    }
-
-    @Test("Mode keys for both hardware variants")
-    func modeKeys() {
         // M5 Max (lowercase)
         #expect(SMCFanKey.key(SMCFanKey.modeLower, fan: 0) == "F0md")
         #expect(SMCFanKey.key(SMCFanKey.modeLower, fan: 1) == "F1md")
         // M1-M4 (uppercase)
         #expect(SMCFanKey.key(SMCFanKey.modeUpper, fan: 0) == "F0Md")
         #expect(SMCFanKey.key(SMCFanKey.modeUpper, fan: 2) == "F2Md")
-    }
-
-    @Test("Static keys are correct")
-    func staticKeys() {
         #expect(SMCFanKey.count == "FNum")
         #expect(SMCFanKey.forceTest == "Ftst")
     }

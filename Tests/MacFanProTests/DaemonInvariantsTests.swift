@@ -81,8 +81,10 @@ struct DaemonInvariantsTests {
         #expect(floor.evaluate(temp: 80, holdCommand: nil, suspended: true) == .restore)
     }
 
-    @Test("thresholds mirror FanProfile, not hardcoded numbers")
+    @Test("95°C protection and 5°C hysteresis are shared with FanProfile")
     func thermalFloorThresholdsMirrorProfile() {
+        #expect(FanProfile.safetyTempThreshold == 95)
+        #expect(FanProfile.hysteresisDegrees == 5)
         let floor = ThermalFloor()
         #expect(floor.threshold == FanProfile.safetyTempThreshold)
         #expect(floor.clearBelow == FanProfile.safetyTempThreshold - FanProfile.hysteresisDegrees)

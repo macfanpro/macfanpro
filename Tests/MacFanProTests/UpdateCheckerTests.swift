@@ -14,75 +14,48 @@ import Testing
 struct UpdateCheckerTests {
     private let url = "https://example.com/r"
 
-    @Test("a newer tag is an available update")
-    func newer() {
-        let u = UpdateChecker.evaluate(current: "0.2.0", tagName: "v0.2.1", url: url)
-        #expect(u == AvailableUpdate(version: "0.2.1", url: url))
-    }
-
-    @Test("the leading v is stripped from the reported version")
-    func stripsV() {
-        let u = UpdateChecker.evaluate(current: "0.2.0", tagName: "v0.3.0", url: url)
-        #expect(u?.version == "0.3.0")
-        // A tag without a v works identically.
-        #expect(UpdateChecker.evaluate(current: "0.2.0", tagName: "0.3.0", url: url)?.version == "0.3.0")
-    }
-
-    @Test("equal version is not an update")
-    func equal() {
-        #expect(UpdateChecker.evaluate(current: "0.2.1", tagName: "v0.2.1", url: url) == nil)
-    }
-
-    @Test("an older tag is not an update")
-    func older() {
-        #expect(UpdateChecker.evaluate(current: "0.2.1", tagName: "v0.2.0", url: url) == nil)
-    }
-
-    @Test("compare is numeric, not lexical (0.2.10 > 0.2.9)")
-    func numeric() {
-        #expect(UpdateChecker.evaluate(current: "0.2.9", tagName: "v0.2.10", url: url)?.version == "0.2.10")
-        #expect(UpdateChecker.evaluate(current: "0.2.10", tagName: "v0.2.9", url: url) == nil)
-    }
-
-    @Test("a malformed or empty tag never yields a false update")
-    func malformed() {
-        // Malformed tags are rejected before release-order comparison.
-        #expect(UpdateChecker.evaluate(current: "0.2.0", tagName: "vX.Y", url: url) == nil)
-        #expect(UpdateChecker.evaluate(current: "0.2.0", tagName: "", url: url) == nil)
-        #expect(UpdateChecker.evaluate(current: "0.2.0", tagName: "v", url: url) == nil)
-        for tag in ["v99.bad.1", "v0.2.3.", "v0..2.3", "v0.2.3.-1", "v0.2.3-pro.9", "v0.2.3.999999999999999999999"] {
-            #expect(UpdateChecker.evaluate(current: "0.2.3.9", tagName: tag, url: url) == nil)
+    @Test("New releases preserve metadata and normalize the optional v prefix")
+    func releaseMetadata() {
+        for tag in ["v0.3.0", "0.3.0"] {
+            #expect(UpdateChecker.evaluate(current: "0.2.0", tagName: tag, url: url)
+                    == AvailableUpdate(version: "0.3.0", url: url), "Tag: \(tag)")
         }
     }
 
-    @Test("Three- and four-component releases share a consistent numeric order")
-    func numericOrderAcrossReleaseFormats() {
-        let versions = ["0.2.3.8", "0.2.3.9", "0.2.3.10", "0.2.4", "0.2.4.1",
-                        "0.3.0", "0.3.0.1", "0.3.1", "0.3.2", "0.3.3", "0.3.4", "1.0.0"]
-        for (i, installed) in versions.enumerated() {
-            for (j, candidate) in versions.enumerated() {
-                let update = UpdateChecker.evaluate(current: installed, tagName: "v\(candidate)", url: url)
-                #expect(update?.version == (j > i ? candidate : nil))
-            }
+    @Test("Numeric ordering covers component boundaries, rollback and equivalent versions")
+    func numericOrder() {
+        // Compare adjacent releases at each boundary instead of a Cartesian product.
+        // Explicit rollover pairs ensure a larger lower component cannot win.
+        let ordered = ["0.2.3.8", "0.2.3.9", "0.2.3.10", "0.2.4", "0.2.4.1",
+                       "0.3.0", "0.3.0.1", "0.3.1", "0.3.2", "0.3.3", "0.3.4", "1.0.0"]
+        let pairs = Array(zip(ordered, ordered.dropFirst())) + [
+            ("0.2.9", "0.2.10"), ("0.2.3.99", "0.2.4.1"), ("0.2.4.9", "0.3.0.1"),
+        ]
+        for (older, newer) in pairs {
+            #expect(UpdateChecker.evaluate(current: older, tagName: "v\(newer)", url: url)?.version == newer,
+                    "Upgrade: \(older) -> \(newer)")
+            #expect(UpdateChecker.evaluate(current: newer, tagName: "v\(older)", url: url) == nil,
+                    "Downgrade: \(newer) -> \(older)")
         }
-    }
-
-    @Test("An omitted fourth component is equivalent to zero")
-    func equivalentNumericVersions() {
+        for version in ordered {
+            #expect(UpdateChecker.evaluate(current: version, tagName: "v\(version)", url: url) == nil,
+                    "Equal: \(version)")
+        }
         for version in ["0.2.3", "0.3.3", "1.0.0"] {
-            #expect(UpdateChecker.evaluate(current: version, tagName: "v\(version).0", url: url) == nil)
-            #expect(UpdateChecker.evaluate(current: "\(version).0", tagName: "v\(version)", url: url) == nil)
+            #expect(UpdateChecker.evaluate(current: version, tagName: "v\(version).0", url: url) == nil,
+                    "Implicit zero: \(version)")
+            #expect(UpdateChecker.evaluate(current: "\(version).0", tagName: "v\(version)", url: url) == nil,
+                    "Explicit zero: \(version).0")
         }
     }
 
-    @Test("Revision and upstream-base changes preserve numeric order")
-    func upstreamRevisionOrder() {
-        for (older, newer) in [("0.2.3.8", "0.2.3.9"), ("0.2.3.9", "0.2.3.10"),
-                               ("0.2.3.99", "0.2.4.1"), ("0.2.4.9", "0.3.0.1")] {
-            #expect(UpdateChecker.evaluate(current: older, tagName: "v\(newer)", url: url)?.version == newer)
-            #expect(UpdateChecker.evaluate(current: newer, tagName: "v\(older)", url: url) == nil)
+    @Test("Malformed or empty tags never yield a false update")
+    func malformed() {
+        for tag in ["vX.Y", "", "v", "v99.bad.1", "v0.2.3.", "v0..2.3", "v0.2.3.-1",
+                    "v0.2.3-pro.9", "v0.2.3.999999999999999999999"] {
+            #expect(UpdateChecker.evaluate(current: "0.2.3.9", tagName: tag, url: url) == nil,
+                    "Malformed tag: \(tag)")
         }
-        #expect(UpdateChecker.evaluate(current: "0.2.3.9", tagName: "v0.2.3.9", url: url) == nil)
     }
 
     @Test("Release numbering does not change protocol capability comparison")

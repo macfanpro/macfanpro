@@ -16,10 +16,8 @@ jobs:
         env:
           RELEASE_TAG: ${{ github.ref_name }}
         run: test -s "docs/releases/${RELEASE_TAG#v}.md"
-      - name: Test Debug
-        run: bash Scripts/test.sh
-      - name: Test Release
-        run: bash Scripts/test.sh -c release
+      - name: Test Debug and Release
+        run: bash Scripts/test.sh --all-configurations
       - name: Build distribution
         env:
           RELEASE_TAG: ${{ github.ref_name }}

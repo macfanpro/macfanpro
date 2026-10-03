@@ -19,6 +19,7 @@ Start with [English README](../README.md) or [中文 README](../README.zh-CN.md)
 | Topic / 主题 | Guide / 文档 |
 | --- | --- |
 | Contribution workflow / 贡献流程 | [CONTRIBUTING.md](../CONTRIBUTING.md) |
+| Test consolidation / 测试精简与覆盖对应 | [2026-10-03 consolidation](test-consolidation-20261003.md) |
 | Fan ownership, failure recovery, calibration / 控制归属、失败恢复与校准 | [Fan-state fixes](fan-state-fixes-20260927.md) |
 | M4 firmware handoff and transport / M4 固件接管与通信 | [M4 handoff repair](m4-handoff-repair.md) |
 | Fork differences / 上游差异 | [Upstream divergence](upstream-divergence.md) |

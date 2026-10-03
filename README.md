@@ -476,13 +476,11 @@ Preserve the distinction between an app-supervised hold and a deliberate CLI hol
 From the repository root:
 
 ```bash
-swift build
-bash Scripts/test.sh
-bash Scripts/test.sh -c release
+bash Scripts/test.sh --all-configurations
 bash Scripts/check-localization-package.sh
 ```
 
-These build and test the project without installing anything. `Scripts/test.sh` runs Swift tests, the client-disconnect regression and installer integration tests; CI also covers Debug, Release and localization packaging.
+These commands build and test the project without installing anything. `--all-configurations` runs Swift tests in Debug and Release, then runs the client-disconnect regression and installer integration tests once. For a single configuration, use `bash Scripts/test.sh` (Debug) or `bash Scripts/test.sh -c release`. CI uses the same combined command and checks localization packaging.
 
 To build a release package locally:
 

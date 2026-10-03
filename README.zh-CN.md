@@ -476,13 +476,11 @@ flowchart LR
 在仓库根目录执行：
 
 ```bash
-swift build
-bash Scripts/test.sh
-bash Scripts/test.sh -c release
+bash Scripts/test.sh --all-configurations
 bash Scripts/check-localization-package.sh
 ```
 
-这些命令构建和测试项目，不执行安装流程。`Scripts/test.sh` 按顺序运行 Swift 测试、客户端断连回归和安装器集成测试；CI 也覆盖 Debug、Release 和语言资源打包验证。
+这些命令构建和测试项目，不执行安装流程。`--all-configurations` 运行 Debug 和 Release 的 Swift 测试，然后将客户端断连回归和安装器集成测试各运行一次。只测单个配置时，使用 `bash Scripts/test.sh`（Debug）或 `bash Scripts/test.sh -c release`。CI 使用同一条合并命令，并检查语言资源打包。
 
 本地生成发行包：
 
