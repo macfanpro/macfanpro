@@ -5,17 +5,20 @@ title: "[Compat] Mac __ M__"
 labels: compatibility
 ---
 
-**Machine:** MacBook Pro M__ (year)
+**Machine / model identifier:** (e.g. MacBook Pro, Mac16,5)
+**Chip:** (exact chip, including Pro, Max or Ultra when applicable)
+**Year:**
 **macOS version:**
 **macfanpro version:**
+**Installation method:** (Homebrew, online installer, release package, source)
 
 ## Results
 
-Run `macfanpro discover --output discover.txt` and attach the file.
+Run `macfanpro discover --output discover.txt` and attach the file. Mark only actions you actually tested. The fan-control commands below change fan state; record your current profile or CLI hold first and restore it afterwards. Read-only discovery alone does not require these tests.
 
 - [ ] `macfanpro status` works (reads fans + temps)
-- [ ] `sudo macfanpro max` works (fans spin up)
-- [ ] `sudo macfanpro auto` works (fans reset)
+- [ ] `macfanpro max` works through the installed daemon (fans spin up)
+- [ ] `macfanpro auto` works (returns control to macOS)
 - [ ] `sudo macfanpro install` works (daemon starts)
 - [ ] Menu bar app shows temps
 

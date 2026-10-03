@@ -10,11 +10,13 @@
 
 **Apple Silicon Mac 风扇控制工具 —— 免费、开源、原生。**
 
-在菜单栏查看 CPU、GPU 温度和风扇转速，让风扇按智能曲线随温度自动调节，也可以通过命令行完全掌控。支持带风扇的 M1 至 M5 机型，macOS 14 或更高版本。
+在菜单栏查看 CPU、GPU 温度和风扇转速，让风扇按智能曲线随温度自动调节，也可以通过命令行完全掌控。面向带有实体风扇的 Apple Silicon Mac，要求 macOS 14 或更高版本；具体机型请查看[兼容性与验证范围](#兼容性与验证范围)。
 
 <img src="docs/images/menu-bar-en.png" alt="MacFanPro menu in English: fan speeds, temperatures, profiles, language setting, version and the update check, and Quit" width="320"> <img src="docs/images/menu-bar-zh-CN.png" alt="MacFanPro 菜单（简体中文）：风扇转速、温度、控制模式、语言设置、版本与检查更新、退出按钮" width="320">
 
 ### 快速安装
+
+已安装 Homebrew 的用户可执行下面的命令；没有 Homebrew 或 Xcode，可用[在线安装脚本](#在线安装脚本)。**中国大陆用户如果无法直连 GitHub，请先使用该节中的代理安装命令，首次安装和后续更新均适用。**
 
 ```bash
 brew tap macfanpro/tap && brew trust macfanpro/tap
@@ -25,12 +27,14 @@ open /Applications/MacFanPro.app
 
 也可以[直接下载应用](https://github.com/macfanpro/macfanpro/releases/latest)，全部安装方式见[安装](#安装)。
 
-[安装](#安装) · [使用](#使用) · [更新](#更新) · [卸载](#卸载) · [日志与数据](#日志与数据) · [常见问题](#常见问题) · [开发与贡献](#开发与贡献) · [参与贡献](#参与贡献)
+**开始使用：** [安装](#安装) · [选择模式](#使用) · [更新与代理](#更新) · [卸载](#卸载)
+
+**深入了解：** [曲线与智能模式](#风扇曲线与智能模式原理) · [安全机制](#安全机制与权限) · [校准](#可选的本机校准) · [日志](#日志与数据) · [兼容性](#兼容性与验证范围) · [常见问题](#常见问题) · [开发](#开发与贡献)
 
 ## 为什么选择 MacFanPro
 
 - **免费开源**：MIT 协议，没有付费版，也不需要激活码。
-- **不收集数据**：唯一的联网请求是每天一次向本仓库检查更新，没有统计分析，也不需要账号。
+- **不收集数据**：温控和日志保留在本机；每天自动或手动检查更新时访问本 GitHub 仓库，安装与更新时下载文件。没有遥测，不需要账号。
 - **原生轻量**：Swift 编写的菜单栏应用加一个小型后台服务，不是 Electron，不占 Dock。
 - **安全设计**：95°C 高温保护；后台服务自带高温兜底，应用退出后仍然生效；应用失去响应时，看门狗会把风扇交还 macOS。
 - **可脚本化**：`macfanpro` 命令行可以设置转速、输出 JSON 状态、记录 CSV 数据。
@@ -54,7 +58,7 @@ open /Applications/MacFanPro.app
 - 风扇控制需要带风扇的机型，无风扇机型无法使用该功能。
 - 首次安装或更新后台服务需要管理员权限；从源码构建还需要 Xcode 16 或更高版本。
 
-当前实机验证以 M4 Max MacBook Pro 为主。其他机型、macOS 版本和显示环境不应视为已验证，具体范围见 [0.2.3.36 验证记录](docs/macfanpro-0.2.3.36-validation.md)。
+适用方向包括配备 Apple Silicon 和实体风扇的 MacBook Pro、Mac mini、Mac Studio、iMac。芯片系列名称本身不能证明风扇控制兼容，已知证据见[兼容性与验证范围](#兼容性与验证范围)。
 
 ## 安装
 
@@ -192,7 +196,82 @@ cd macfanpro
 
 `macfanpro auto` 不关闭应用；应用中的自动模式仍可能再次接管。需要完全交回 macOS 时，使用 `macfanpro auto --stop-app`。
 
-高级命令 `watch` 会按模式持续控制风扇，并非只读监测；`calibrate` 会运行负载并改变风扇转速。这两项操作需要管理员权限，使用前请阅读各自的 `--help`，它们不是日常使用的必需步骤。
+高级命令 `watch` 会按模式持续控制风扇，并非只读监测；目前支持 `silent`、`balanced`、`performance`、`max`，智能模式在菜单栏应用中选择。校准会创建负载，属于可选操作，详见[本机校准](#可选的本机校准)。使用 `watch` 控制风扇或运行校准需要管理员权限，执行前请阅读命令的 `--help`。
+
+实际 RPM 是风扇当前测得的转速，与目标值略有偏差属于正常现象。最低、最高转速也因风扇和机型而异。后台服务不可用时，`max`、`set` 直接操作硬件需要管理员权限；日常使用建议先正常安装后台服务。
+
+## 风扇曲线与智能模式原理
+
+希望自动调节，可先选“**智能**”；希望响应温和一些，可选“**均衡**”；希望由 macOS 决定常规转速，可选“**静音**”。下表是当前内置参数，实际目标还受到硬件转速范围和高温保护约束。
+
+| 模式 | 启动温度 | 达到启动温度的持续时间 | 曲线顶点温度 | 最高目标转速 | 曲线 |
+| --- | --- | --- | --- | --- | --- |
+| 静音（Apple 默认） | macOS 决定 | — | — | macOS 决定 | 常规状态下不接管 |
+| 均衡 | 55°C | 8 秒 | 70°C | 60% | 缓入：`x²` |
+| 性能 | 55°C | 4 秒 | 65°C | 85% | 线性：`x` |
+| 最大转速 | 65°C | 5 秒 | 65°C | 100% | 触发后直接请求满速 |
+| 智能 | 53°C | 6 秒 | 85°C | 100% | S 曲线 `x²(3 − 2x)`，或有效校准表，再叠加温度趋势 |
+
+`x` 是温度在启动与顶点之间的位置：`(当前温度 − 启动温度) / (顶点温度 − 启动温度)`，限制在 0–1 范围内。
+
+百分比相对于硬件最高 RPM，不是“最低至最高转速区间”的百分比；运行时还会限制在每个风扇自己的有效范围内。**曲线顶点温度**表示基础曲线在此请求最高目标转速，不代表温度一定被限制在此值以下：转速渐变、固件接管和负载变化都需要时间。
+
+### 为什么短暂升温不会立刻启动风扇
+
+**持续触发：** 温度需要连续达到或超过启动阈值，持续时间见上表。途中降到启动温度以下会重新计时，用于过滤打开应用等短暂负载。独立的 95°C 高温保护不等待普通模式的触发计时。
+
+**滞回：** 使用不同的启动和释放温度，避免在同一阈值附近反复启停。均衡、性能、最大转速模式在温度不高于 50°C 时释放手动控制；智能模式还要求温度低于 50°C，且近期趋势持平或下降。处于释放温度与启动温度之间时，尚未启动的模式保持等待，已经启动的模式可以在降速过程中维持接近最低转速。
+
+这里的“停转”实际是**释放手动控制，让 macOS 决定**。固件可能停转，也可能继续转动。智能模式下看到 `system`、`auto` 或 0 RPM，并不表示智能模式被取消；程序仍然监测温度。
+
+### 智能模式如何提前响应升温
+
+没有校准数据时，智能模式把 53–85°C 映射到 S 曲线。温度持续上升时，根据升温速度增加转速需求，比单纯看当前温度更早响应。有有效校准数据时，基础需求来自测量点之间的插值，再叠加趋势修正。超过 85°C 时请求 100% 目标，但仍经过普通转速渐变限制；95°C 高温保护使用独立的满速路径。
+
+趋势由约每两秒采集一次的近期温度估算。默认控制循环为 **100 ms**，界面更新为 **500 ms**，异常检测及进程记录为 **2 秒**。这些是调度周期，不代表硬件操作一定能在该时间内完成。
+
+转速变化率限制用于平滑升降速。智能和均衡每秒最多上调**最高 RPM 的 5%**、下调 **2.5%**；性能为 **10% / 4%**。例如，最高转速为 5,777 RPM 的风扇，智能模式名义上约每秒上调 289 RPM、下调 144 RPM。从停转到硬件最低转速是单独的启动过程。最大转速模式触发后跳过上调限制，降速仍有约束。
+
+提前散热有助于应对持续编译、渲染或推理时的热量积累；实际温度、噪声和吞吐量取决于机器、环境与负载。它不保证温度始终低于 85°C，也不承诺固定性能提升或风扇寿命增幅。
+
+对应实现见 [Profile.swift](Sources/MacFanProCore/Profile.swift) 和 [ThermalMonitor.swift](Sources/MacFanProCore/ThermalMonitor.swift)。原理参考了 [ThermalForge 的技术说明](https://github.com/ProducerGuy/ThermalForge/blob/ed4cef8116995e67589f43eee6dcbe3fe0143fe5/README.md#smart-profile)，并按本仓库实现核对修订。
+
+## 安全机制与权限
+
+菜单栏应用使用普通用户权限；需要特权的风扇写入交给 root 后台服务，通过本机套接字通信。因此安装或替换后台服务时需要管理员密码。
+
+| 机制 | 实际作用 |
+| --- | --- |
+| 95°C / 90°C 保护 | 应用监测到 95°C 时请求满速，并保持到低于 90°C。后台服务独立检查：如果已记录的手动设置把风扇保持在低于满速的状态且温度过高，则接管为满速；应用关闭后这层保护仍有效。 |
+| 心跳看门狗 | 对应用管理的转速设置，心跳超过 15 秒未更新时，在下一次看门狗检查中视为失效（通常每 5 秒检查），尝试交还 macOS；若高温保护已生效，则保持满速直到降温。 |
+| 终端控制归属 | 明确执行 `max`、`set` 产生的 CLI 设置不受应用心跳超时撤销；需要点击“默认”、选择模式或运行 `macfanpro auto` 解除。 |
+| 睡眠唤醒恢复 | 唤醒后尝试重新施加当前设置，保留高温保护，并重试失败的释放操作；固件恢复速度因机器而异。 |
+| 本机访问限制 | `/var/run/macfanpro.sock` 权限为 `0600`，属于安装时指定的用户；该用户及 root 能够发送命令。 |
+| 有界通信 | 协议带版本和消息大小限制，连接有超时与并发上限，风扇写入有频率限制；硬件写入串行执行，RPM 按硬件范围检查。 |
+
+这些机制依赖软件、固件与传感器正常工作，不能保证应对所有硬件或散热故障。后台高温保护针对它管理的手动设置；没有接管时，macOS 仍负责常规控制。安全判断使用选定 CPU/GPU 传感器中的最热点，可能高于界面显示值，详见[传感器读数说明](#温度与-stats-等工具不一致)。
+
+## 可选的本机校准
+
+**不校准也可以使用智能模式。** 校准通过本机负载测量建立“温度 → 转速”映射，适合希望研究或调整该行为的用户；请安排在电脑可以持续运行负载的时间。
+
+先查看参数：
+
+```bash
+macfanpro calibrate --help
+```
+
+确定需要测量时，执行标准 CPU + GPU 校准：
+
+```bash
+sudo macfanpro calibrate --mode standard --stress combined
+```
+
+模式包括 `quick`、`standard`、`optimized`，负载包括 `cpu`、`gpu`、`combined`，耗时取决于温度稳定过程。校准会创建负载、改变转速，并临时关闭正在运行的菜单栏应用，以免应用覆盖测量设置。正常完成后会重新打开应用；Ctrl-C 中断时会尝试恢复 Apple 控制，之后请重新打开 MacFanPro，并核对原来的模式或终端转速设置。
+
+结果保存在 `~/Library/Application Support/MacFanPro/calibration.json`，另有 CSV 过程记录供分析。文件采用原子写入；未通过有效性检查的结果不会覆盖已有校准。选择智能模式时会重新读取数据；缺失或被拒绝的数据使用默认曲线。对比校准前后效果时，应保持负载和环境条件接近。
+
+如果明确要放弃校准、恢复默认曲线，可运行 `macfanpro calibrate --reset`，再重新选择智能模式。这会删除校准文件，并非更新必需步骤。
 
 ## 更新
 
@@ -225,6 +304,8 @@ macfanpro auto --stop-app
 sudo "$(brew --prefix macfanpro)/bin/macfanpro" install
 open /Applications/MacFanPro.app
 ```
+
+`auto --stop-app` 会在替换期间明确关闭应用并释放风扇控制。重新打开后，请核对原模式是否恢复；原来明确设置的 CLI 转速需要重新施加。
 
 `brew upgrade` 更新 Homebrew 中的文件，随后仍需同步后台服务和 `/Applications` 中的应用。如果 Homebrew 提示 `untrusted tap`，先执行一次 `brew trust macfanpro/tap`。使用 `brew --prefix` 指向刚升级的版本，避免误用旧的系统副本。
 
@@ -269,6 +350,30 @@ brew uninstall macfanpro
 
 ## 日志与数据
 
+### 记录一次负载
+
+短时采样可用 `macfanpro log --duration 60s`。需要以 10 Hz 记录一小时并长期保留时，执行：
+
+```bash
+macfanpro log --rate 10 --duration 1h --no-expire
+```
+
+`log` 只记录读数，不切换模式、不下发风扇转速。每次采样包含：
+
+| 文件 | 内容 |
+| --- | --- |
+| `thermal.csv` | 时间戳、探测到的温度键、每个风扇的实际/目标 RPM 与硬件模式 |
+| `processes.csv` | 随采样记录的高 CPU 占用进程 |
+| `metadata.json` | 机型标识、系统与应用版本、风扇范围、采样率、传感器键、起止时间和样本数 |
+
+CSV 和 JSON 可以直接交给 pandas、R 或电子表格分析。原始 SMC 键便于对照重复实验，但含义可能随芯片变化。元数据中的版本字段为兼容旧数据保留了 `thermalForgeVersion` 名称，实际值是 MacFanPro 版本。
+
+做对比时，请记录相同的负载、模式、校准、环境温度与持续时间，并另行测量任务吞吐量。CPU 进程相关性不等于 GPU 利用率、功耗或降频证据，也不能单独证明升温原因。日志中含有进程名称，分享前请检查内容。
+
+运行日志还会标记约两秒内超过 5°C，或约 30 秒内超过 10°C 的温度变化，并附近期进程记录。这用于定位需要检查的时间段，单次波动不等于硬件故障。
+
+### 存储与保留规则
+
 运行日志和手动采样数据使用不同的保留策略：
 
 | 数据 | 默认位置 | 保留策略 |
@@ -290,7 +395,34 @@ sudo tail -n 50 "/var/root/Library/Logs/MacFanPro/macfanpro-$(date +%F).log"
 
 **采样的 100 MiB 限制针对每次记录，不是整个采样目录的总容量。** 使用 `--output <目录>` 或 `--no-expire` 的采样会永久保留且没有该容量限制，需自行管理。未标记到期时间的旧采样和其他文件不会自动删除。
 
+## 兼容性与验证范围
+
+风扇控制要求 **Apple Silicon、macOS 14+ 和实体风扇**。Intel Mac，以及 MacBook Air 等无风扇机型不在风扇控制范围内。不同硬件的 SMC 键名、固件接管耗时、转速范围不同；能够编译不能代替兼容性实测。
+
+| 证据来源 | 范围 |
+| --- | --- |
+| 本仓库的 M4 Max MacBook Pro 实测 | 包括[温控与完整睡眠唤醒记录](docs/macfanpro-0.2.3.23-hardware-validation.md)，以及后续逐版本检查。这些证据对应当时测试的版本，不自动代表以后所有构建。 |
+| ThermalForge 上游报告 | [上游兼容性表](https://github.com/ProducerGuy/ThermalForge/blob/ed4cef8116995e67589f43eee6dcbe3fe0143fe5/README.md#compatibility)列出更多 MacBook Pro、Mac Studio 和 Mac mini 配置，芯片系列写至 M6。这属于上游声明，不等同于本仓库的独立验收。 |
+
+在新机器上，可先收集只读信息：
+
+```bash
+macfanpro --version
+macfanpro status
+macfanpro discover --output discover.txt
+```
+
+提交[兼容性报告](https://github.com/macfanpro/macfanpro/issues/new?template=compatibility-report.md)时，附上具体机型、芯片、年份、macOS 版本与安装方式，并说明实际测试过的操作。能够读取温度不代表已验证风扇写入或睡眠唤醒。
+
 ## 常见问题
+
+### 智能模式下显示 system 或 0 RPM
+
+智能模式在空闲时仍然选中。低于释放阈值后，它允许 macOS 接管，固件可能让风扇停转。界面的模式表示控制策略，`system`、`auto`、`manual` 表示当前硬件状态，两者不是同一个概念。
+
+### 关闭应用后，风扇仍保持固定转速
+
+检查是否有“终端正在接管风扇”的提示。明确的 CLI 设置会保留到解除，在应用中选择需要的模式即可恢复自动调节。若确实希望由 Apple 控制，可点“默认”或运行 `macfanpro auto`；加上 `--stop-app` 还会关闭应用。它会改变控制归属，不应当作普通的“关闭应用”命令使用。
 
 ### 提示后台服务不可用或版本不一致
 
@@ -311,6 +443,22 @@ sudo tail -n 50 "/var/root/Library/Logs/MacFanPro/macfanpro-$(date +%F).log"
 MacFanPro 的 CPU、GPU 行显示对应传感器中的**最高值**，可与 Stats 的“Hottest CPU / Hottest GPU”对照，不要与“Average”对照。在 M4 系列上，CPU 行使用与 Stats 相同的核心传感器；其他芯片按传感器前缀分组，可能与其他工具的选择不同。风扇控制和 95°C 安全阈值跟随芯片最热点（包括不在 CPU 行显示的热点传感器），因此风扇可能在 CPU、GPU 行都未到阈值时开始提速。对照方法与实测数据见 [传感器校准记录](docs/thermal-sensor-calibration-20260924.md)。
 
 ## 开发与贡献
+
+### 架构与控制归属
+
+```mermaid
+flowchart LR
+    A[菜单栏应用 / CLI] --> R[FanCommandRouter]
+    R --> S[本机私有套接字]
+    S --> D[后台服务]
+    W[心跳看门狗 + 高温保护] --> D
+    D --> H[SMC]
+    H --> F[风扇]
+```
+
+应用的 `ThermalMonitor` 计算模式需求，`AppState` 异步发送命令并跟踪确认结果；后台服务负责串行硬件写入和控制归属。只读 CLI 命令可以直接读取 SMC；`max`、`set` 优先使用可用的后台服务，也能在具备权限时回退到直接写入。
+
+维护时应区分应用管理的设置和用户明确执行的 CLI 设置，旧模式排队中的释放操作不能清除更新的用户意图。[风扇状态修复记录](docs/fan-state-fixes-20260927.md)、[M4 接管记录](docs/m4-handoff-repair.md)与对应回归测试说明了这些约束。
 
 ### 项目结构
 
@@ -334,7 +482,7 @@ bash Scripts/test.sh -c release
 bash Scripts/check-localization-package.sh
 ```
 
-这些命令构建和测试项目，不执行安装流程。`Scripts/test.sh` 按顺序运行 Swift 测试及客户端断连检查；CI 也覆盖 Debug、Release 和语言资源打包验证。
+这些命令构建和测试项目，不执行安装流程。`Scripts/test.sh` 按顺序运行 Swift 测试、客户端断连回归和安装器集成测试；CI 也覆盖 Debug、Release 和语言资源打包验证。
 
 本地生成发行包：
 
@@ -342,41 +490,18 @@ bash Scripts/check-localization-package.sh
 bash Scripts/package-release.sh
 ```
 
-产物输出到 `dist/`，包括完整应用与 CLI 的 `.tar.gz` 和 `SHA256SUMS`。打包不会替换本机已安装的应用；需要安装开发版本时再运行 `./setup.sh`。
+产物输出到 `dist/`，包括完整应用与 CLI 的 `.tar.gz`、`SHA256SUMS`，以及固定版本的 `install.sh` 和 `install.sh.sha256`。打包不会替换本机已安装的应用；需要安装开发版本时再运行 `./setup.sh`。
 
 提交 [Pull Request](https://github.com/macfanpro/macfanpro/pulls) 时，请说明具体问题、改动范围和验证结果。涉及温控、后台通信或原生菜单行为的修改，应补充对应的本机验证，并区分自动化测试、隔离显示测试和真实硬件结果。
 
-### 文档与维护约定
+### 文档与上游维护
 
-- [更新记录](CHANGELOG.md)：已发行版本的主要变化。
-- [发布说明规范与模板](docs/releases/README.md)：按版本维护发布说明、下载入口、升级提示和验证依据。
-- [0.2.3.15 验证记录](docs/macfanpro-0.2.3.15-validation.md)：发行产物、本机运行和未覆盖环境。
-- [0.2.3.16 验证记录](docs/macfanpro-0.2.3.16-validation.md)：温度传感器修正、与 Stats 的对照、发行产物与 Homebrew 升级。
-- [0.2.3.17 验证记录](docs/macfanpro-0.2.3.17-validation.md)：日志写入性能、卸载清理后台服务日志。
-- [0.2.3.18 验证记录](docs/macfanpro-0.2.3.18-validation.md)：菜单中的语言与版本区块。
-- [0.2.3.19 验证记录](docs/macfanpro-0.2.3.19-validation.md)：语言下拉框宽度。
-- [0.2.3.20 验证记录](docs/macfanpro-0.2.3.20-validation.md)：默认按钮、睡眠唤醒与校准修复；逐项分析见 [风扇状态与校准修复](docs/fan-state-fixes-20260927.md)。
-- [0.2.3.21 验证记录](docs/macfanpro-0.2.3.21-validation.md)：校准文件的安全写入与复核发现的时序问题。
-- [0.2.3.23 验证记录](docs/macfanpro-0.2.3.23-validation.md)：第三轮审计的风扇状态、失败恢复、校准与安装修复。
-- [0.2.3.24 验证记录](docs/macfanpro-0.2.3.24-validation.md)：高温保护期间指令失败时保持满速。
-- [0.2.3.25 验证记录](docs/macfanpro-0.2.3.25-validation.md)：菜单中的“检查更新”。
-- [0.2.3.26 验证记录](docs/macfanpro-0.2.3.26-validation.md)：“更新”一行与其他行统一字体。
-- [0.2.3.27 验证记录](docs/macfanpro-0.2.3.27-validation.md)：中文按钮改为“检查更新”。
-- [0.2.3.28 验证记录](docs/macfanpro-0.2.3.28-validation.md)：关闭菜单后清除检查结果。
-- [0.2.3.29 验证记录](docs/macfanpro-0.2.3.29-validation.md)：新增 14 种界面语言，README 与发布说明中英双语。
-- [0.2.3.30 验证记录](docs/macfanpro-0.2.3.30-validation.md)：新增阿拉伯语及从右往左排版。
-- [0.2.3.31 验证记录](docs/macfanpro-0.2.3.31-validation.md)：更新提示按安装方式给出步骤。
-- [0.2.3.36 验证记录](docs/macfanpro-0.2.3.36-validation.md)：科技配色的新应用图标。
-- [0.2.3.35 验证记录](docs/macfanpro-0.2.3.35-validation.md)：更新提示中完整可复制的源码更新命令。
-- [0.2.3.34 验证记录](docs/macfanpro-0.2.3.34-validation.md)：Homebrew 更新不再停在确认提示，只刷新本软件源。
-- [0.2.3.33 验证记录](docs/macfanpro-0.2.3.33-validation.md)：一条命令的在线安装脚本，应用内更新改用同一脚本。
-- [0.2.3.32 验证记录](docs/macfanpro-0.2.3.32-validation.md)：“在终端中更新”按钮与 Homebrew 发版自动化。
-- [相对上游的温度改动](docs/upstream-divergence.md)：合并上游时需要重新施加的改动。
-- [GUI 本地化](docs/gui-localization.md)：18 种界面语言、新增语言与排版检查步骤、资源校验流程（英文）。
-- [菜单栏标签验证](docs/menu-bar-label-validation.md)：最小宽度、位数变化和隔离显示测试。
-- [M4 风扇接管修复](docs/m4-handoff-repair.md)：相关硬件行为与修复依据。
+- [文档索引](docs/README.md)：按任务整理使用指南、技术资料和验证历史。
+- [更新记录](CHANGELOG.md)与[发布说明规范](docs/releases/README.md)：已发布的变化与发布流程。
+- [相对上游的差异](docs/upstream-divergence.md)与[本次合并检查](docs/upstream-sync-20261003.md)：合并时要保留的功能及此次验证结果。
+- [GUI 本地化](docs/gui-localization.md)：语言表、占位符、从右往左排版与资源打包检查。
 
-`docs/upstream/` 和早期验收文档用于保存历史背景，不代表当前发行版或所有机型的测试结论。
+上游 README 中的 `experiment`、`compare`、GPU/功耗指标、共享温度数据库等属于规划，本仓库 CLI 尚未提供这些功能；可运行 `macfanpro --help` 确认可用命令。`docs/upstream/` 和早期验收文档用于历史参考，不代表当前功能或所有机型的测试结论。
 
 版本号采用 **上游版本号 + 第四段修订号**，由 [`Version.swift`](Sources/MacFanProCore/Version.swift) 定义。例如 `0.2.3.15` 基于上游 `0.2.3`；只有实际合入新的上游版本后才更新前三段。应用和 CLI 按各段数字比较版本，缺省段视为 0，不为特定旧版添加比较例外。
 

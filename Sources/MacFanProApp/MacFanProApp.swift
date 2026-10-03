@@ -2,7 +2,7 @@
 //  MacFanProApp.swift
 //  MacFanPro
 //
-//  Menu bar app for fan control on Apple Silicon MacBooks.
+//  Menu bar app for fan control on Apple Silicon Macs with fans.
 //
 
 import SwiftUI

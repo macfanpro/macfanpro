@@ -2,7 +2,7 @@
 //  MacFanPro.swift
 //  MacFanPro
 //
-//  CLI entry point — fan control for Apple Silicon MacBooks.
+//  CLI entry point. Fan control for Apple Silicon Macs with fans.
 //
 
 import ArgumentParser
@@ -14,7 +14,7 @@ import MacFanProLocalization
 struct MacFanPro: ParsableCommand {
     static let configuration = CommandConfiguration(
         commandName: "macfanpro",
-        abstract: "Fan control for Apple Silicon MacBooks",
+        abstract: "Fan control for Apple Silicon Macs with fans: MacBook Pro, Mac mini, Mac Studio, iMac",
         version: MacFanProVersion.current,
         subcommands: [
             Max.self,

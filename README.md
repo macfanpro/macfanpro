@@ -10,11 +10,13 @@
 
 **Fan control for Apple Silicon Macs — free, open source, native.**
 
-See CPU and GPU temperatures and fan speeds in the menu bar, let the fans follow the temperature with smart curves, or take full control from the command line. Works on M1 to M5 Macs with fans, on macOS 14 or later.
+See CPU and GPU temperatures and fan speeds in the menu bar, let the fans follow the temperature with smart curves, or take full control from the command line. Designed for Apple Silicon Macs with physical fans, on macOS 14 or later. Check the [compatibility evidence](#compatibility) for your model.
 
 <img src="docs/images/menu-bar-en.png" alt="MacFanPro menu in English: fan speeds, temperatures, profiles, language setting, version and the update check, and Quit" width="320"> <img src="docs/images/menu-bar-zh-CN.png" alt="MacFanPro 菜单（简体中文）：风扇转速、温度、控制模式、语言设置、版本与检查更新、退出按钮" width="320">
 
 ### Quick install
+
+Already use Homebrew? Run this block. Otherwise, use the [online installer](#online-installer), which needs neither Homebrew nor Xcode. If GitHub is hard to reach, start with the [proxy installation command](#online-installer).
 
 ```bash
 brew tap macfanpro/tap && brew trust macfanpro/tap
@@ -25,12 +27,14 @@ open /Applications/MacFanPro.app
 
 Or [download the app](https://github.com/macfanpro/macfanpro/releases/latest) — see [Install](#install) for all options.
 
-[Install](#install) · [Usage](#usage) · [Updating](#updating) · [Uninstall](#uninstall) · [Logs and data](#logs-and-data) · [FAQ](#faq) · [Development](#development) · [Contributing](#contributing)
+**Start here:** [Install](#install) · [Choose a profile](#usage) · [Update / proxy](#updating) · [Uninstall](#uninstall)
+
+**Understand and develop:** [Fan curves](#fan-curves-and-smart-mode) · [Safety](#safety-and-permissions) · [Calibration](#optional-calibration) · [Logs](#logs-and-data) · [Compatibility](#compatibility) · [FAQ](#faq) · [Development](#development)
 
 ## Why MacFanPro
 
 - **Free and open source** under the MIT license — no paid tier, no license key.
-- **Private**: the only network request is a daily update check against this GitHub repository. No analytics, no accounts.
+- **Private**: temperature control and logs stay on your Mac. Update checks contact this GitHub repository automatically each day or when requested; installation and updates download files. No telemetry or account is required.
 - **Native and light**: a Swift menu bar app and a small background service; no Electron, no Dock icon.
 - **Safe by design**: a 95°C safety override, a background thermal floor that works even if the app quits, and a watchdog that hands the fans back to macOS if the app stops responding.
 - **Scriptable**: a `macfanpro` CLI to set speeds, read JSON status and record CSV samples.
@@ -54,7 +58,7 @@ The screenshots above are MacFanPro 0.2.3.36 running on an M4 Max MacBook Pro.
 - Fan control needs a Mac with fans; fanless models cannot use it.
 - Installing or updating the background service needs administrator rights. Building from source needs Xcode 16 or later.
 
-Hardware testing so far has been mainly on an M4 Max MacBook Pro. Treat other models, macOS versions and display setups as untested; see the [0.2.3.36 validation record](docs/macfanpro-0.2.3.36-validation.md) (in Chinese) for the exact scope.
+MacBook Pro, Mac mini, Mac Studio and iMac configurations with Apple Silicon and physical fans are relevant targets. A chip family name alone does not establish working fan control; see [Compatibility](#compatibility).
 
 ## Install
 
@@ -192,7 +196,82 @@ Run these individually as needed. With a normal install and the background servi
 
 `macfanpro auto` does not quit the app, and the app's automatic profiles may take over again. To hand control back to macOS completely, use `macfanpro auto --stop-app`.
 
-The advanced `watch` command keeps controlling the fans by profile (it is not read-only), and `calibrate` runs a load while changing fan speeds. Both need administrator rights; read their `--help` first. Neither is needed for everyday use.
+The advanced `watch` command keeps controlling the fans by profile (it is not read-only). It supports `silent`, `balanced`, `performance` and `max`; Smart is selected in the menu bar app. Calibration is optional and creates a load; see [Calibration](#optional-calibration). Both controlling `watch` and running a calibration need administrator rights. Read the command's `--help` before using either.
+
+Actual RPM is the fan's measured speed, so it can differ slightly from the requested target. Minimum and maximum RPM also vary by fan and model. When the daemon is unavailable, direct `max`/`set` writes need administrator rights; install the service for ordinary use.
+
+## Fan curves and Smart mode
+
+Start with **Smart** for automatic control, **Balanced** for a gentler curve, or **Silent** to leave ordinary fan decisions to macOS. The values below describe the current built-in profiles, before hardware limits and safety overrides.
+
+| Profile | Start temperature | Time above start | Curve ceiling | Maximum target | Curve |
+| --- | --- | --- | --- | --- | --- |
+| Silent (Apple Default) | macOS decides | — | — | macOS decides | No ordinary manual control |
+| Balanced | 55°C | 8 s | 70°C | 60% | Ease-in: `x²` |
+| Performance | 55°C | 4 s | 65°C | 85% | Linear: `x` |
+| Max | 65°C | 5 s | 65°C | 100% | Immediate maximum once triggered |
+| Smart | 53°C | 6 s | 85°C | 100% | S-curve: `x²(3 − 2x)`, or a valid calibration lookup, plus temperature trend |
+
+`x` is the temperature's position between start and ceiling, clamped to 0–1: `(temperature − start) / (ceiling − start)`.
+
+The percentages refer to hardware maximum RPM, not a percentage of the range between minimum and maximum. A running fan is clamped to its own supported range. The **curve ceiling** is where the base curve asks for its maximum; it is not a promised temperature cap. Ramping, firmware handoff and workload changes take time.
+
+### Why a brief temperature spike does not immediately start the fans
+
+**Sustained trigger:** the temperature must stay at or above the start threshold for the listed duration. A drop below start resets that timer. This filters short bursts such as opening an app. The separate 95°C safety override bypasses ordinary profile timing.
+
+**Hysteresis:** start and release temperatures differ, so a reading near one threshold does not repeatedly switch the fans on and off. Balanced, Performance and Max release their manual control at or below 50°C. Smart releases below 50°C when its recent trend is flat or falling. Between release and start, a stopped profile stays stopped; an engaged profile can keep the fans near minimum while ramping down.
+
+Here, “off” means **release manual control to macOS**. Firmware may stop the fans or keep them turning. Seeing `system` or `auto` and 0 RPM can be normal with Smart selected; the profile is still monitoring temperature.
+
+### How Smart anticipates rising temperature
+
+Without calibration, Smart maps 53–85°C onto an S-curve. A rising temperature trend adds demand before the base curve alone would reach that speed. With valid calibration, an interpolated lookup supplies the base demand, with an additional trend adjustment. Above 85°C it requests a 100% target, subject to the ordinary ramp governor; the 95°C protection is a separate maximum-speed path.
+
+Smart estimates the trend from recent samples taken about two seconds apart. By default, the control loop runs every **100 ms**, the interface receives readings every **500 ms**, and anomaly/process logging runs every **2 s**. These are scheduling intervals, not guarantees that a hardware operation finishes in that time.
+
+The ramp governor limits how quickly the requested speed changes. Smart and Balanced use **5% of maximum RPM per second upward** and **2.5% downward**; Performance uses **10% / 4%**. For a 5,777 RPM fan, Smart's nominal limits are about 289 RPM/s up and 144 RPM/s down. Moving from stopped to the hardware minimum is a separate transition. Max skips the upward governor after its trigger, but still ramps down.
+
+Earlier cooling can reduce heat buildup during sustained compilation, rendering or inference. Actual temperature, noise and throughput depend on the machine, room temperature and workload. The profile does not guarantee an 85°C maximum, a fixed performance gain or a measured increase in fan lifespan.
+
+The implementation is in [Profile.swift](Sources/MacFanProCore/Profile.swift) and [ThermalMonitor.swift](Sources/MacFanProCore/ThermalMonitor.swift). The concepts are adapted from [ThermalForge's technical documentation](https://github.com/ProducerGuy/ThermalForge/blob/ed4cef8116995e67589f43eee6dcbe3fe0143fe5/README.md#smart-profile), with the descriptions checked against this fork.
+
+## Safety and permissions
+
+The menu bar app runs as your login user. A root-owned background service performs privileged fan writes through a local socket; this is why installing or replacing the service asks for an administrator password.
+
+| Mechanism | What it does |
+| --- | --- |
+| 95°C / 90°C protection | The app's monitor requests maximum speed at 95°C and keeps the override until below 90°C. The daemon independently protects against a recorded manual hold keeping fans below maximum at high temperature. This daemon protection works while the app is closed. |
+| Heartbeat watchdog | For app-supervised holds, a heartbeat older than 15 s is treated as expired on the watchdog's next check (normally every 5 s). It attempts to return control to macOS; an active thermal override keeps maximum speed until cooldown. |
+| Terminal ownership | Deliberate `max`/`set` CLI holds are unsupervised: closing the app or losing its heartbeat does not cancel them. Release them with Default, a profile selection, or `macfanpro auto`. |
+| Sleep/wake recovery | The daemon attempts to reapply its current hold after wake, while retaining the safety override and retrying failed releases. Firmware readiness differs by machine. |
+| Local access control | `/var/run/macfanpro.sock` uses mode `0600` and belongs to the installation's designated user. That user and root can send commands. |
+| Bounded requests | Versioned messages, size limits, timeouts, bounded concurrent clients and write-rate limits protect the service. Hardware writes are serialized and RPM requests are checked against the fan's range. |
+
+The protections depend on working software, firmware and sensor readings; they are not a guarantee against every hardware or thermal failure. The daemon's thermal floor is a backstop for its manual holds, not a replacement for macOS's own control when no hold exists. The safety temperature follows the hottest selected CPU/GPU sensor, which can differ from the value displayed in the menu; see [Sensor readings](#temperatures-dont-match-stats-or-similar-tools).
+
+## Optional calibration
+
+**Smart works without calibration.** Calibration measures this machine under load to build a temperature-to-fan lookup. Use it only when you want to investigate or tune that behavior, and set aside time when the Mac can run a sustained workload.
+
+Read the available modes first:
+
+```bash
+macfanpro calibrate --help
+```
+
+To deliberately start a standard CPU + GPU calibration:
+
+```bash
+sudo macfanpro calibrate --mode standard --stress combined
+```
+
+Modes are `quick`, `standard` and `optimized`; workloads are `cpu`, `gpu` and `combined`. Completion time depends on thermal settling. This operation creates load, changes fan speeds and temporarily closes a running menu bar app so the app cannot overwrite the measurements. Normal completion reopens it. If interrupted with Ctrl-C, the command attempts to restore Apple control; reopen MacFanPro afterwards and check your selected profile or previous Terminal hold.
+
+Results live in `~/Library/Application Support/MacFanPro/calibration.json`, with a CSV trace for analysis. Saving is atomic and a result rejected by validation does not replace an existing calibration. Selecting Smart reloads the data; missing or rejected data uses the default curve. Keep workload and ambient conditions comparable when assessing whether calibration helped.
+
+To intentionally discard calibration and use the default curve again, run `macfanpro calibrate --reset`, then reselect Smart. This deletes your calibration file; it is not required for an update.
 
 ## Updating
 
@@ -225,6 +304,8 @@ macfanpro auto --stop-app
 sudo "$(brew --prefix macfanpro)/bin/macfanpro" install
 open /Applications/MacFanPro.app
 ```
+
+`auto --stop-app` intentionally stops the app and releases fan control during replacement. After reopening, check that your previous profile is selected; a deliberate CLI hold needs to be set again.
 
 `brew upgrade` updates Homebrew's copy; the background service and the app in `/Applications` still need syncing afterwards. If Homebrew reports an `untrusted tap`, run `brew trust macfanpro/tap` once. `brew --prefix` points at the version you just upgraded to, instead of an older system copy.
 
@@ -269,6 +350,30 @@ brew uninstall macfanpro
 
 ## Logs and data
 
+### Record a workload
+
+For a short capture, use `macfanpro log --duration 60s`. For a 10 Hz, one-hour session that you want to retain:
+
+```bash
+macfanpro log --rate 10 --duration 1h --no-expire
+```
+
+`log` records readings without choosing a profile or commanding fan speeds. Each session contains:
+
+| File | Contents |
+| --- | --- |
+| `thermal.csv` | Timestamps, detected temperature keys, each fan's actual/target RPM and hardware mode |
+| `processes.csv` | The top CPU-consuming processes captured with the samples |
+| `metadata.json` | Machine identifier, OS and application version, fan range, sample rate, sensor keys, timestamps and sample count |
+
+CSV and JSON can be opened in pandas, R or a spreadsheet. Raw SMC keys help compare repeated runs, but their meanings vary by chip generation. The version field in metadata retains the historical key `thermalForgeVersion` for compatibility; its value is the MacFanPro version.
+
+For a useful comparison, record the same workload, profile, calibration, ambient conditions and duration, and measure workload throughput separately. CPU-process correlation alone does not measure GPU utilization, power draw, clock throttling or prove why a temperature changed. Logs include process names; review them before sharing.
+
+Runtime anomaly messages flag changes greater than 5°C between approximately two-second samples, or 10°C across approximately 30 seconds, with recent process history. They help find a time window to investigate; a spike alone is not a hardware-fault diagnosis.
+
+### Storage and retention
+
 Runtime logs and manual samples are kept under different rules:
 
 | Data | Default location | Retention |
@@ -290,7 +395,34 @@ A temporary sample stops and keeps its data when it reaches its size limit. Its 
 
 **The 100 MiB limit applies to each recording, not to the sample folder as a whole.** Samples made with `--output <folder>` or `--no-expire` are kept permanently without that limit; manage them yourself. Older samples without an expiry marker and other files are not deleted automatically.
 
+## Compatibility
+
+Fan control needs **Apple Silicon, macOS 14+, and physical fans**. Intel Macs and fanless Macs such as MacBook Air are outside the fan-control scope. SMC key names, firmware handoff delays and RPM ranges differ by hardware; successful building alone is not a compatibility test.
+
+| Evidence | Scope |
+| --- | --- |
+| MacFanPro testing on an M4 Max MacBook Pro | Includes [documented thermal and full sleep/wake checks](docs/macfanpro-0.2.3.23-hardware-validation.md), plus later per-release checks. These records describe the versions tested, not every future build. |
+| ThermalForge upstream reports | The [upstream compatibility table](https://github.com/ProducerGuy/ThermalForge/blob/ed4cef8116995e67589f43eee6dcbe3fe0143fe5/README.md#compatibility) lists additional MacBook Pro, Mac Studio and Mac mini configurations, with chip families through M6. Those are upstream claims, not independent MacFanPro acceptance results. |
+
+For a new machine, collect read-only information first:
+
+```bash
+macfanpro --version
+macfanpro status
+macfanpro discover --output discover.txt
+```
+
+Open a [compatibility report](https://github.com/macfanpro/macfanpro/issues/new?template=compatibility-report.md) with the exact model, chip, year, macOS version and installation method. Include which actions you actually tested; do not infer fan-write or wake support from temperature readings alone.
+
 ## FAQ
+
+### Smart is selected, but status shows `system` or 0 RPM
+
+Smart remains selected while idle. Below its release threshold it allows macOS to control the fans, and firmware can leave them stopped. The selected profile describes the policy; `system`, `auto` and `manual` describe the hardware's current mode. They are different readings.
+
+### Fans remain at a fixed speed after closing the app
+
+Check for a “Fans held from Terminal” banner. An explicit CLI hold survives app exit. Select the profile you want in the app to resume automatic control. If you intentionally want Apple control, use Default or `macfanpro auto`; `--stop-app` also quits the app. Do not use that option as a generic “close app” command: it changes fan ownership.
 
 ### The background service is unavailable or its version doesn't match
 
@@ -311,6 +443,22 @@ Models differ in their sensors, number of fans and speed ranges. When reporting 
 MacFanPro's CPU and GPU rows show the **highest** reading of their sensors. Compare them with Stats' "Hottest CPU / Hottest GPU", not "Average". On the M4 family, the CPU row uses the same core sensors as Stats; other chips group sensors by prefix, which may differ from other tools. Fan control and the 95°C safety threshold follow the chip's hottest point, including hotspot sensors that the CPU row doesn't show, so the fans may speed up before the CPU or GPU rows reach the threshold. The comparison method and measurements are in the [sensor calibration record](docs/thermal-sensor-calibration-20260924.md).
 
 ## Development
+
+### Architecture and control ownership
+
+```mermaid
+flowchart LR
+    A[Menu bar app / CLI] --> R[FanCommandRouter]
+    R --> S[Private local socket]
+    S --> D[Daemon]
+    W[Watchdog + thermal floor] --> D
+    D --> H[SMC]
+    H --> F[Fans]
+```
+
+The app's `ThermalMonitor` computes profile demand. `AppState` sends commands asynchronously and tracks acknowledgements; the daemon owns serialized hardware writes and control ownership. Read-only CLI commands can read SMC directly; CLI `max`/`set` use the daemon when available and can fall back to direct writes with appropriate privileges.
+
+Preserve the distinction between an app-supervised hold and a deliberate CLI hold. A queued release from an older profile must not clear newer user intent. The [fan-state repair notes](docs/fan-state-fixes-20260927.md), [M4 handoff notes](docs/m4-handoff-repair.md) and their regression tests explain those constraints.
 
 ### Project layout
 
@@ -334,7 +482,7 @@ bash Scripts/test.sh -c release
 bash Scripts/check-localization-package.sh
 ```
 
-These build and test the project without installing anything. `Scripts/test.sh` runs the Swift tests and then the client-disconnect check; CI also covers Debug, Release and localization packaging.
+These build and test the project without installing anything. `Scripts/test.sh` runs Swift tests, the client-disconnect regression and installer integration tests; CI also covers Debug, Release and localization packaging.
 
 To build a release package locally:
 
@@ -342,22 +490,18 @@ To build a release package locally:
 bash Scripts/package-release.sh
 ```
 
-Output goes to `dist/`: a `.tar.gz` with the app and CLI, and `SHA256SUMS`. Packaging doesn't replace the installed app; run `./setup.sh` when you want to install a development build.
+Output goes to `dist/`: a `.tar.gz` with the app and CLI, `SHA256SUMS`, and the version-pinned `install.sh` and `install.sh.sha256`. Packaging doesn't replace the installed app; run `./setup.sh` when you want to install a development build.
 
 When opening a [Pull Request](https://github.com/macfanpro/macfanpro/pulls), describe the problem, the scope of the change and how you verified it. Changes to fan control, background service communication or native menu behavior should include matching hardware checks, keeping automated tests, isolated rendering tests and real hardware results distinct.
 
-### Documentation
+### Documentation and upstream maintenance
 
-- [Changelog](CHANGELOG.md): the main changes in each release.
-- [GUI localization](docs/gui-localization.md): the 18 interface languages, how to add a language, and the layout and packaging checks.
-- [Release notes guide and template](docs/releases/README.md) (in Chinese): per-release notes, downloads, upgrade notes and evidence.
-- Per-release validation records (in Chinese): `docs/macfanpro-<version>-validation.md`, for example [0.2.3.36](docs/macfanpro-0.2.3.36-validation.md).
-- [Fan state and calibration fixes](docs/fan-state-fixes-20260927.md): the audits behind 0.2.3.20 to 0.2.3.24.
-- [Temperature changes relative to upstream](docs/upstream-divergence.md): changes to reapply when merging upstream.
-- [Menu bar label validation](docs/menu-bar-label-validation.md): minimum width, digit changes and isolated rendering tests.
-- [M4 fan handoff repair](docs/m4-handoff-repair.md): the hardware behavior and the reasoning behind the fix.
+- [Documentation index](docs/README.md): user guides, technical notes and validation history, grouped by task.
+- [Changelog](CHANGELOG.md) and [release notes](docs/releases/README.md): what changed in published versions and how releases are prepared.
+- [Upstream differences](docs/upstream-divergence.md) and [2026-10-03 integration review](docs/upstream-sync-20261003.md): which fork behaviors must survive an upstream merge and what was checked this time.
+- [GUI localization](docs/gui-localization.md): language catalogs, placeholders, right-to-left layout and packaged resources.
 
-`docs/upstream/` and early acceptance documents are kept as history; they are not test conclusions for the current release or for every model.
+Some upstream README items, including `experiment`, `compare`, GPU/power metrics and a shared thermal database, are proposals. This CLI does not provide them. Check `macfanpro --help` for implemented commands. Historical documents in `docs/upstream/` and earlier validation records describe their original versions, not the current feature set.
 
 Versions are **the upstream version plus a fourth revision number**, defined in [`Version.swift`](Sources/MacFanProCore/Version.swift). For example, `0.2.3.15` is based on upstream `0.2.3`; the first three parts change only after a new upstream release is merged. The app and CLI compare versions part by part numerically, treating missing parts as 0, with no special cases for older versions.
 
