@@ -1,33 +1,52 @@
-# MacFanPro
+<p align="center">
+  <img src="docs/images/icon.png" width="128" alt="MacFanPro 应用图标">
+</p>
 
-[![CI](https://github.com/macfanpro/macfanpro/actions/workflows/ci.yml/badge.svg)](https://github.com/macfanpro/macfanpro/actions/workflows/ci.yml)
-[![Release](https://img.shields.io/github/v/release/macfanpro/macfanpro?sort=date)](https://github.com/macfanpro/macfanpro/releases/latest)
-[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+<h1 align="center">MacFanPro</h1>
 
-[English](README.md) | **简体中文**
+<p align="center">
+  <b>为 Apple Silicon Mac 打造的风扇控制工具。</b><br>
+  菜单栏实时查看温度，智能曲线自动调速，也可通过命令行控制。<br>
+  Swift 原生应用 · 免费开源（MIT）· 支持 18 种语言
+</p>
 
-[官方网站 · 18 种语言](https://macfanpro.github.io/macfanpro/?lang=zh-Hans) · [下载](https://github.com/macfanpro/macfanpro/releases/latest)
+<p align="center">
+  <a href="README.md">English</a> · <b>简体中文</b>
+</p>
 
-<img src="docs/images/social-preview-zh-CN.png" alt="MacFanPro：Apple Silicon Mac 风扇控制。免费开源（MIT 协议），菜单栏应用与命令行，一键更新，支持 M1–M5、macOS 14 及以上，18 种语言" width="100%">
+<p align="center">
+  <a href="https://github.com/macfanpro/macfanpro/releases/latest"><img src="https://img.shields.io/github/v/release/macfanpro/macfanpro?sort=date&amp;style=flat-square" alt="最新发行版"></a>
+  <a href="#系统要求"><img src="https://img.shields.io/badge/macOS-14%2B-blue?style=flat-square" alt="macOS 14 或更高版本"></a>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue?style=flat-square" alt="MIT 开源协议"></a>
+  <a href="https://github.com/macfanpro/macfanpro/actions/workflows/ci.yml"><img src="https://github.com/macfanpro/macfanpro/actions/workflows/ci.yml/badge.svg" alt="CI 状态"></a>
+</p>
 
-**Apple Silicon Mac 风扇控制工具 —— 免费、开源、原生。**
+<p align="center">
+  <a href="https://macfanpro.github.io/macfanpro/?lang=zh-Hans"><b>官方网站 · 18 种语言</b></a>
+  &nbsp;·&nbsp;
+  <a href="https://github.com/macfanpro/macfanpro/releases/latest"><b>下载发行版</b></a>
+  &nbsp;·&nbsp;
+  <a href="#快速安装"><b>快速安装</b></a>
+  &nbsp;·&nbsp;
+  <a href="#方式一通过-homebrew-安装"><b>Homebrew</b></a>
+</p>
 
-在菜单栏查看 CPU、GPU 温度和风扇转速，让风扇按智能曲线随温度自动调节，也可以通过命令行完全掌控。面向带有实体风扇的 Apple Silicon Mac，要求 macOS 14 或更高版本；具体机型请查看[兼容性与验证范围](#兼容性与验证范围)。
+> [!NOTE]
+> 需要 **macOS 14 或更高版本**及**配备实体风扇的 Apple Silicon Mac**，具体见[兼容性与验证范围](#兼容性与验证范围)。安装时需要管理员密码来配置[后台服务](#安全机制与权限)。发行包尚未经过 Apple 公证；首次打开遇到系统拦截时，请查看[首次运行说明](#下载后提示无法验证开发者)。
 
-<img src="docs/images/menu-bar-en.png" alt="MacFanPro menu in English: fan speeds, temperatures, profiles, language setting, version and the update check, and Quit" width="320"> <img src="docs/images/menu-bar-zh-CN.png" alt="MacFanPro 菜单（简体中文）：风扇转速、温度、控制模式、语言设置、版本与检查更新、退出按钮" width="320">
+## 快速安装
 
-### 快速安装
-
-已安装 Homebrew 的用户可执行下面的命令；没有 Homebrew 或 Xcode，可用[在线安装脚本](#在线安装脚本)。**中国大陆用户如果无法直连 GitHub，请先使用该节中的代理安装命令，首次安装和后续更新均适用。**
+**中国大陆用户建议先使用代理安装。** 打开代理软件，确认本地 HTTP 代理端口，将示例中的 `7890` 改为实际端口，然后在终端中复制执行整个代码块。也可以在[官网安装区](https://macfanpro.github.io/macfanpro/?lang=zh-Hans#install)选择代理类型、填写端口并复制生成的命令。
 
 ```bash
-brew tap macfanpro/tap && brew trust macfanpro/tap
-brew install macfanpro
-sudo "$(brew --prefix macfanpro)/bin/macfanpro" install
-open /Applications/MacFanPro.app
+(
+  export https_proxy=http://127.0.0.1:7890
+  set -o pipefail
+  curl -fsSL https://github.com/macfanpro/macfanpro/releases/latest/download/install.sh | bash
+)
 ```
 
-也可以[直接下载应用](https://github.com/macfanpro/macfanpro/releases/latest)，全部安装方式见[安装](#安装)。
+无需安装 Homebrew 或 Xcode，首次安装与后续更新均可使用。终端提示输入管理员密码时，输入 Mac 登录密码并按回车；**输入过程中不会显示字符**。能直连 GitHub 或使用 SOCKS5 代理，请看[在线安装说明](#在线安装脚本)；已有 Homebrew 可用 [Homebrew 安装](#方式一通过-homebrew-安装)，也可[手动下载发行包](#方式二下载发行包安装)。
 
 **开始使用：** [安装](#安装) · [选择模式](#使用) · [更新与代理](#更新) · [卸载](#卸载)
 
@@ -46,13 +65,18 @@ open /Applications/MacFanPro.app
 
 ## 功能与界面
 
+<p align="center">
+  <img src="docs/images/menu-bar-zh-CN.png" width="320" alt="MacFanPro 简体中文菜单：温度、风扇转速、控制模式与更新设置">
+  <img src="docs/images/menu-bar-en.png" width="320" alt="MacFanPro 英文菜单：温度、风扇转速、控制模式与更新设置">
+  <br>
+  <sub>MacFanPro 0.2.3.36 在 M4 Max MacBook Pro 上的实际界面。此处展示简体中文与英文，应用共支持 18 种语言。</sub>
+</p>
+
 - **温度与转速监测**：查看 CPU、GPU、内存、SSD、环境温度及各风扇实际转速，具体读数取决于机型提供的传感器。
 - **自动风扇控制**：提供智能、静音、均衡、性能和最大转速模式，也可恢复 Apple 自动控制。
 - **原生菜单栏界面**：弹窗高度随内容调整；温度标签按“图标＋两位数字＋°”预留最小宽度，内容整体居中，三位数时扩展。
 - **18 种界面语言**：英语、简体中文、繁体中文、日语、韩语、德语、法语、西班牙语、意大利语、葡萄牙语（巴西）、俄语、乌克兰语、波兰语、荷兰语、土耳其语、越南语、印尼语和阿拉伯语（从右往左排版），默认跟随系统语言；另可切换摄氏/华氏及登录时启动。
 - **命令行与后台服务**：支持指定转速、读取状态和 CSV 数据采样；正常安装后，应用和普通控制命令通过后台服务操作风扇。
-
-上方截图为 MacFanPro 0.2.3.36 在 M4 Max MacBook Pro 上的实际运行界面。
 
 ## 系统要求
 
@@ -75,10 +99,6 @@ open /Applications/MacFanPro.app
 
 ### 在线安装脚本
 
-```bash
-curl -fsSL https://github.com/macfanpro/macfanpro/releases/latest/download/install.sh | bash
-```
-
 首次安装时若 GitHub 无法直连，打开代理软件，确认其本地 HTTP 代理端口，然后复制以下整段命令。`7890` 仅为示例，换成实际端口；这条命令以后也能用于更新：
 
 ```bash
@@ -90,6 +110,15 @@ curl -fsSL https://github.com/macfanpro/macfanpro/releases/latest/download/insta
 ```
 
 如果只有 SOCKS5 端口，把 `export` 一行改为 `export all_proxy=socks5h://127.0.0.1:实际端口`。[代理说明与连接检查](docs/online-installer.md#代理更新)
+
+**能够直连 GitHub 时**，使用不带代理的命令：
+
+```bash
+(
+  set -o pipefail
+  curl -fsSL https://github.com/macfanpro/macfanpro/releases/latest/download/install.sh | bash
+)
+```
 
 以普通登录用户运行。脚本会下载并校验预编译包，然后请求管理员密码，安装应用和后台服务。已有 Homebrew 安装会刷新本软件源并通过 Homebrew 升级，继续由 Homebrew 管理；需要等待软件源提供所请求的版本。其他安装使用发行包。保留配置和校准数据，拒绝降级；重复运行可重新安装并检查所选版本。
 
@@ -472,6 +501,7 @@ flowchart LR
 | [`Sources/macfanpro/`](Sources/macfanpro/) | CLI、应用组装、安装与卸载入口 |
 | [`Tests/MacFanProTests/`](Tests/MacFanProTests/) | 自动化测试 |
 | [`Scripts/`](Scripts/) | 测试、语言资源校验与发行打包脚本 |
+| [`website/`](website/) | GitHub Pages 官网及 18 种语言的翻译 |
 
 ### 构建与验证
 
@@ -496,6 +526,7 @@ bash Scripts/package-release.sh
 
 ### 文档与上游维护
 
+- [官方网站](https://macfanpro.github.io/macfanpro/?lang=zh-Hans)与[官网维护说明](website/README.md)：18 种语言的项目介绍、安装命令及 GitHub Pages 构建方式。
 - [文档索引](docs/README.md)：按任务整理使用指南、技术资料和验证历史。
 - [更新记录](CHANGELOG.md)与[发布说明规范](docs/releases/README.md)：已发布的变化与发布流程。
 - [相对上游的差异](docs/upstream-divergence.md)与[本次合并检查](docs/upstream-sync-20261003.md)：合并时要保留的功能及此次验证结果。

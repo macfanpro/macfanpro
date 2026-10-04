@@ -1,33 +1,51 @@
-# MacFanPro
+<p align="center">
+  <img src="docs/images/icon.png" width="128" alt="MacFanPro app icon">
+</p>
 
-[![CI](https://github.com/macfanpro/macfanpro/actions/workflows/ci.yml/badge.svg)](https://github.com/macfanpro/macfanpro/actions/workflows/ci.yml)
-[![Release](https://img.shields.io/github/v/release/macfanpro/macfanpro?sort=date)](https://github.com/macfanpro/macfanpro/releases/latest)
-[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+<h1 align="center">MacFanPro</h1>
 
-**English** | [简体中文](README.zh-CN.md)
+<p align="center">
+  <b>Fan control for Apple Silicon Macs.</b><br>
+  Monitor temperatures in the menu bar, follow smart fan curves, or take control from the command line.<br>
+  Native Swift. Free and open source (MIT). Available in 18 languages.
+</p>
 
-[Website · 18 languages](https://macfanpro.github.io/macfanpro/en/) · [Download](https://github.com/macfanpro/macfanpro/releases/latest)
+<p align="center">
+  <b>English</b> · <a href="README.zh-CN.md">简体中文</a>
+</p>
 
-<img src="docs/images/social-preview.png" alt="MacFanPro: fan control for Apple Silicon Macs. Free and open source under MIT, menu bar app and CLI with one-click updates, M1 to M5, macOS 14 or later, 18 languages" width="100%">
+<p align="center">
+  <a href="https://github.com/macfanpro/macfanpro/releases/latest"><img src="https://img.shields.io/github/v/release/macfanpro/macfanpro?sort=date&amp;style=flat-square" alt="Latest release"></a>
+  <a href="#requirements"><img src="https://img.shields.io/badge/macOS-14%2B-blue?style=flat-square" alt="macOS 14 or later"></a>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue?style=flat-square" alt="MIT license"></a>
+  <a href="https://github.com/macfanpro/macfanpro/actions/workflows/ci.yml"><img src="https://github.com/macfanpro/macfanpro/actions/workflows/ci.yml/badge.svg" alt="CI status"></a>
+</p>
 
-**Fan control for Apple Silicon Macs — free, open source, native.**
+<p align="center">
+  <a href="https://macfanpro.github.io/macfanpro/en/"><b>Website · 18 languages</b></a>
+  &nbsp;·&nbsp;
+  <a href="https://github.com/macfanpro/macfanpro/releases/latest"><b>Download</b></a>
+  &nbsp;·&nbsp;
+  <a href="#quick-install"><b>Quick install</b></a>
+  &nbsp;·&nbsp;
+  <a href="#option-1-homebrew"><b>Homebrew</b></a>
+</p>
 
-See CPU and GPU temperatures and fan speeds in the menu bar, let the fans follow the temperature with smart curves, or take full control from the command line. Designed for Apple Silicon Macs with physical fans, on macOS 14 or later. Check the [compatibility evidence](#compatibility) for your model.
+> [!NOTE]
+> Requires **macOS 14 or later** and an **Apple Silicon Mac with physical fans**; see [compatibility](#compatibility). Installation needs an administrator password to set up the [background service](#safety-and-permissions). Release packages are not yet notarized by Apple; if macOS blocks the first launch, follow the [first-launch instructions](#macos-says-it-cant-verify-the-developer).
 
-<img src="docs/images/menu-bar-en.png" alt="MacFanPro menu in English: fan speeds, temperatures, profiles, language setting, version and the update check, and Quit" width="320"> <img src="docs/images/menu-bar-zh-CN.png" alt="MacFanPro 菜单（简体中文）：风扇转速、温度、控制模式、语言设置、版本与检查更新、退出按钮" width="320">
+## Quick install
 
-### Quick install
-
-Already use Homebrew? Run this block. Otherwise, use the [online installer](#online-installer), which needs neither Homebrew nor Xcode. If GitHub is hard to reach, start with the [proxy installation command](#online-installer).
+Run this block in Terminal as your normal login user. It downloads and verifies the prebuilt release, then installs the app and background service. No Homebrew or Xcode needed. If GitHub is hard to reach, use the [proxy command](#online-installer) or [configure your proxy on the website](https://macfanpro.github.io/macfanpro/en/#install) before installing.
 
 ```bash
-brew tap macfanpro/tap && brew trust macfanpro/tap
-brew install macfanpro
-sudo "$(brew --prefix macfanpro)/bin/macfanpro" install
-open /Applications/MacFanPro.app
+(
+  set -o pipefail
+  curl -fsSL https://github.com/macfanpro/macfanpro/releases/latest/download/install.sh | bash
+)
 ```
 
-Or [download the app](https://github.com/macfanpro/macfanpro/releases/latest) — see [Install](#install) for all options.
+When Terminal asks for your administrator password, type your Mac login password and press Return; no characters appear while you type. Already use Homebrew? See [Homebrew installation](#option-1-homebrew). Prefer a manual download? See [release installation](#option-2-release-download).
 
 **Start here:** [Install](#install) · [Choose a profile](#usage) · [Update / proxy](#updating) · [Uninstall](#uninstall)
 
@@ -46,13 +64,18 @@ An open-source alternative to tools like Macs Fan Control for people who want tr
 
 ## Features
 
+<p align="center">
+  <img src="docs/images/menu-bar-en.png" width="320" alt="MacFanPro English menu showing temperatures, fan speeds, profiles and update settings">
+  <img src="docs/images/menu-bar-zh-CN.png" width="320" alt="MacFanPro Simplified Chinese menu showing temperatures, fan speeds, profiles and update settings">
+  <br>
+  <sub>MacFanPro 0.2.3.36 on an M4 Max MacBook Pro. English and Simplified Chinese shown; 18 interface languages available.</sub>
+</p>
+
 - **Temperature and fan monitoring**: CPU, GPU, memory, SSD and ambient temperatures, and each fan's actual speed. Which readings appear depends on the sensors your Mac provides.
 - **Automatic fan control**: Smart, Silent, Balanced, Performance and Max profiles, plus a one-click return to Apple's automatic control.
 - **Native menu bar app**: the panel sizes itself to its content; the temperature label reserves room for "icon + two digits + °", stays centered, and widens for three digits.
 - **18 interface languages**: English, Simplified Chinese, Traditional Chinese, Japanese, Korean, German, French, Spanish, Italian, Brazilian Portuguese, Russian, Ukrainian, Polish, Dutch, Turkish, Vietnamese, Indonesian and Arabic (laid out right to left), following the system language by default. You can also switch between °C and °F and launch at login.
 - **Command line and background service**: set speeds, read status and record CSV samples. Once installed, the app and everyday commands control the fans through the background service.
-
-The screenshots above are MacFanPro 0.2.3.36 running on an M4 Max MacBook Pro.
 
 ## Requirements
 
@@ -76,7 +99,10 @@ MacBook Pro, Mac mini, Mac Studio and iMac configurations with Apple Silicon and
 ### Online installer
 
 ```bash
-curl -fsSL https://github.com/macfanpro/macfanpro/releases/latest/download/install.sh | bash
+(
+  set -o pipefail
+  curl -fsSL https://github.com/macfanpro/macfanpro/releases/latest/download/install.sh | bash
+)
 ```
 
 For a first install when GitHub cannot be reached directly, start a proxy and find its local HTTP proxy port. Replace the example port `7890` below and run the complete block. The same command works for later updates:
@@ -472,6 +498,7 @@ Preserve the distinction between an app-supervised hold and a deliberate CLI hol
 | [`Sources/macfanpro/`](Sources/macfanpro/) | CLI, app assembly, install and uninstall |
 | [`Tests/MacFanProTests/`](Tests/MacFanProTests/) | Automated tests |
 | [`Scripts/`](Scripts/) | Test, localization check and release packaging scripts |
+| [`website/`](website/) | GitHub Pages website, with translations for all 18 languages |
 
 ### Build and test
 
@@ -496,6 +523,7 @@ When opening a [Pull Request](https://github.com/macfanpro/macfanpro/pulls), des
 
 ### Documentation and upstream maintenance
 
+- [Website](https://macfanpro.github.io/macfanpro/en/) and [website maintenance](website/README.md): the 18-language introduction, installation commands and GitHub Pages build instructions.
 - [Documentation index](docs/README.md): user guides, technical notes and validation history, grouped by task.
 - [Changelog](CHANGELOG.md) and [release notes](docs/releases/README.md): what changed in published versions and how releases are prepared.
 - [Upstream differences](docs/upstream-divergence.md) and [2026-10-03 integration review](docs/upstream-sync-20261003.md): which fork behaviors must survive an upstream merge and what was checked this time.
