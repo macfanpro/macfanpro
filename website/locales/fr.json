@@ -95,7 +95,7 @@
     ]
   ],
   "update": "Et pour les mises à jour ?",
-  "update_body": "Utilisez l’invite de mise à jour de l’application ou relancez la commande en ligne. Démarrez votre proxy au préalable si nécessaire. Réglages et données d’étalonnage sont conservés.",
+  "update_body": "DMG : glissez la nouvelle MacFanPro.app dans Applications, choisissez Remplacer et relancez-la. Quittez l’ancienne app si elle tourne encore et autorisez la synchronisation du service si nécessaire. Aucune désinstallation n’est requise. Réglages, étalonnage et journaux sont conservés. Utilisez Homebrew pour une installation Homebrew, ou relancez la commande de l’installateur en ligne. Utilisez un proxy si GitHub est inaccessible.",
   "download": "Télécharger une version",
   "full_guide": "Guide d’installation et de proxy",
   "source_build": "Compiler le code source",

@@ -95,7 +95,7 @@
     ]
   ],
   "update": "What about updates?",
-  "update_body": "Use the app’s update prompt to open the terminal updater, or run the online installation command again. Start your proxy first if needed. Settings and calibration data are preserved.",
+  "update_body": "DMG: drag the new MacFanPro.app into Applications, choose Replace, and relaunch it. Quit the old app if it is still running; authorize service synchronization if prompted. No uninstall is needed. Settings, calibration and logs are kept. Homebrew users should use Homebrew; online installer users can run their command again. Use a proxy if GitHub is unreachable.",
   "download": "Download a release",
   "full_guide": "Full installation & proxy guide",
   "source_build": "Build from source",

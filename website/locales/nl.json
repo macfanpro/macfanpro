@@ -95,7 +95,7 @@
     ]
   ],
   "update": "Hoe werk ik later bij?",
-  "update_body": "Gebruik de updatemelding in de app of voer de online opdracht opnieuw uit. Start zo nodig eerst je proxy. Instellingen en kalibratiegegevens blijven behouden.",
+  "update_body": "DMG: sleep de nieuwe MacFanPro.app naar Programma’s, kies Vervang en start de app opnieuw. Sluit de oude app als die nog actief is en geef toestemming om de service te synchroniseren wanneer daarom wordt gevraagd. Verwijderen is niet nodig; instellingen, kalibratie en logboeken blijven bewaard. Homebrew-gebruikers werken bij via Homebrew; bij de online installer kun je dezelfde opdracht herhalen. Gebruik een proxy als GitHub niet bereikbaar is.",
   "download": "Release downloaden",
   "full_guide": "Installatie- en proxyhandleiding",
   "source_build": "Bouwen vanuit broncode",

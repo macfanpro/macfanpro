@@ -95,7 +95,7 @@
     ]
   ],
   "update": "Nasıl güncellenir?",
-  "update_body": "Uygulamadaki güncelleme bildiriminden Terminal güncelleyicisini açın veya çevrimiçi komutu yeniden çalıştırın. Gerekirse önce proxy’yi başlatın. Ayarlar ve kalibrasyon verileri korunur.",
+  "update_body": "DMG: yeni MacFanPro.app dosyasını Uygulamalar’a sürükleyin, Değiştir’i seçin ve yeniden açın. Eski uygulama hâlâ çalışıyorsa kapatın; istendiğinde hizmet eşitlemesine izin verin. Kaldırma gerekmez; ayarlar, kalibrasyon ve günlükler korunur. Homebrew kullanıcıları Homebrew ile güncellemelidir; çevrimiçi yükleyici kullanıcıları aynı komutu yeniden çalıştırabilir. GitHub’a erişilemiyorsa vekil sunucu kullanın.",
   "download": "Sürüm indir",
   "full_guide": "Kurulum ve proxy rehberi",
   "source_build": "Kaynak koddan derle",

@@ -95,7 +95,7 @@
     ]
   ],
   "update": "Jak aktualizować?",
-  "update_body": "Skorzystaj z powiadomienia aplikacji, aby otworzyć aktualizator w Terminalu, lub powtórz polecenie online. Włącz wcześniej proxy, jeśli jest potrzebne. Ustawienia i dane kalibracji zostaną zachowane.",
+  "update_body": "DMG: przeciągnij nową MacFanPro.app do Aplikacji, wybierz Zastąp i uruchom ją ponownie. Zamknij starą aplikację, jeśli nadal działa, i w razie potrzeby autoryzuj synchronizację usługi. Nie trzeba jej odinstalowywać; ustawienia, kalibracja i dzienniki zostaną zachowane. Użytkownicy Homebrew aktualizują przez Homebrew, a użytkownicy instalatora online mogą powtórzyć polecenie. Użyj proxy, jeśli GitHub jest niedostępny.",
   "download": "Pobierz wydanie",
   "full_guide": "Poradnik instalacji i proxy",
   "source_build": "Zbuduj ze źródeł",

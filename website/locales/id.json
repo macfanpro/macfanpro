@@ -95,7 +95,7 @@
     ]
   ],
   "update": "Bagaimana cara memperbarui?",
-  "update_body": "Buka pembaru Terminal dari pemberitahuan aplikasi atau jalankan kembali perintah online. Aktifkan proxy terlebih dahulu jika perlu. Pengaturan dan data kalibrasi tetap disimpan.",
+  "update_body": "DMG: seret MacFanPro.app yang baru ke Applications, pilih Replace, lalu buka kembali. Tutup aplikasi lama jika masih berjalan dan izinkan sinkronisasi layanan saat diminta. Tidak perlu menghapus instalasi; pengaturan, kalibrasi, dan log tetap disimpan. Pengguna Homebrew memperbarui melalui Homebrew; pengguna pemasang online dapat menjalankan kembali perintah yang sama. Gunakan proksi jika GitHub tidak dapat diakses.",
   "download": "Unduh rilis",
   "full_guide": "Panduan instalasi dan proxy",
   "source_build": "Bangun dari kode sumber",

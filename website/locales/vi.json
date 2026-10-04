@@ -95,7 +95,7 @@
     ]
   ],
   "update": "Cập nhật về sau thế nào?",
-  "update_body": "Mở trình cập nhật Terminal từ thông báo trong ứng dụng hoặc chạy lại lệnh trực tuyến. Bật proxy trước nếu cần. Cài đặt và dữ liệu hiệu chuẩn được giữ lại.",
+  "update_body": "DMG: kéo MacFanPro.app mới vào Applications, chọn Replace rồi mở lại. Thoát ứng dụng cũ nếu vẫn đang chạy và cấp quyền đồng bộ dịch vụ khi được yêu cầu. Không cần gỡ cài đặt; cài đặt, dữ liệu hiệu chuẩn và nhật ký được giữ lại. Người dùng Homebrew tiếp tục cập nhật bằng Homebrew; người dùng trình cài trực tuyến có thể chạy lại lệnh cũ. Dùng proxy nếu không truy cập được GitHub.",
   "download": "Tải bản phát hành",
   "full_guide": "Hướng dẫn cài đặt và proxy",
   "source_build": "Biên dịch từ mã nguồn",

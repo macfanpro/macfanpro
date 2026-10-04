@@ -87,7 +87,7 @@ MacBook Pro, Mac mini, Mac Studio and iMac configurations with Apple Silicon and
 
 ## Install
 
-**Pick one of the methods below; you don't need more than one.** If MacFanPro is already running, choose Quit in its menu first.
+**Pick one of the methods below; you don't need more than one.** For an existing installation, follow the corresponding [update steps](#updating).
 
 | Method | Best for | Builds on your Mac? |
 | --- | --- | --- |
@@ -105,7 +105,7 @@ Starting with **0.2.3.50**, download `MacFanPro-<version>-macos-arm64.dmg` for g
 2. Open the app from Applications. If macOS blocks it, follow the [first-launch instructions](#macos-says-it-cant-verify-the-developer); these builds are not notarized.
 3. Choose **Install and enable** in the setup window and approve the macOS administrator authorization dialog. The app includes the service executable, so this step needs no network, Homebrew or Xcode.
 
-For updates, quit the app, replace it with the newer copy, and reopen it. The setup window appears when the service needs synchronization. Homebrew installations continue to use Homebrew. To remove a DMG installation, choose **Background service… → Remove background service…**, then quit and move the app to the Trash; settings and logs are retained.
+**To update: download the new version → drag the `.app` into Applications and choose Replace → relaunch it → authorize if prompted. No uninstall or manual service removal is needed; settings, calibration and logs are kept.** If Finder says the app is in use, quit it before replacing it. See [DMG updates](#dmg-updates). Homebrew users should continue updating through Homebrew.
 
 [DMG setup, proxy downloads and developer verification](docs/dmg-installation.md).
 
@@ -318,7 +318,15 @@ To intentionally discard calibration and use the default curve again, run `macfa
 
 The online installer above also upgrades existing installations. The app’s “Update in Terminal” uses the same bundled installer.
 
-The app checks this repository's releases once a day, and you can check now with Check for Updates at the bottom of the menu. When a new version is out it shows the upgrade steps for how you installed, and an **Update in Terminal** button that runs them for you: Terminal opens, downloads or upgrades, and asks for your password once. It never replaces the program without you. The check needs access to GitHub and uses your system proxy settings; if it says it couldn't reach GitHub, check your network or proxy. Update the same way you installed, and quit the app before replacing the background service.
+The app checks this repository's releases once a day, and you can check now with Check for Updates at the bottom of the menu. When a new version is out it shows the upgrade steps for how you installed, and an **Update in Terminal** button that runs them for you: Terminal opens, downloads or upgrades, and asks for your password once. It never replaces the program without you. The check needs access to GitHub and uses your system proxy settings; if it says it couldn't reach GitHub, check your network or proxy. Update the same way you installed. DMG users can replace the app directly, as described below.
+
+### DMG updates
+
+1. Download and open the new DMG, drag **MacFanPro.app** into Applications, and choose **Replace**. If Finder says the app is in use, quit MacFanPro and retry.
+2. **Relaunch MacFanPro**. If the old app is still running, quit it and open it again so the new version starts.
+3. If the service needs synchronization, choose **Install and enable** in the setup window and approve the macOS authorization dialog. If the versions already match, the app is ready to use.
+
+**Do not uninstall or choose Remove background service when updating.** The app handles service synchronization and preserves settings, calibration and logs. Homebrew-managed installations continue to use the Homebrew update flow below.
 
 ### Update through a proxy
 
@@ -369,7 +377,11 @@ If you checked out a release tag, run `git fetch origin --tags`, check out the n
 
 ## Uninstall
 
-Remove the app, the command-line tool and the background service, keeping your data:
+These steps are only for **stopping use of MacFanPro**, not for updating it.
+
+**DMG installation**: choose **Background service… → Remove background service…**, confirm and authorize, then quit the app and move MacFanPro.app to the Trash. Settings, calibration and logs are kept.
+
+Alternatively, remove the app, command-line tool and background service with this command, keeping your data:
 
 ```bash
 sudo macfanpro uninstall
