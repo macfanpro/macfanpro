@@ -1,0 +1,141 @@
+{
+  "title": "MacFanPro — Kontrol kipas Mac gratis dan sumber terbuka",
+  "description": "Kontrol kipas native untuk Mac Apple Silicon. Pantau suhu, gunakan kurva pintar, instal lewat proxy atau Homebrew. Aplikasi tersedia dalam 18 bahasa. macOS 14 ke atas.",
+  "skip": "Ke konten utama",
+  "nav": [
+    "Fitur",
+    "Instalasi",
+    "Pertanyaan"
+  ],
+  "eyebrow": "UNTUK APPLE SILICON",
+  "headline": [
+    "Suhu terlihat jelas.",
+    "Kipas dalam kendali."
+  ],
+  "intro": "Lihat suhu Mac dari bar menu. Biarkan kurva pintar mengatur kipas atau kendalikan sendiri. Native, gratis, dan sumber terbuka.",
+  "install": "Instal gratis",
+  "source": "Lihat kode di GitHub",
+  "requirements": "macOS 14+ · Apple Silicon · Memerlukan kipas fisik",
+  "stage_note": "Nyaman di bar menu",
+  "caption": "Antarmuka nyata berbahasa Inggris · v0.2.3.36 · M4 Max MacBook Pro",
+  "facts": [
+    [
+      "Swift",
+      "Native untuk macOS"
+    ],
+    [
+      "Smart",
+      "Penyesuaian berdasarkan suhu"
+    ],
+    [
+      "18",
+      "bahasa aplikasi"
+    ],
+    [
+      "MIT",
+      "Gratis dan sumber terbuka"
+    ]
+  ],
+  "feature_kicker": "LEBIH JELAS. LEBIH TERKENDALI.",
+  "feature_title": "Kontrol kipas untuk alur kerja Anda.",
+  "features": [
+    [
+      "01 / PANTAU",
+      "Kondisi Mac dalam sekilas.",
+      "Lihat suhu CPU dan GPU serta kecepatan kipas sebenarnya. Pembacaan lain bergantung pada sensor model Mac Anda.",
+      "CPU / GPU / RPM"
+    ],
+    [
+      "02 / KONTROL",
+      "Otomatis atau sesuai pilihan.",
+      "Mode pintar merespons suhu dan trennya. Pilih keseimbangan atau performa, atau kembalikan kontrol otomatis Apple.",
+      "SMART / BALANCED / PERFORMANCE"
+    ],
+    [
+      "03 / TERMINAL",
+      "Juga melalui baris perintah.",
+      "Baca status JSON, atur kecepatan, dan catat data CSV. Aplikasi dan CLI menggunakan layanan latar belakang yang sama.",
+      "macfanpro status"
+    ]
+  ],
+  "safety_kicker": "PERLINDUNGAN BAWAAN",
+  "safety_title": "Mempertimbangkan pemulihan saat gangguan.",
+  "safety_body": "Layanan latar belakang memberi perlindungan termal pada 95°C selama kontrol manual. Jika sinyal aktivitas kontrol yang dikelola aplikasi hilang, pengawas mencoba mengembalikan kontrol ke macOS. Perilaku bergantung pada mode, firmware, dan sensor.",
+  "safety_link": "Pelajari kontrol dan perlindungan",
+  "privacy_title": "Data tetap di Mac Anda.",
+  "privacy_body": "Suhu dan log disimpan secara lokal. Tanpa akun atau telemetri. Pemeriksaan pembaruan menghubungi GitHub; instalasi dan pembaruan mengunduh berkas.",
+  "install_kicker": "MULAI DALAM BEBERAPA LANGKAH",
+  "install_title": "Mudah dipasang dan diperbarui.",
+  "install_intro": "Penginstal online mengunduh aplikasi siap pakai tanpa memerlukan Homebrew atau Xcode. Instalasi Homebrew yang ada tetap diperbarui melalui Homebrew.",
+  "method": "Pilih metode instalasi",
+  "proxy": "Gunakan proxy",
+  "direct": "Koneksi langsung",
+  "brew": "Homebrew",
+  "proxy_note": "Jika GitHub tidak terjangkau, jalankan proxy Anda sendiri. 7890 hanya contoh; ganti dengan port lokal sebenarnya. Situs ini tidak menyediakan layanan proxy.",
+  "direct_note": "Untuk jaringan yang bisa mengakses GitHub langsung. Jalankan perintah yang sama lagi untuk memperbarui.",
+  "brew_note": "Untuk pengguna Homebrew. Jika perlu, atur proxy di Terminal atau pilih tab proxy. Penginstal online mengenali instalasi Homebrew yang ada.",
+  "type": "Jenis proxy",
+  "port": "Port lokal",
+  "copy": "Salin perintah",
+  "copied": "Disalin",
+  "copy_error": "Tidak dapat menyalin otomatis. Pilih perintah dan salin secara manual.",
+  "port_error": "Masukkan port antara 1 dan 65535.",
+  "steps": [
+    [
+      "Buka Terminal",
+      "Salin seluruh perintah, tempel di Terminal, lalu tekan Return."
+    ],
+    [
+      "Masukkan kata sandi administrator",
+      "Diperlukan untuk layanan latar belakang. Karakter tidak ditampilkan saat mengetik. Tekan Return setelah selesai."
+    ],
+    [
+      "Mulai dari bar menu",
+      "Buka MacFanPro, klik ikon kipas, lalu pilih mode."
+    ]
+  ],
+  "update": "Bagaimana cara memperbarui?",
+  "update_body": "Buka pembaru Terminal dari pemberitahuan aplikasi atau jalankan kembali perintah online. Aktifkan proxy terlebih dahulu jika perlu. Pengaturan dan data kalibrasi tetap disimpan.",
+  "download": "Unduh rilis",
+  "full_guide": "Panduan instalasi dan proxy",
+  "source_build": "Bangun dari kode sumber",
+  "faq_kicker": "PERLU DIKETAHUI",
+  "faq_title": "Sebelum memulai.",
+  "faq": [
+    [
+      "Apakah Mac saya didukung?",
+      "Memerlukan macOS 14+, Apple Silicon, dan kipas fisik. Mac Intel tidak didukung; MacBook Air tanpa kipas tidak dapat menggunakan kontrol kipas. Sebagian besar pengujian perangkat keras dilakukan pada M4 Max MacBook Pro. Lihat catatan kompatibilitas untuk model lain."
+    ],
+    [
+      "Apakah gratis? Perlu akun?",
+      "Gratis dengan lisensi MIT, tanpa akun atau kunci aktivasi. Anda bisa membaca kode, membangun sendiri, dan berkontribusi."
+    ],
+    [
+      "Cukup seret aplikasi ke Applications?",
+      "Layanan latar belakang juga harus dipasang. Kami menyarankan perintah di atas. Untuk pemasangan manual, ikuti README dan simpan aplikasi bersama folder bin. Rilis saat ini ditandatangani ad-hoc dan belum dinotarisasi Apple; peringatan keamanan dapat muncul saat pertama dibuka."
+    ],
+    [
+      "Berhenti di Password. Apa yang harus dilakukan?",
+      "Terminal menunggu kata sandi administrator. Karakter maupun tanda bintang tidak muncul. Ketik kata sandi masuk Mac lalu tekan Return. Jangan masukkan di halaman web atau bagikan kepada orang lain."
+    ],
+    [
+      "Bagaimana jika GitHub tidak bisa diakses?",
+      "Jalankan proxy yang berfungsi, masukkan port HTTP atau SOCKS5 sebenarnya pada tab proxy, lalu jalankan seluruh perintah. GitHub Pages dan unduhan juga mungkin membutuhkan proxy."
+    ],
+    [
+      "Apakah mode pintar membuat kipas selalu berputar?",
+      "Tidak memaksa kecepatan maksimum terus-menerus. Saat beban rendah, kontrol manual dapat dilepas. macOS dan firmware menentukan apakah kipas berhenti. Suhu, kebisingan, dan performa bergantung pada model dan beban."
+    ]
+  ],
+  "closing": "Kenali kondisi Mac Anda lebih dekat.",
+  "closing_body": "Dari pemeriksaan suhu singkat hingga alur kerja sendiri.",
+  "footer": "Kontrol kipas sumber terbuka untuk Mac Apple Silicon.",
+  "docs": "Dokumentasi",
+  "issues": "Laporkan masalah",
+  "license": "Lisensi MIT",
+  "credit": "Dibangun dari ThermalForge. Terima kasih kepada proyek asal dan semua kontributor.",
+  "image_alt": "Panel MacFanPro dengan suhu, kecepatan, mode, dan bahasa",
+  "main_nav": "Navigasi utama",
+  "languages": "Pilih bahasa",
+  "copyright": "Kontributor MacFanPro"
+}

@@ -1,0 +1,141 @@
+{
+  "title": "MacFanPro — Mac için ücretsiz, açık kaynaklı fan kontrolü",
+  "description": "Apple Silicon Mac için yerel fan kontrolü. Sıcaklık izleme, akıllı eğriler, proxy ve Homebrew ile kurulum. Uygulamada 18 dil. macOS 14 ve üzeri.",
+  "skip": "İçeriğe geç",
+  "nav": [
+    "Özellikler",
+    "Kurulum",
+    "Sorular"
+  ],
+  "eyebrow": "APPLE SILICON İÇİN",
+  "headline": [
+    "Sıcaklık göz önünde.",
+    "Fanlar kontrolünüzde."
+  ],
+  "intro": "Mac sıcaklığını menü çubuğundan izleyin. Akıllı eğrilerin fanları yönetmesine izin verin ya da kontrolü kendiniz alın. Yerel, ücretsiz ve açık kaynaklı.",
+  "install": "Ücretsiz yükle",
+  "source": "GitHub’da kaynak kodu",
+  "requirements": "macOS 14+ · Apple Silicon · Fiziksel fan gerekir",
+  "stage_note": "Menü çubuğunuzda",
+  "caption": "Gerçek İngilizce arayüz · v0.2.3.36 · M4 Max MacBook Pro",
+  "facts": [
+    [
+      "Swift",
+      "Yerel macOS deneyimi"
+    ],
+    [
+      "Smart",
+      "Sıcaklığa göre otomatik ayar"
+    ],
+    [
+      "18",
+      "uygulama dili"
+    ],
+    [
+      "MIT",
+      "Ücretsiz ve açık kaynaklı"
+    ]
+  ],
+  "feature_kicker": "DAHA NET GÖRÜN. GEREKTİĞİNDE YÖNETİN.",
+  "feature_title": "Çalışma biçiminize uygun fan kontrolü.",
+  "features": [
+    [
+      "01 / İZLEME",
+      "Mac’inizin durumu bir bakışta.",
+      "CPU ve GPU sıcaklıklarını, gerçek fan hızlarını görün. Ek okumalar modelinizdeki sensörlere bağlıdır.",
+      "CPU / GPU / RPM"
+    ],
+    [
+      "02 / KONTROL",
+      "Otomatik veya tercihinize göre.",
+      "Akıllı mod sıcaklığa ve değişim eğilimine tepki verir. Dengeli ya da performans modunu seçin veya Apple’ın otomatik kontrolüne dönün.",
+      "SMART / BALANCED / PERFORMANCE"
+    ],
+    [
+      "03 / TERMİNAL",
+      "Komut satırında da yanınızda.",
+      "JSON durumunu okuyun, hız ayarlayın ve CSV kaydedin. Uygulama ve CLI aynı arka plan hizmetini kullanır.",
+      "macfanpro status"
+    ]
+  ],
+  "safety_kicker": "YERLEŞİK KORUMALAR",
+  "safety_title": "Beklenmedik durumları da düşünür.",
+  "safety_body": "Manuel kontrol sırasında arka plan hizmeti 95°C sıcaklık koruması sağlar. Uygulamanın yönettiği kontrolün yaşam sinyali kesilirse gözetim mekanizması kontrolü macOS’e geri vermeye çalışır. Davranış moda, aygıt yazılımına ve sensörlere bağlıdır.",
+  "safety_link": "Kontrol ve korumaları öğrenin",
+  "privacy_title": "Verileriniz Mac’inizde kalır.",
+  "privacy_body": "Sıcaklıklar ve günlükler yereldir. Hesap veya telemetri yoktur. Güncelleme denetimi GitHub’a bağlanır; kurulum ve güncellemeler dosya indirir.",
+  "install_kicker": "BİRKAÇ ADIMDA BAŞLAYIN",
+  "install_title": "Kolay kurulum ve güncelleme.",
+  "install_intro": "Çevrimiçi yükleyici hazır uygulamayı indirir; Homebrew veya Xcode gerekmez. Mevcut Homebrew kurulumları yine Homebrew üzerinden güncellenir.",
+  "method": "Kurulum yöntemini seçin",
+  "proxy": "Proxy kullan",
+  "direct": "Doğrudan bağlantı",
+  "brew": "Homebrew",
+  "proxy_note": "GitHub’a erişilemiyorsa kendi proxy uygulamanızı başlatın. 7890 örnektir; gerçek yerel bağlantı noktasını yazın. Bu site proxy hizmeti sağlamaz.",
+  "direct_note": "GitHub’a doğrudan erişebilen ağlar içindir. Aynı komutu yeniden çalıştırarak güncelleyebilirsiniz.",
+  "brew_note": "Homebrew kullananlar içindir. Gerekiyorsa Terminal’de proxy ayarlayın veya proxy sekmesini seçin. Çevrimiçi yükleyici mevcut Homebrew kurulumunu tanır.",
+  "type": "Proxy türü",
+  "port": "Yerel bağlantı noktası",
+  "copy": "Komutu kopyala",
+  "copied": "Kopyalandı",
+  "copy_error": "Otomatik kopyalanamadı. Komutu seçip elle kopyalayın.",
+  "port_error": "1–65535 arasında bir bağlantı noktası girin.",
+  "steps": [
+    [
+      "Terminal’i açın",
+      "Komutun tamamını kopyalayıp Terminal’e yapıştırın ve Return’e basın."
+    ],
+    [
+      "Yönetici parolasını girin",
+      "Arka plan hizmeti için gereklidir. Yazarken karakterler görünmez. Bitince Return’e basın."
+    ],
+    [
+      "Menü çubuğundan başlayın",
+      "MacFanPro’yu açın, fan simgesine tıklayın ve bir mod seçin."
+    ]
+  ],
+  "update": "Nasıl güncellenir?",
+  "update_body": "Uygulamadaki güncelleme bildiriminden Terminal güncelleyicisini açın veya çevrimiçi komutu yeniden çalıştırın. Gerekirse önce proxy’yi başlatın. Ayarlar ve kalibrasyon verileri korunur.",
+  "download": "Sürüm indir",
+  "full_guide": "Kurulum ve proxy rehberi",
+  "source_build": "Kaynak koddan derle",
+  "faq_kicker": "BİLMENİZ GEREKENLER",
+  "faq_title": "Başlamadan önce.",
+  "faq": [
+    [
+      "Mac’imde çalışır mı?",
+      "macOS 14+, Apple Silicon ve fiziksel fan gerekir. Intel Mac desteklenmez; fansız MacBook Air modellerinde fan kontrolü kullanılamaz. Donanım testleri ağırlıklı olarak M4 Max MacBook Pro’da yapıldı. Diğer modeller için uyumluluk kayıtlarına bakın."
+    ],
+    [
+      "Ücretsiz mi? Hesap gerekli mi?",
+      "MIT lisansıyla ücretsizdir; hesap veya etkinleştirme anahtarı gerekmez. Kodu okuyabilir, derleyebilir ve katkıda bulunabilirsiniz."
+    ],
+    [
+      "Uygulamayı Uygulamalar’a sürüklemek yeterli mi?",
+      "Arka plan hizmeti de kurulmalıdır. Yukarıdaki komutu öneriyoruz. Elle kurulumda README’yi izleyin, uygulama ve bin klasörünü birlikte tutun. Sürümler ad-hoc imzalıdır ve Apple noter onayı yoktur; ilk açılışta güvenlik uyarısı görülebilir."
+    ],
+    [
+      "Password yazısında kaldı. Ne yapmalıyım?",
+      "Terminal yönetici parolanızı bekler. Karakter veya yıldız göstermez. Mac oturum açma parolanızı yazıp Return’e basın. Parolayı web sayfasına girmeyin ve başkalarıyla paylaşmayın."
+    ],
+    [
+      "GitHub’a erişemiyorsam?",
+      "Çalışan bir proxy başlatın, proxy sekmesinde gerçek HTTP veya SOCKS5 bağlantı noktasını girin ve tüm komutu çalıştırın. GitHub Pages ve indirmeler de proxy gerektirebilir."
+    ],
+    [
+      "Akıllı mod fanları sürekli çalıştırır mı?",
+      "Sürekli en yüksek hızı zorlamaz. Düşük yükte manuel kontrolü bırakabilir. Fanların durmasına macOS ve aygıt yazılımı karar verir. Sıcaklık, gürültü ve performans modele ve yüke göre değişir."
+    ]
+  ],
+  "closing": "Mac’inizi biraz daha iyi tanıyın.",
+  "closing_body": "Hızlı sıcaklık kontrolünden kendi iş akışınıza.",
+  "footer": "Apple Silicon Mac için açık kaynaklı fan kontrolü.",
+  "docs": "Belgeler",
+  "issues": "Sorun bildir",
+  "license": "MIT lisansı",
+  "credit": "ThermalForge temel alınmıştır. Üst projeye ve tüm katkıda bulunanlara teşekkürler.",
+  "image_alt": "Sıcaklıkları, hızları, modları ve dilleri gösteren MacFanPro paneli",
+  "main_nav": "Ana gezinme",
+  "languages": "Dil seçin",
+  "copyright": "MacFanPro katkıda bulunanları"
+}

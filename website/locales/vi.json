@@ -1,0 +1,141 @@
+{
+  "title": "MacFanPro — Điều khiển quạt Mac miễn phí, mã nguồn mở",
+  "description": "Ứng dụng gốc cho Mac Apple Silicon: theo dõi nhiệt độ, đường cong quạt thông minh, cài đặt qua proxy hoặc Homebrew. Giao diện ứng dụng có 18 ngôn ngữ. macOS 14 trở lên.",
+  "skip": "Đến nội dung chính",
+  "nav": [
+    "Tính năng",
+    "Cài đặt",
+    "Câu hỏi"
+  ],
+  "eyebrow": "DÀNH CHO APPLE SILICON",
+  "headline": [
+    "Nhiệt độ rõ ràng.",
+    "Quạt trong tầm tay."
+  ],
+  "intro": "Xem nhiệt độ Mac ngay trên thanh menu. Để đường cong thông minh điều chỉnh quạt hoặc tự mình kiểm soát. Ứng dụng gốc, miễn phí và mã nguồn mở.",
+  "install": "Cài đặt miễn phí",
+  "source": "Xem mã trên GitHub",
+  "requirements": "macOS 14+ · Apple Silicon · Cần có quạt vật lý",
+  "stage_note": "Ngay trên thanh menu",
+  "caption": "Giao diện thực bằng tiếng Anh · v0.2.3.36 · M4 Max MacBook Pro",
+  "facts": [
+    [
+      "Swift",
+      "Ứng dụng gốc cho macOS"
+    ],
+    [
+      "Smart",
+      "Tự điều chỉnh theo nhiệt độ"
+    ],
+    [
+      "18",
+      "ngôn ngữ ứng dụng"
+    ],
+    [
+      "MIT",
+      "Miễn phí, mã nguồn mở"
+    ]
+  ],
+  "feature_kicker": "NHÌN RÕ TRẠNG THÁI. KIỂM SOÁT KHI CẦN.",
+  "feature_title": "Điều khiển quạt theo cách bạn làm việc.",
+  "features": [
+    [
+      "01 / THEO DÕI",
+      "Hiểu Mac chỉ trong một cái nhìn.",
+      "Xem nhiệt độ CPU, GPU và tốc độ quạt thực tế. Các số đo khác phụ thuộc vào cảm biến của máy.",
+      "CPU / GPU / RPM"
+    ],
+    [
+      "02 / ĐIỀU KHIỂN",
+      "Tự động hoặc theo ý bạn.",
+      "Chế độ thông minh đáp ứng nhiệt độ và xu hướng thay đổi. Chọn cân bằng, hiệu năng hoặc khôi phục điều khiển tự động của Apple.",
+      "SMART / BALANCED / PERFORMANCE"
+    ],
+    [
+      "03 / DÒNG LỆNH",
+      "Dùng được cả trong Terminal.",
+      "Đọc trạng thái JSON, đặt tốc độ và ghi dữ liệu CSV. Ứng dụng và CLI dùng chung dịch vụ nền.",
+      "macfanpro status"
+    ]
+  ],
+  "safety_kicker": "BẢO VỆ TÍCH HỢP",
+  "safety_title": "Tính đến cả tình huống bất thường.",
+  "safety_body": "Dịch vụ nền cung cấp bảo vệ nhiệt ở 95°C khi điều khiển thủ công. Nếu mất tín hiệu hoạt động của điều khiển do ứng dụng quản lý, bộ giám sát sẽ thử trả quyền điều khiển cho macOS. Hành vi phụ thuộc vào chế độ, firmware và cảm biến.",
+  "safety_link": "Tìm hiểu điều khiển và bảo vệ",
+  "privacy_title": "Dữ liệu ở lại trên Mac của bạn.",
+  "privacy_body": "Nhiệt độ và nhật ký được lưu cục bộ. Không tài khoản hay đo lường từ xa. Kiểm tra cập nhật truy cập GitHub; cài đặt và cập nhật tải các tệp cần thiết.",
+  "install_kicker": "BẮT ĐẦU TRONG VÀI BƯỚC",
+  "install_title": "Dễ cài đặt, dễ cập nhật.",
+  "install_intro": "Trình cài đặt trực tuyến tải ứng dụng đã biên dịch, không cần Homebrew hay Xcode. Bản cài qua Homebrew vẫn được cập nhật bằng Homebrew.",
+  "method": "Chọn cách cài đặt",
+  "proxy": "Dùng proxy",
+  "direct": "Kết nối trực tiếp",
+  "brew": "Homebrew",
+  "proxy_note": "Nếu không truy cập được GitHub, hãy mở ứng dụng proxy của bạn. 7890 chỉ là ví dụ; thay bằng cổng cục bộ thực tế. Trang web này không cung cấp dịch vụ proxy.",
+  "direct_note": "Dành cho mạng truy cập trực tiếp được GitHub. Chạy lại cùng lệnh để cập nhật.",
+  "brew_note": "Dành cho người đã có Homebrew. Nếu cần, cấu hình proxy trong Terminal hoặc chọn thẻ proxy. Trình cài đặt nhận biết bản cài Homebrew hiện có.",
+  "type": "Loại proxy",
+  "port": "Cổng cục bộ",
+  "copy": "Sao chép lệnh",
+  "copied": "Đã sao chép",
+  "copy_error": "Không thể tự sao chép. Hãy chọn lệnh và sao chép thủ công.",
+  "port_error": "Nhập cổng từ 1 đến 65535.",
+  "steps": [
+    [
+      "Mở Terminal",
+      "Sao chép toàn bộ lệnh, dán vào Terminal và nhấn Return."
+    ],
+    [
+      "Nhập mật khẩu quản trị",
+      "Cần để cài dịch vụ nền. Ký tự không hiển thị khi gõ. Nhấn Return sau khi nhập xong."
+    ],
+    [
+      "Bắt đầu từ thanh menu",
+      "Mở MacFanPro, nhấp biểu tượng quạt và chọn chế độ."
+    ]
+  ],
+  "update": "Cập nhật về sau thế nào?",
+  "update_body": "Mở trình cập nhật Terminal từ thông báo trong ứng dụng hoặc chạy lại lệnh trực tuyến. Bật proxy trước nếu cần. Cài đặt và dữ liệu hiệu chuẩn được giữ lại.",
+  "download": "Tải bản phát hành",
+  "full_guide": "Hướng dẫn cài đặt và proxy",
+  "source_build": "Biên dịch từ mã nguồn",
+  "faq_kicker": "ĐIỀU CẦN BIẾT",
+  "faq_title": "Trước khi bắt đầu.",
+  "faq": [
+    [
+      "Mac của tôi có dùng được không?",
+      "Cần macOS 14+, Apple Silicon và quạt vật lý. Không hỗ trợ Mac Intel; MacBook Air không có quạt không dùng được điều khiển quạt. Kiểm thử phần cứng chủ yếu trên M4 Max MacBook Pro. Xem hồ sơ tương thích cho các mẫu khác."
+    ],
+    [
+      "Có miễn phí không? Cần tài khoản không?",
+      "Miễn phí theo giấy phép MIT, không cần tài khoản hay mã kích hoạt. Bạn có thể đọc mã, tự biên dịch và đóng góp."
+    ],
+    [
+      "Chỉ kéo ứng dụng vào Applications là đủ?",
+      "Cần cài cả dịch vụ nền. Nên dùng lệnh ở trên. Nếu cài thủ công, làm theo README và giữ ứng dụng cùng thư mục bin. Bản hiện tại dùng chữ ký ad-hoc, chưa được Apple công chứng; lần đầu mở có thể có cảnh báo bảo mật."
+    ],
+    [
+      "Dừng ở Password thì làm gì?",
+      "Terminal đang chờ mật khẩu quản trị. Không hiện ký tự hay dấu sao khi gõ. Nhập mật khẩu đăng nhập Mac và nhấn Return. Không nhập mật khẩu trên trang web hoặc gửi cho người khác."
+    ],
+    [
+      "Nếu GitHub không truy cập được?",
+      "Mở proxy phù hợp, nhập cổng HTTP hoặc SOCKS5 thực tế trong thẻ proxy và chạy toàn bộ lệnh. GitHub Pages và tải xuống cũng có thể cần proxy."
+    ],
+    [
+      "Chế độ thông minh có chạy quạt liên tục không?",
+      "Không ép quạt luôn chạy tối đa. Khi tải thấp, nó có thể nhả điều khiển thủ công. Việc dừng quạt do macOS và firmware quyết định. Nhiệt độ, tiếng ồn và hiệu năng thay đổi theo máy và tải."
+    ]
+  ],
+  "closing": "Hiểu rõ Mac của bạn hơn một chút.",
+  "closing_body": "Từ xem nhanh nhiệt độ đến quy trình làm việc riêng.",
+  "footer": "Điều khiển quạt mã nguồn mở cho Mac Apple Silicon.",
+  "docs": "Tài liệu",
+  "issues": "Báo lỗi",
+  "license": "Giấy phép MIT",
+  "credit": "Phát triển từ ThermalForge. Cảm ơn dự án gốc và mọi người đóng góp.",
+  "image_alt": "Bảng MacFanPro hiển thị nhiệt độ, tốc độ, chế độ và ngôn ngữ",
+  "main_nav": "Điều hướng chính",
+  "languages": "Chọn ngôn ngữ",
+  "copyright": "Những người đóng góp cho MacFanPro"
+}

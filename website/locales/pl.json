@@ -1,0 +1,141 @@
+{
+  "title": "MacFanPro — Darmowe sterowanie wentylatorami Maca",
+  "description": "Natywna aplikacja open source dla Maców z Apple Silicon. Temperatury, inteligentne krzywe, instalacja przez proxy lub Homebrew. 18 języków aplikacji. macOS 14 lub nowszy.",
+  "skip": "Przejdź do treści",
+  "nav": [
+    "Funkcje",
+    "Instalacja",
+    "Pytania"
+  ],
+  "eyebrow": "DLA APPLE SILICON",
+  "headline": [
+    "Temperatura na widoku.",
+    "Wentylatory pod kontrolą."
+  ],
+  "intro": "Sprawdzaj temperaturę Maca na pasku menu. Korzystaj z inteligentnych krzywych lub steruj samodzielnie. Natywnie, bezpłatnie i z otwartym kodem.",
+  "install": "Zainstaluj bezpłatnie",
+  "source": "Kod na GitHubie",
+  "requirements": "macOS 14+ · Apple Silicon · Wymagane fizyczne wentylatory",
+  "stage_note": "Wprost na pasku menu",
+  "caption": "Rzeczywisty interfejs po angielsku · v0.2.3.36 · M4 Max MacBook Pro",
+  "facts": [
+    [
+      "Swift",
+      "Natywnie na macOS"
+    ],
+    [
+      "Smart",
+      "Regulacja według temperatury"
+    ],
+    [
+      "18",
+      "języków aplikacji"
+    ],
+    [
+      "MIT",
+      "Bezpłatnie i open source"
+    ]
+  ],
+  "feature_kicker": "LEPSZY WGLĄD. WIĘKSZA KONTROLA.",
+  "feature_title": "Sterowanie dopasowane do pracy.",
+  "features": [
+    [
+      "01 / MONITOROWANIE",
+      "Stan Maca w mgnieniu oka.",
+      "Temperatury CPU i GPU oraz rzeczywiste obroty wentylatorów. Pozostałe odczyty zależą od czujników danego modelu.",
+      "CPU / GPU / RPM"
+    ],
+    [
+      "02 / STEROWANIE",
+      "Automatycznie lub po swojemu.",
+      "Tryb inteligentny reaguje na temperaturę i jej trend. Wybierz równowagę lub wydajność albo przywróć automatyczne sterowanie Apple.",
+      "SMART / BALANCED / PERFORMANCE"
+    ],
+    [
+      "03 / TERMINAL",
+      "Także z wiersza poleceń.",
+      "Odczytuj JSON, ustawiaj obroty i zapisuj CSV. Aplikacja i CLI korzystają ze wspólnej usługi w tle.",
+      "macfanpro status"
+    ]
+  ],
+  "safety_kicker": "WBUDOWANE ZABEZPIECZENIA",
+  "safety_title": "Z myślą o nieprzewidzianych sytuacjach.",
+  "safety_body": "Podczas sterowania ręcznego usługa zapewnia ochronę termiczną przy 95°C. Gdy znika sygnał aktywności sterowania zarządzanego przez aplikację, mechanizm nadzorczy próbuje oddać kontrolę macOS. Zachowanie zależy od trybu, firmware’u i czujników.",
+  "safety_link": "Poznaj sterowanie i zabezpieczenia",
+  "privacy_title": "Twoje dane zostają na Macu.",
+  "privacy_body": "Temperatury i dzienniki są lokalne. Bez konta i telemetrii. Sprawdzanie aktualizacji łączy się z GitHubem; instalacja i aktualizacje pobierają pliki.",
+  "install_kicker": "KILKA KROKÓW DO STARTU",
+  "install_title": "Łatwa instalacja i aktualizacja.",
+  "install_intro": "Instalator online pobiera gotową aplikację bez Homebrew i Xcode. Istniejące instalacje Homebrew nadal są aktualizowane przez Homebrew.",
+  "method": "Wybierz sposób instalacji",
+  "proxy": "Przez proxy",
+  "direct": "Połączenie bezpośrednie",
+  "brew": "Homebrew",
+  "proxy_note": "Jeśli GitHub jest niedostępny, uruchom własne proxy. 7890 to przykład — wpisz rzeczywisty port lokalny. Ta witryna nie udostępnia usługi proxy.",
+  "direct_note": "Dla sieci z bezpośrednim dostępem do GitHuba. Uruchom ponownie to samo polecenie, aby zaktualizować aplikację.",
+  "brew_note": "Dla użytkowników Homebrew. W razie potrzeby skonfiguruj proxy w Terminalu albo wybierz kartę proxy. Instalator rozpoznaje istniejące instalacje Homebrew.",
+  "type": "Typ proxy",
+  "port": "Port lokalny",
+  "copy": "Kopiuj polecenie",
+  "copied": "Skopiowano",
+  "copy_error": "Nie udało się skopiować automatycznie. Zaznacz polecenie i skopiuj ręcznie.",
+  "port_error": "Podaj port od 1 do 65535.",
+  "steps": [
+    [
+      "Otwórz Terminal",
+      "Skopiuj całe polecenie, wklej do Terminala i naciśnij Return."
+    ],
+    [
+      "Wpisz hasło administratora",
+      "Jest potrzebne do instalacji usługi. Znaki podczas wpisywania są niewidoczne. Na końcu naciśnij Return."
+    ],
+    [
+      "Zacznij na pasku menu",
+      "Otwórz MacFanPro, kliknij ikonę wentylatora i wybierz tryb."
+    ]
+  ],
+  "update": "Jak aktualizować?",
+  "update_body": "Skorzystaj z powiadomienia aplikacji, aby otworzyć aktualizator w Terminalu, lub powtórz polecenie online. Włącz wcześniej proxy, jeśli jest potrzebne. Ustawienia i dane kalibracji zostaną zachowane.",
+  "download": "Pobierz wydanie",
+  "full_guide": "Poradnik instalacji i proxy",
+  "source_build": "Zbuduj ze źródeł",
+  "faq_kicker": "WARTO WIEDZIEĆ",
+  "faq_title": "Zanim zaczniesz.",
+  "faq": [
+    [
+      "Czy mój Mac jest obsługiwany?",
+      "Wymagane są macOS 14+, Apple Silicon i fizyczne wentylatory. Maci Intel nie są obsługiwane, a MacBook Air bez wentylatora nie umożliwia sterowania nim. Większość testów sprzętowych wykonano na M4 Max MacBook Pro. Inne modele opisano w raportach zgodności."
+    ],
+    [
+      "Czy aplikacja jest darmowa? Potrzebuję konta?",
+      "Bezpłatna na licencji MIT, bez konta i klucza aktywacyjnego. Możesz czytać kod, kompilować i wnosić poprawki."
+    ],
+    [
+      "Czy wystarczy przeciągnąć aplikację do Aplikacji?",
+      "Trzeba też zainstalować usługę w tle. Zalecamy polecenie powyżej. Przy ręcznej instalacji postępuj według README i trzymaj aplikację z katalogiem bin. Wydania mają podpis ad-hoc, bez poświadczenia Apple; przy pierwszym starcie może pojawić się ostrzeżenie."
+    ],
+    [
+      "Terminal zatrzymał się na Password. Co robić?",
+      "Czeka na hasło administratora. Nie wyświetla znaków ani gwiazdek. Wpisz hasło logowania do Maca i naciśnij Return. Nie wpisuj go na stronie internetowej ani nie udostępniaj innym."
+    ],
+    [
+      "Co zrobić bez dostępu do GitHuba?",
+      "Uruchom działające proxy i wpisz jego port HTTP lub SOCKS5 na karcie proxy. Wykonaj całe polecenie. Dostęp do GitHub Pages i pobierania też może wymagać proxy."
+    ],
+    [
+      "Czy tryb inteligentny stale uruchamia wentylatory?",
+      "Nie wymusza ciągłych maksymalnych obrotów. Przy małym obciążeniu może zwolnić sterowanie ręczne. O zatrzymaniu decydują macOS i firmware. Temperatury, hałas i wydajność zależą od modelu i obciążenia."
+    ]
+  ],
+  "closing": "Poznaj lepiej swojego Maca.",
+  "closing_body": "Od sprawdzenia temperatury po własny przepływ pracy.",
+  "footer": "Otwarte sterowanie wentylatorami Maców z Apple Silicon.",
+  "docs": "Dokumentacja",
+  "issues": "Zgłoś problem",
+  "license": "Licencja MIT",
+  "credit": "Na bazie ThermalForge. Dziękujemy projektowi źródłowemu i wszystkim współtwórcom.",
+  "image_alt": "Panel MacFanPro z temperaturami, obrotami, trybami i językami",
+  "main_nav": "Nawigacja główna",
+  "languages": "Wybierz język",
+  "copyright": "Współtwórcy MacFanPro"
+}

@@ -1,0 +1,141 @@
+{
+  "title": "MacFanPro — Free, open-source fan control for Mac",
+  "description": "Native fan control for Apple Silicon Macs. Monitor temperatures, use smart fan curves, and install with Homebrew or a proxy-aware installer. Free and open source. macOS 14+.",
+  "skip": "Skip to content",
+  "nav": [
+    "Features",
+    "Install & update",
+    "FAQ"
+  ],
+  "eyebrow": "BUILT FOR APPLE SILICON",
+  "headline": [
+    "A cooler Mac.",
+    "A clearer view."
+  ],
+  "intro": "Know your temperatures at a glance. Let smart curves handle the fans, or take control yourself. Native, free, and open source.",
+  "install": "Get MacFanPro",
+  "source": "View source on GitHub",
+  "requirements": "macOS 14+ · Apple Silicon · Physical fans required",
+  "stage_note": "At home in your menu bar",
+  "caption": "Actual app · v0.2.3.36 · M4 Max MacBook Pro",
+  "facts": [
+    [
+      "Swift",
+      "Native to macOS"
+    ],
+    [
+      "Smart",
+      "Temperature-aware control"
+    ],
+    [
+      "18",
+      "App interface languages"
+    ],
+    [
+      "MIT",
+      "Free and open source"
+    ]
+  ],
+  "feature_kicker": "A CLEARER PICTURE. MORE CONTROL.",
+  "feature_title": "Fan control that fits your workflow.",
+  "features": [
+    [
+      "01 / MONITOR",
+      "Your Mac, at a glance.",
+      "See CPU and GPU temperatures and actual fan speeds. Open the panel for more sensor readings, depending on what your Mac provides.",
+      "CPU / GPU / RPM"
+    ],
+    [
+      "02 / CONTROL",
+      "Automatic, with room for you.",
+      "Smart mode responds to temperature and its trend. Choose Balanced or Performance, or use Default to restore Apple’s automatic control.",
+      "SMART / BALANCED / PERFORMANCE"
+    ],
+    [
+      "03 / SCRIPT",
+      "At home in the terminal, too.",
+      "Read JSON status, set fan speeds, and record CSV data. The app and command line share a background service, ready for your own scripts.",
+      "macfanpro status"
+    ]
+  ],
+  "safety_kicker": "BUILT-IN PROTECTIONS",
+  "safety_title": "Control with recovery in mind.",
+  "safety_body": "The background service provides a 95°C thermal safeguard during manual control. A watchdog attempts to restore macOS control if an app-supervised hold loses its heartbeat. Behavior depends on the active mode, firmware, and sensors.",
+  "safety_link": "Read about control and safeguards",
+  "privacy_title": "Your data stays on your Mac.",
+  "privacy_body": "Temperatures and logs stay local. No account or telemetry. Update checks contact GitHub; installation and updates download files.",
+  "install_kicker": "READY WHEN YOU ARE",
+  "install_title": "Easy to install. Ready to update.",
+  "install_intro": "The online installer downloads a prebuilt app. No Homebrew or Xcode required. Existing Homebrew installations keep updating through Homebrew.",
+  "method": "Choose an installation method",
+  "proxy": "Use a proxy",
+  "direct": "Direct connection",
+  "brew": "Homebrew",
+  "proxy_note": "If GitHub is unreachable, start your own proxy app and check its local port. 7890 is an example; replace it with your actual port. This website does not provide a proxy service.",
+  "direct_note": "For networks that can reach GitHub directly. Run the same command again to update an existing installation.",
+  "brew_note": "For existing Homebrew users. If you need a proxy, configure it in your terminal first or select “Use a proxy”; the online installer recognizes Homebrew installations.",
+  "type": "Proxy protocol",
+  "port": "Local port",
+  "copy": "Copy command",
+  "copied": "Copied",
+  "copy_error": "Could not copy automatically. Select and copy the command manually.",
+  "port_error": "Enter a port between 1 and 65535.",
+  "steps": [
+    [
+      "Open Terminal",
+      "Copy the complete command for your selected method, paste it into Terminal, and press Return."
+    ],
+    [
+      "Enter your Mac password",
+      "Administrator access installs the background service. Terminal hides password characters; type your password and press Return."
+    ],
+    [
+      "Find your menu bar icon",
+      "Open MacFanPro after installation. Click the fan icon and choose a mode that works for you."
+    ]
+  ],
+  "update": "What about updates?",
+  "update_body": "Use the app’s update prompt to open the terminal updater, or run the online installation command again. Start your proxy first if needed. Settings and calibration data are preserved.",
+  "download": "Download a release",
+  "full_guide": "Full installation & proxy guide",
+  "source_build": "Build from source",
+  "faq_kicker": "GOOD TO KNOW",
+  "faq_title": "Before you begin.",
+  "faq": [
+    [
+      "Will it work on my Mac?",
+      "You need macOS 14 or later, Apple Silicon, and physical fans. Intel Macs are unsupported; fanless MacBook Air models cannot use fan control. Most hardware testing has been on an M4 Max MacBook Pro. Check the repository’s compatibility records for other models."
+    ],
+    [
+      "Is it free? Do I need an account?",
+      "It is free under the MIT license. No account or activation key. Read the source, build it yourself, or contribute a fix."
+    ],
+    [
+      "Can I just drag the app into Applications?",
+      "The background service must also be installed, so we recommend the online command above. For manual downloads, follow the README and keep the app and bin folder together. Current releases are ad-hoc signed and not notarized by Apple; macOS may show a security prompt on first launch."
+    ],
+    [
+      "The installer stopped at Password. What now?",
+      "Terminal is waiting for your administrator password. No characters or asterisks appear while you type. Enter your Mac login password and press Return. Never enter it on this website or send it to someone else."
+    ],
+    [
+      "What if I cannot reach GitHub?",
+      "Start a proxy that can reach GitHub, then select “Use a proxy” above. Enter the HTTP or SOCKS5 port from your proxy app and run the complete command. Access to both GitHub Pages and release downloads may require a proxy on some networks."
+    ],
+    [
+      "Will Smart mode keep my fans running all the time?",
+      "It does not force constant full speed. Smart mode responds to temperature and its trend and may release manual control at low loads. Whether fans stop depends on macOS and firmware. Temperatures, noise, and performance vary by machine and workload."
+    ]
+  ],
+  "closing": "Get to know your Mac a little better.",
+  "closing_body": "From a quick temperature check to a workflow of your own.",
+  "footer": "Open-source fan control, made for Apple Silicon Macs.",
+  "docs": "Documentation",
+  "issues": "Report an issue",
+  "license": "MIT license",
+  "credit": "Built on ThermalForge. Thanks to upstream and all contributors.",
+  "image_alt": "MacFanPro panel: temperatures, fan speeds, control modes, and language settings",
+  "main_nav": "Main navigation",
+  "languages": "Choose a language",
+  "copyright": "MacFanPro contributors"
+}

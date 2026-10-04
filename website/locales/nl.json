@@ -1,0 +1,141 @@
+{
+  "title": "MacFanPro — Gratis open-source ventilatorregeling voor Mac",
+  "description": "Native ventilatorregeling voor Apple Silicon Macs. Temperaturen, slimme curves en installatie met proxy of Homebrew. App in 18 talen. Vanaf macOS 14.",
+  "skip": "Naar de inhoud",
+  "nav": [
+    "Functies",
+    "Installatie",
+    "Vragen"
+  ],
+  "eyebrow": "VOOR APPLE SILICON",
+  "headline": [
+    "Temperatuur in beeld.",
+    "Ventilatoren in de hand."
+  ],
+  "intro": "Bekijk de temperatuur van je Mac in de menubalk. Laat slimme curves de ventilatoren regelen of neem zelf de controle. Native, gratis en open source.",
+  "install": "Gratis installeren",
+  "source": "Broncode op GitHub",
+  "requirements": "macOS 14+ · Apple Silicon · Fysieke ventilatoren nodig",
+  "stage_note": "Thuis in je menubalk",
+  "caption": "Echte Engelse interface · v0.2.3.36 · M4 Max MacBook Pro",
+  "facts": [
+    [
+      "Swift",
+      "Native voor macOS"
+    ],
+    [
+      "Smart",
+      "Regeling op temperatuur"
+    ],
+    [
+      "18",
+      "talen in de app"
+    ],
+    [
+      "MIT",
+      "Gratis en open source"
+    ]
+  ],
+  "feature_kicker": "MEER INZICHT. MEER CONTROLE.",
+  "feature_title": "Ventilatorregeling voor jouw werkwijze.",
+  "features": [
+    [
+      "01 / BEKIJKEN",
+      "Je Mac in één oogopslag.",
+      "CPU- en GPU-temperaturen en werkelijke ventilatorsnelheden. Extra metingen hangen af van de sensoren in je model.",
+      "CPU / GPU / RPM"
+    ],
+    [
+      "02 / REGELEN",
+      "Automatisch of zoals jij wilt.",
+      "Smart reageert op temperatuur en trend. Kies balans of prestaties, of herstel de automatische regeling van Apple.",
+      "SMART / BALANCED / PERFORMANCE"
+    ],
+    [
+      "03 / TERMINAL",
+      "Ook via de opdrachtregel.",
+      "Lees JSON-status, stel snelheden in en leg CSV-gegevens vast. De app en CLI delen dezelfde achtergrondservice.",
+      "macfanpro status"
+    ]
+  ],
+  "safety_kicker": "INGEBOUWDE BESCHERMING",
+  "safety_title": "Ook voorbereid op storingen.",
+  "safety_body": "Tijdens handmatige regeling biedt de service thermische bescherming bij 95°C. Valt het hartslagsignaal van een door de app beheerde regeling weg, dan probeert de bewaking de controle aan macOS terug te geven. Het gedrag hangt af van modus, firmware en sensoren.",
+  "safety_link": "Lees over regeling en bescherming",
+  "privacy_title": "Je gegevens blijven op je Mac.",
+  "privacy_body": "Temperatuurgegevens en logs blijven lokaal. Geen account of telemetrie. Updatecontroles benaderen GitHub; installatie en updates downloaden bestanden.",
+  "install_kicker": "IN EEN PAAR STAPPEN KLAAR",
+  "install_title": "Eenvoudig installeren en bijwerken.",
+  "install_intro": "De online installer downloadt een kant-en-klare app, zonder Homebrew of Xcode. Bestaande Homebrew-installaties blijven via Homebrew bijgewerkt worden.",
+  "method": "Kies een installatiemethode",
+  "proxy": "Met proxy",
+  "direct": "Direct verbinden",
+  "brew": "Homebrew",
+  "proxy_note": "Is GitHub onbereikbaar, start dan je eigen proxy. 7890 is een voorbeeld: vul de echte lokale poort in. Deze website biedt geen proxyservice.",
+  "direct_note": "Voor netwerken met directe toegang tot GitHub. Dezelfde opdracht werkt ook als update.",
+  "brew_note": "Voor wie Homebrew al gebruikt. Stel zo nodig een proxy in Terminal in of kies het proxytabblad. De installer herkent bestaande Homebrew-installaties.",
+  "type": "Proxytype",
+  "port": "Lokale poort",
+  "copy": "Opdracht kopiëren",
+  "copied": "Gekopieerd",
+  "copy_error": "Automatisch kopiëren is mislukt. Selecteer de opdracht en kopieer handmatig.",
+  "port_error": "Voer een poort tussen 1 en 65535 in.",
+  "steps": [
+    [
+      "Open Terminal",
+      "Kopieer de volledige opdracht, plak deze in Terminal en druk op Return."
+    ],
+    [
+      "Voer je beheerderswachtwoord in",
+      "Dit is nodig voor de achtergrondservice. Tijdens het typen verschijnen geen tekens. Druk daarna op Return."
+    ],
+    [
+      "Begin in de menubalk",
+      "Open MacFanPro, klik op de ventilator en kies een modus."
+    ]
+  ],
+  "update": "Hoe werk ik later bij?",
+  "update_body": "Gebruik de updatemelding in de app of voer de online opdracht opnieuw uit. Start zo nodig eerst je proxy. Instellingen en kalibratiegegevens blijven behouden.",
+  "download": "Release downloaden",
+  "full_guide": "Installatie- en proxyhandleiding",
+  "source_build": "Bouwen vanuit broncode",
+  "faq_kicker": "GOED OM TE WETEN",
+  "faq_title": "Voordat je begint.",
+  "faq": [
+    [
+      "Werkt het op mijn Mac?",
+      "Je hebt macOS 14+, Apple Silicon en fysieke ventilatoren nodig. Intel Macs worden niet ondersteund; ventilatorloze MacBook Air-modellen kunnen geen ventilatoren regelen. De meeste hardwaretests zijn gedaan op een M4 Max MacBook Pro. Zie de compatibiliteitsverslagen voor andere modellen."
+    ],
+    [
+      "Is het gratis? Heb ik een account nodig?",
+      "Gratis onder de MIT-licentie, zonder account of activatiesleutel. Je kunt de code lezen, zelf bouwen en bijdragen."
+    ],
+    [
+      "Kan ik de app gewoon naar Apps slepen?",
+      "De achtergrondservice moet ook geïnstalleerd worden. Gebruik bij voorkeur de opdracht hierboven. Volg bij handmatige installatie de README en houd de app en bin-map samen. Releases zijn ad-hoc ondertekend en niet door Apple genotariseerd; bij de eerste start kan een waarschuwing verschijnen."
+    ],
+    [
+      "Het stopt bij Password. Wat nu?",
+      "Terminal wacht op je beheerderswachtwoord. Er verschijnen geen tekens of sterretjes. Typ je Mac-inlogwachtwoord en druk op Return. Voer het niet op een website in en deel het niet met anderen."
+    ],
+    [
+      "Wat als GitHub niet bereikbaar is?",
+      "Start een werkende proxy en vul de HTTP- of SOCKS5-poort in op het proxytabblad. Voer de hele opdracht uit. Ook GitHub Pages en downloads kunnen een proxy nodig hebben."
+    ],
+    [
+      "Laat Smart de ventilatoren altijd draaien?",
+      "Smart dwingt geen constante maximumsnelheid af. Bij lage belasting kan de handmatige regeling worden losgelaten. macOS en firmware bepalen of de ventilatoren stoppen. Temperatuur, geluid en prestaties verschillen per model en belasting."
+    ]
+  ],
+  "closing": "Leer je Mac wat beter kennen.",
+  "closing_body": "Van een snelle temperatuurcheck tot je eigen werkwijze.",
+  "footer": "Open-source ventilatorregeling voor Apple Silicon Macs.",
+  "docs": "Documentatie",
+  "issues": "Probleem melden",
+  "license": "MIT-licentie",
+  "credit": "Gebaseerd op ThermalForge. Dank aan het oorspronkelijke project en alle bijdragers.",
+  "image_alt": "MacFanPro-paneel met temperaturen, snelheden, modi en talen",
+  "main_nav": "Hoofdnavigatie",
+  "languages": "Taal kiezen",
+  "copyright": "MacFanPro-bijdragers"
+}

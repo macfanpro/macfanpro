@@ -6,6 +6,8 @@
 
 [English](README.md) | **简体中文**
 
+[官方网站 · 18 种语言](https://macfanpro.github.io/macfanpro/?lang=zh-Hans) · [下载](https://github.com/macfanpro/macfanpro/releases/latest)
+
 <img src="docs/images/social-preview-zh-CN.png" alt="MacFanPro：Apple Silicon Mac 风扇控制。免费开源（MIT 协议），菜单栏应用与命令行，一键更新，支持 M1–M5、macOS 14 及以上，18 种语言" width="100%">
 
 **Apple Silicon Mac 风扇控制工具 —— 免费、开源、原生。**

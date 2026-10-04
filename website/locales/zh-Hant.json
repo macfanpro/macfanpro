@@ -1,0 +1,141 @@
+{
+  "title": "MacFanPro — 免費開源的 Mac 風扇控制工具",
+  "description": "Apple Silicon Mac 原生風扇控制工具。查看溫度與轉速、使用智慧曲線，支援代理安裝、Homebrew 與 18 種介面語言。macOS 14 起。",
+  "skip": "跳到主要內容",
+  "nav": [
+    "功能",
+    "安裝與更新",
+    "常見問題"
+  ],
+  "eyebrow": "為 APPLE SILICON 打造",
+  "headline": [
+    "溫度一目了然。",
+    "風扇由你掌控。"
+  ],
+  "intro": "在選單列查看 Mac 的溫度，讓風扇隨智慧曲線調整。原生、免費、開源，散熱方式由你選擇。",
+  "install": "免費安裝",
+  "source": "在 GitHub 查看原始碼",
+  "requirements": "macOS 14+ · Apple Silicon · 需要實體風扇",
+  "stage_note": "原生選單列應用程式",
+  "caption": "實際簡體中文介面 · v0.2.3.36 · M4 Max MacBook Pro",
+  "facts": [
+    [
+      "Swift",
+      "原生 macOS 體驗"
+    ],
+    [
+      "Smart",
+      "隨溫度自動調整"
+    ],
+    [
+      "18",
+      "種應用程式介面語言"
+    ],
+    [
+      "MIT",
+      "免費使用，開放原始碼"
+    ]
+  ],
+  "feature_kicker": "看清狀態，掌握控制",
+  "feature_title": "讓散熱融入你的工作流程。",
+  "features": [
+    [
+      "01 / 監測",
+      "狀態，就在選單列。",
+      "查看 CPU、GPU 溫度與實際風扇轉速。展開面板可查看其他感測器，讀數依機型而異。",
+      "CPU / GPU / RPM"
+    ],
+    [
+      "02 / 控制",
+      "自動調整，也能自行選擇。",
+      "智慧模式依溫度與變化趨勢調整轉速。可選擇均衡、效能模式，或恢復 Apple 自動控制。",
+      "SMART / BALANCED / PERFORMANCE"
+    ],
+    [
+      "03 / 指令列",
+      "日常使用，也適合開發。",
+      "讀取 JSON 狀態、設定轉速、記錄 CSV 資料。應用程式與指令列共用背景服務。",
+      "macfanpro status"
+    ]
+  ],
+  "safety_kicker": "內建保護",
+  "safety_title": "控制風扇，也考慮異常恢復。",
+  "safety_body": "背景服務在手動控制期間提供 95°C 高溫保護。應用程式管理的控制失去心跳時，看門狗會嘗試恢復 macOS 控制。行為取決於模式、韌體與感測器。",
+  "safety_link": "了解控制原理與保護機制",
+  "privacy_title": "你的資料，留在你的 Mac。",
+  "privacy_body": "溫控與日誌保存在本機，不設帳號、不收集遙測。檢查更新會連線 GitHub，安裝與更新會下載檔案。",
+  "install_kicker": "幾步，開始使用",
+  "install_title": "輕鬆安裝，也能持續更新。",
+  "install_intro": "線上安裝程式下載預先編譯的應用程式，無需 Homebrew 或 Xcode。既有 Homebrew 安裝仍透過 Homebrew 更新。",
+  "method": "選擇安裝方式",
+  "proxy": "代理安裝 / 更新",
+  "direct": "直接連線",
+  "brew": "Homebrew",
+  "proxy_note": "若無法直接連線 GitHub，請先啟動自己的代理軟體並確認本機連接埠。7890 僅為範例，請改成實際值；本網站不提供代理服務。",
+  "direct_note": "適合能直接連線 GitHub 的網路。再次執行相同指令即可更新。",
+  "brew_note": "適合已安裝 Homebrew 的使用者。若需要代理，先在終端機設定，或選擇「代理安裝 / 更新」；線上安裝程式會辨識既有 Homebrew 安裝。",
+  "type": "代理類型",
+  "port": "本機連接埠",
+  "copy": "複製指令",
+  "copied": "已複製",
+  "copy_error": "無法自動複製，請選取指令手動複製。",
+  "port_error": "請輸入 1–65535 之間的連接埠。",
+  "steps": [
+    [
+      "開啟終端機",
+      "複製完整指令，貼到 macOS「終端機」，然後按 Return。"
+    ],
+    [
+      "輸入管理員密碼",
+      "用於安裝背景服務。輸入時不會顯示字元，完成後按 Return。"
+    ],
+    [
+      "從選單列開始",
+      "安裝完成後開啟 MacFanPro，按一下風扇圖示並選擇模式。"
+    ]
+  ],
+  "update": "之後如何更新？",
+  "update_body": "在應用程式的更新提示中開啟終端機更新，或再次執行線上安裝指令。需要代理時先開啟代理軟體，既有設定與校準資料會保留。",
+  "download": "下載發行套件",
+  "full_guide": "完整安裝與代理說明",
+  "source_build": "從原始碼建置",
+  "faq_kicker": "你可能想知道",
+  "faq_title": "開始之前。",
+  "faq": [
+    [
+      "我的 Mac 可以使用嗎？",
+      "需要 macOS 14 以上、Apple Silicon 與實體風扇。不支援 Intel Mac；無風扇的 MacBook Air 無法使用風扇控制。主要實測機型是 M4 Max MacBook Pro，其他機型請參考相容性記錄。"
+    ],
+    [
+      "免費嗎？需要註冊嗎？",
+      "使用 MIT 開源授權，完全免費，不需要帳號或啟用碼。歡迎閱讀原始碼、自行建置或參與改進。"
+    ],
+    [
+      "直接拖入「應用程式」就可以嗎？",
+      "還需要安裝背景服務，建議使用上方指令。手動下載時請遵循 README，保留應用程式和 bin 資料夾。發行套件使用 ad-hoc 簽署，尚未經 Apple 公證，首次啟動可能出現安全提示。"
+    ],
+    [
+      "停在 Password 怎麼辦？",
+      "終端機正在等待管理員密碼。輸入時不顯示字元或星號，輸入 Mac 登入密碼後按 Return。不要在網頁填寫密碼或提供給他人。"
+    ],
+    [
+      "無法連線 GitHub 怎麼辦？",
+      "先開啟能連線 GitHub 的代理，選擇上方代理安裝，填入實際 HTTP 或 SOCKS5 連接埠並執行完整指令。部分網路存取 GitHub Pages 或下載也需要代理。"
+    ],
+    [
+      "智慧模式會讓風扇一直轉嗎？",
+      "不會強制持續全速。智慧模式依溫度與趨勢調整，低負載時可能釋放手動控制；是否停轉取決於 macOS 和韌體。溫度、噪音與效能因機型及負載而異。"
+    ]
+  ],
+  "closing": "更清楚掌握 Mac 的狀態。",
+  "closing_body": "從查看溫度，到建立自己的工作流程。",
+  "footer": "為 Apple Silicon Mac 打造的開源風扇控制工具。",
+  "docs": "使用文件",
+  "issues": "回報問題",
+  "license": "MIT 授權",
+  "credit": "基於 ThermalForge 開發，感謝上游與所有貢獻者。",
+  "image_alt": "MacFanPro 面板：溫度、轉速、控制模式與語言設定",
+  "main_nav": "主導覽",
+  "languages": "選擇語言",
+  "copyright": "MacFanPro 貢獻者"
+}

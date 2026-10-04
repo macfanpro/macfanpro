@@ -6,6 +6,8 @@
 
 **English** | [简体中文](README.zh-CN.md)
 
+[Website · 18 languages](https://macfanpro.github.io/macfanpro/en/) · [Download](https://github.com/macfanpro/macfanpro/releases/latest)
+
 <img src="docs/images/social-preview.png" alt="MacFanPro: fan control for Apple Silicon Macs. Free and open source under MIT, menu bar app and CLI with one-click updates, M1 to M5, macOS 14 or later, 18 languages" width="100%">
 
 **Fan control for Apple Silicon Macs — free, open source, native.**

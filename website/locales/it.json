@@ -1,0 +1,141 @@
+{
+  "title": "MacFanPro — Controllo gratuito e open source delle ventole Mac",
+  "description": "Controllo nativo delle ventole per Mac Apple Silicon. Temperature, curve intelligenti e installazione con proxy o Homebrew. App in 18 lingue. Da macOS 14.",
+  "skip": "Vai al contenuto",
+  "nav": [
+    "Funzioni",
+    "Installazione",
+    "Domande"
+  ],
+  "eyebrow": "PER APPLE SILICON",
+  "headline": [
+    "Temperature in vista.",
+    "Ventole sotto controllo."
+  ],
+  "intro": "Controlla la temperatura del Mac dalla barra dei menu. Affidati alle curve intelligenti o scegli tu. Nativo, gratuito e open source.",
+  "install": "Installa gratis",
+  "source": "Codice su GitHub",
+  "requirements": "macOS 14+ · Apple Silicon · Richiede ventole fisiche",
+  "stage_note": "Nella barra dei menu",
+  "caption": "Interfaccia reale in inglese · v0.2.3.36 · M4 Max MacBook Pro",
+  "facts": [
+    [
+      "Swift",
+      "Nativo per macOS"
+    ],
+    [
+      "Smart",
+      "Regolazione in base alla temperatura"
+    ],
+    [
+      "18",
+      "lingue nell’app"
+    ],
+    [
+      "MIT",
+      "Gratuito e open source"
+    ]
+  ],
+  "feature_kicker": "PIÙ CHIAREZZA. PIÙ CONTROLLO.",
+  "feature_title": "Un controllo adatto al tuo lavoro.",
+  "features": [
+    [
+      "01 / MONITORA",
+      "Il tuo Mac a colpo d’occhio.",
+      "Leggi temperature di CPU e GPU e velocità reali delle ventole. Le altre letture dipendono dai sensori del tuo modello.",
+      "CPU / GPU / RPM"
+    ],
+    [
+      "02 / CONTROLLA",
+      "In automatico o come preferisci.",
+      "Smart segue temperatura e andamento. Scegli equilibrio o prestazioni, oppure ripristina il controllo automatico di Apple.",
+      "SMART / BALANCED / PERFORMANCE"
+    ],
+    [
+      "03 / TERMINALE",
+      "Anche dalla riga di comando.",
+      "Leggi lo stato JSON, imposta le velocità e registra dati CSV. App e CLI condividono lo stesso servizio in background.",
+      "macfanpro status"
+    ]
+  ],
+  "safety_kicker": "PROTEZIONI INTEGRATE",
+  "safety_title": "Pensato anche per gli imprevisti.",
+  "safety_body": "Il servizio in background offre protezione termica a 95°C durante il controllo manuale. Se manca il segnale di attività del controllo gestito dall’app, il watchdog tenta di restituire il controllo a macOS. Il comportamento dipende da modalità, firmware e sensori.",
+  "safety_link": "Scopri controllo e protezioni",
+  "privacy_title": "I tuoi dati restano sul Mac.",
+  "privacy_body": "Temperature e log sono locali. Nessun account o telemetria. Il controllo aggiornamenti contatta GitHub; installazione e aggiornamenti scaricano file.",
+  "install_kicker": "PRONTO IN POCHI PASSI",
+  "install_title": "Facile da installare e aggiornare.",
+  "install_intro": "L’installer online scarica un’app già compilata: non servono Homebrew o Xcode. Le installazioni Homebrew esistenti continuano a usare Homebrew per gli aggiornamenti.",
+  "method": "Scegli come installare",
+  "proxy": "Usa un proxy",
+  "direct": "Connessione diretta",
+  "brew": "Homebrew",
+  "proxy_note": "Se GitHub non è raggiungibile, avvia il tuo proxy. 7890 è solo un esempio: inserisci la porta locale effettiva. Questo sito non offre un servizio proxy.",
+  "direct_note": "Per reti che raggiungono GitHub direttamente. Ripeti lo stesso comando per aggiornare.",
+  "brew_note": "Per chi usa già Homebrew. Se serve un proxy, configuralo nel Terminale oppure scegli la scheda proxy. L’installer riconosce le installazioni Homebrew esistenti.",
+  "type": "Tipo di proxy",
+  "port": "Porta locale",
+  "copy": "Copia comando",
+  "copied": "Copiato",
+  "copy_error": "Copia automatica non riuscita. Seleziona e copia il comando manualmente.",
+  "port_error": "Inserisci una porta tra 1 e 65535.",
+  "steps": [
+    [
+      "Apri Terminale",
+      "Copia il comando completo, incollalo nel Terminale e premi Invio."
+    ],
+    [
+      "Inserisci la password amministratore",
+      "Serve per installare il servizio. I caratteri non vengono mostrati mentre scrivi. Premi Invio al termine."
+    ],
+    [
+      "Inizia dalla barra dei menu",
+      "Apri MacFanPro, fai clic sulla ventola e scegli una modalità."
+    ]
+  ],
+  "update": "Come si aggiorna?",
+  "update_body": "Usa l’avviso dell’app per aggiornare nel Terminale o ripeti il comando online. Avvia prima il proxy se necessario. Impostazioni e dati di calibrazione vengono conservati.",
+  "download": "Scarica una versione",
+  "full_guide": "Guida a installazione e proxy",
+  "source_build": "Compila dal sorgente",
+  "faq_kicker": "DA SAPERE",
+  "faq_title": "Prima di iniziare.",
+  "faq": [
+    [
+      "Funziona sul mio Mac?",
+      "Richiede macOS 14+, Apple Silicon e ventole fisiche. Non supporta Mac Intel né il controllo delle ventole sui MacBook Air senza ventole. I test hardware sono soprattutto su M4 Max MacBook Pro; consulta i rapporti di compatibilità per altri modelli."
+    ],
+    [
+      "È gratuito? Serve un account?",
+      "Gratuito con licenza MIT, senza account o chiavi di attivazione. Puoi leggere il codice, compilarlo e contribuire."
+    ],
+    [
+      "Basta spostare l’app in Applicazioni?",
+      "Occorre anche installare il servizio. Consigliamo il comando sopra. Per l’installazione manuale segui il README e mantieni insieme app e cartella bin. Le versioni attuali usano una firma ad-hoc e non sono autenticate da Apple; al primo avvio può apparire un avviso di sicurezza."
+    ],
+    [
+      "Si è fermato su Password. Che faccio?",
+      "Il Terminale attende la password amministratore. Non mostra caratteri né asterischi. Inserisci la password di accesso al Mac e premi Invio. Non inserirla su pagine web e non condividerla."
+    ],
+    [
+      "GitHub non è raggiungibile: come procedo?",
+      "Avvia un proxy funzionante e inserisci la sua porta HTTP o SOCKS5 nella scheda proxy. Esegui l’intero comando. Anche GitHub Pages e i download potrebbero richiedere un proxy."
+    ],
+    [
+      "Smart tiene sempre accese le ventole?",
+      "Non impone la velocità massima continua. A basso carico può rilasciare il controllo manuale. L’arresto dipende da macOS e dal firmware. Temperature, rumore e prestazioni variano con modello e carico."
+    ]
+  ],
+  "closing": "Conosci meglio il tuo Mac.",
+  "closing_body": "Da una rapida lettura della temperatura al tuo flusso di lavoro.",
+  "footer": "Controllo open source delle ventole per Mac Apple Silicon.",
+  "docs": "Documentazione",
+  "issues": "Segnala un problema",
+  "license": "Licenza MIT",
+  "credit": "Basato su ThermalForge. Grazie al progetto originale e a tutti i collaboratori.",
+  "image_alt": "Pannello MacFanPro con temperature, velocità, modalità e lingue",
+  "main_nav": "Navigazione principale",
+  "languages": "Scegli la lingua",
+  "copyright": "Collaboratori MacFanPro"
+}

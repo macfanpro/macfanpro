@@ -1,0 +1,141 @@
+{
+  "title": "MacFanPro — Kostenlose Lüftersteuerung für Mac",
+  "description": "Native Open-Source-Lüftersteuerung für Apple Silicon Macs. Temperaturen überwachen, intelligente Kurven nutzen und mit Proxy oder Homebrew installieren. 18 App-Sprachen. Ab macOS 14.",
+  "skip": "Zum Inhalt",
+  "nav": [
+    "Funktionen",
+    "Installation",
+    "FAQ"
+  ],
+  "eyebrow": "FÜR APPLE SILICON",
+  "headline": [
+    "Temperatur im Blick.",
+    "Lüfter im Griff."
+  ],
+  "intro": "Behalte die Temperatur deines Mac in der Menüleiste im Blick. Nutze intelligente Lüfterkurven oder steuere selbst. Nativ, kostenlos und quelloffen.",
+  "install": "Kostenlos installieren",
+  "source": "Quellcode auf GitHub",
+  "requirements": "macOS 14+ · Apple Silicon · Physische Lüfter erforderlich",
+  "stage_note": "Zuhause in der Menüleiste",
+  "caption": "Echte englische Oberfläche · v0.2.3.36 · M4 Max MacBook Pro",
+  "facts": [
+    [
+      "Swift",
+      "Nativ für macOS"
+    ],
+    [
+      "Smart",
+      "Temperaturabhängige Regelung"
+    ],
+    [
+      "18",
+      "Sprachen in der App"
+    ],
+    [
+      "MIT",
+      "Kostenlos und quelloffen"
+    ]
+  ],
+  "feature_kicker": "MEHR ÜBERBLICK. MEHR KONTROLLE.",
+  "feature_title": "Lüftersteuerung für deinen Arbeitsablauf.",
+  "features": [
+    [
+      "01 / ÜBERWACHEN",
+      "Dein Mac auf einen Blick.",
+      "Sieh CPU- und GPU-Temperaturen sowie tatsächliche Lüfterdrehzahlen. Weitere Sensorwerte hängen vom Mac-Modell ab.",
+      "CPU / GPU / RPM"
+    ],
+    [
+      "02 / STEUERN",
+      "Automatisch oder nach Wunsch.",
+      "Smart reagiert auf Temperatur und Trend. Wähle einen ausgeglichenen oder leistungsorientierten Modus oder kehre zur automatischen Apple-Steuerung zurück.",
+      "SMART / BALANCED / PERFORMANCE"
+    ],
+    [
+      "03 / TERMINAL",
+      "Auch per Kommandozeile.",
+      "Lies JSON-Statusdaten, setze Drehzahlen und protokolliere CSV-Daten. App und CLI verwenden denselben Hintergrunddienst.",
+      "macfanpro status"
+    ]
+  ],
+  "safety_kicker": "INTEGRIERTE SCHUTZFUNKTIONEN",
+  "safety_title": "Auch auf Störungen vorbereitet.",
+  "safety_body": "Bei manueller Steuerung bietet der Hintergrunddienst einen Temperaturschutz ab 95°C. Bleibt der Heartbeat einer von der App verwalteten Steuerung aus, versucht der Watchdog, die Kontrolle an macOS zurückzugeben. Das Verhalten hängt von Modus, Firmware und Sensoren ab.",
+  "safety_link": "Steuerung und Schutz verstehen",
+  "privacy_title": "Deine Daten bleiben auf deinem Mac.",
+  "privacy_body": "Temperaturdaten und Protokolle bleiben lokal. Kein Konto, keine Telemetrie. Updates werden über GitHub geprüft; Installation und Aktualisierung laden Dateien herunter.",
+  "install_kicker": "IN WENIGEN SCHRITTEN STARTKLAR",
+  "install_title": "Einfach installieren. Einfach aktualisieren.",
+  "install_intro": "Der Online-Installer lädt eine fertige App herunter, ohne Homebrew oder Xcode vorauszusetzen. Bestehende Homebrew-Installationen werden weiterhin darüber aktualisiert.",
+  "method": "Installationsmethode wählen",
+  "proxy": "Mit Proxy",
+  "direct": "Direkte Verbindung",
+  "brew": "Homebrew",
+  "proxy_note": "Ist GitHub nicht erreichbar, starte deine eigene Proxy-App. 7890 ist nur ein Beispiel; trage den tatsächlichen lokalen Port ein. Diese Website stellt keinen Proxy bereit.",
+  "direct_note": "Für Netzwerke mit direktem GitHub-Zugriff. Derselbe Befehl aktualisiert auch eine vorhandene Installation.",
+  "brew_note": "Für vorhandene Homebrew-Nutzer. Konfiguriere bei Bedarf einen Proxy im Terminal oder wähle den Proxy-Tab. Der Online-Installer erkennt bestehende Homebrew-Installationen.",
+  "type": "Proxy-Protokoll",
+  "port": "Lokaler Port",
+  "copy": "Befehl kopieren",
+  "copied": "Kopiert",
+  "copy_error": "Automatisches Kopieren fehlgeschlagen. Bitte den Befehl markieren und manuell kopieren.",
+  "port_error": "Bitte einen Port zwischen 1 und 65535 eingeben.",
+  "steps": [
+    [
+      "Terminal öffnen",
+      "Den vollständigen Befehl kopieren, in Terminal einfügen und Return drücken."
+    ],
+    [
+      "Admin-Passwort eingeben",
+      "Für den Hintergrunddienst sind Administratorrechte nötig. Die Eingabe bleibt unsichtbar. Danach Return drücken."
+    ],
+    [
+      "In der Menüleiste starten",
+      "MacFanPro öffnen, auf das Lüftersymbol klicken und einen Modus wählen."
+    ]
+  ],
+  "update": "Und spätere Updates?",
+  "update_body": "Nutze den Updatehinweis der App oder führe den Online-Installationsbefehl erneut aus. Starte bei Bedarf vorher deinen Proxy. Einstellungen und Kalibrierungsdaten bleiben erhalten.",
+  "download": "Release herunterladen",
+  "full_guide": "Installations- und Proxy-Anleitung",
+  "source_build": "Aus Quellcode bauen",
+  "faq_kicker": "GUT ZU WISSEN",
+  "faq_title": "Vor dem Start.",
+  "faq": [
+    [
+      "Funktioniert es auf meinem Mac?",
+      "Erforderlich sind macOS 14+, Apple Silicon und physische Lüfter. Intel Macs und lüfterlose MacBook-Air-Modelle sind ausgeschlossen. Die meisten Hardwaretests erfolgten auf einem M4 Max MacBook Pro; weitere Modelle stehen in den Kompatibilitätsberichten."
+    ],
+    [
+      "Ist es kostenlos? Brauche ich ein Konto?",
+      "Kostenlos unter der MIT-Lizenz, ohne Konto oder Aktivierungsschlüssel. Du kannst den Quellcode lesen, selbst bauen und Verbesserungen beitragen."
+    ],
+    [
+      "Reicht es, die App in Programme zu ziehen?",
+      "Der Hintergrunddienst muss ebenfalls installiert werden. Nutze bevorzugt den Befehl oben oder folge der README; App und bin-Ordner zusammen aufbewahren. Releases sind ad-hoc signiert, nicht von Apple notarisiert. Beim ersten Start kann ein Sicherheitshinweis erscheinen."
+    ],
+    [
+      "Das Terminal wartet bei Password. Was tun?",
+      "Gib dein Mac-Anmeldepasswort ein und drücke Return. Zeichen und Sternchen werden nicht angezeigt. Gib dein Passwort niemals auf dieser Website ein und teile es nicht mit anderen."
+    ],
+    [
+      "Was tun, wenn GitHub nicht erreichbar ist?",
+      "Starte einen geeigneten Proxy und trage im Proxy-Tab dessen tatsächlichen HTTP- oder SOCKS5-Port ein. Führe den kompletten Befehl aus. Auch GitHub Pages und Downloads können einen Proxy benötigen."
+    ],
+    [
+      "Laufen die Lüfter im Smart-Modus ständig?",
+      "Smart erzwingt keine dauerhafte Höchstdrehzahl. Bei geringer Last kann die manuelle Steuerung freigegeben werden. Ob die Lüfter stoppen, bestimmen macOS und Firmware. Temperatur, Lautstärke und Leistung hängen von Modell und Last ab."
+    ]
+  ],
+  "closing": "Lerne deinen Mac besser kennen.",
+  "closing_body": "Vom schnellen Temperaturcheck zum eigenen Arbeitsablauf.",
+  "footer": "Open-Source-Lüftersteuerung für Apple Silicon Macs.",
+  "docs": "Dokumentation",
+  "issues": "Problem melden",
+  "license": "MIT-Lizenz",
+  "credit": "Basiert auf ThermalForge. Danke an das Ursprungsprojekt und alle Mitwirkenden.",
+  "image_alt": "MacFanPro mit Temperaturen, Drehzahlen, Modi und Spracheinstellungen",
+  "main_nav": "Hauptnavigation",
+  "languages": "Sprache wählen",
+  "copyright": "MacFanPro-Mitwirkende"
+}
