@@ -144,7 +144,13 @@ public struct FanApplyResult: Equatable {
 }
 
 public final class DaemonClient {
-    public init() {}
+    private let socketPath: String
+
+    public init() { self.socketPath = MacFanProDaemon.socketPath }
+
+    /// Test seam: point the client at a plain bound AF_UNIX socket instead of the
+    /// daemon's. Production callers use `init()`.
+    init(socketPath: String) { self.socketPath = socketPath }
 
     /// Read the daemon's current hold (what's set and who owns it) so the menu
     /// bar app can reflect a CLI hold instead of fighting or wiping it.
@@ -183,6 +189,7 @@ public final class DaemonClient {
         let fd = socket(AF_UNIX, SOCK_STREAM, 0)
         guard fd >= 0 else { throw DaemonError.connectionFailed }
         defer { close(fd) }
+        // Every client socket needs protection before a write can reach a vanished peer.
         var noSignal: Int32 = 1
         guard setsockopt(fd, SOL_SOCKET, SO_NOSIGPIPE, &noSignal,
                          socklen_t(MemoryLayout<Int32>.size)) == 0 else {
@@ -201,7 +208,7 @@ public final class DaemonClient {
 
         var addr = sockaddr_un()
         addr.sun_family = sa_family_t(AF_UNIX)
-        setPath(&addr, MacFanProDaemon.socketPath)
+        setPath(&addr, socketPath)
 
         // connect() must ALSO be bounded, not just read/write. A wedged daemon
         // (accept loop stalled in a slow handleClient, listen backlog full) makes a
@@ -410,7 +417,12 @@ public final class DaemonServer {
         // Accept connections concurrently (bounded) so one hung connection can't stall
         // others, and — the security fix — a slow-reading client can no longer hold
         // smcLock during the response write (processFrame takes it only around process()).
-        let server = ConnectionServer(listenFD: socketFD) { [self] body in processFrame(body) }
+        // Every accepted connection is checked against the peer's kernel credentials
+        // (root or ownerUID only), a second layer behind the socket's 0600 permissions.
+        let server = ConnectionServer(listenFD: socketFD,
+                                      authorizer: PeerAuthorizer(ownerUID: ownerUID)) { [self] body in
+            processFrame(body)
+        }
         server.start()
         connectionServer = server
 

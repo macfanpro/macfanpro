@@ -234,7 +234,7 @@ cd macfanpro
 
 提前散热有助于应对持续编译、渲染或推理时的热量积累；实际温度、噪声和吞吐量取决于机器、环境与负载。它不保证温度始终低于 85°C，也不承诺固定性能提升或风扇寿命增幅。
 
-对应实现见 [Profile.swift](Sources/MacFanProCore/Profile.swift) 和 [ThermalMonitor.swift](Sources/MacFanProCore/ThermalMonitor.swift)。原理参考了 [ThermalForge 的技术说明](https://github.com/ProducerGuy/ThermalForge/blob/ed4cef8116995e67589f43eee6dcbe3fe0143fe5/README.md#smart-profile)，并按本仓库实现核对修订。
+对应实现见 [Profile.swift](Sources/MacFanProCore/Profile.swift) 和 [ThermalMonitor.swift](Sources/MacFanProCore/ThermalMonitor.swift)。原理参考了 [ThermalForge 的技术说明](https://github.com/ProducerGuy/ThermalForge/blob/93ed7d2df231b079704156b5ae67654a50d31f62/README.md#smart-profile)，并按本仓库实现核对修订。
 
 ## 安全机制与权限
 
@@ -246,7 +246,7 @@ cd macfanpro
 | 心跳看门狗 | 对应用管理的转速设置，心跳超过 15 秒未更新时，在下一次看门狗检查中视为失效（通常每 5 秒检查），尝试交还 macOS；若高温保护已生效，则保持满速直到降温。 |
 | 终端控制归属 | 明确执行 `max`、`set` 产生的 CLI 设置不受应用心跳超时撤销；需要点击“默认”、选择模式或运行 `macfanpro auto` 解除。 |
 | 睡眠唤醒恢复 | 唤醒后尝试重新施加当前设置，保留高温保护，并重试失败的释放操作；固件恢复速度因机器而异。 |
-| 本机访问限制 | `/var/run/macfanpro.sock` 权限为 `0600`，属于安装时指定的用户；该用户及 root 能够发送命令。 |
+| 本机访问限制 | `/var/run/macfanpro.sock` 权限为 `0600`，属于安装时指定的用户；每个连接还会通过内核凭据再次校验，只允许该用户和 root；身份读取失败时，在读取请求前拒绝连接。 |
 | 有界通信 | 协议带版本和消息大小限制，连接有超时与并发上限，风扇写入有频率限制；硬件写入串行执行，RPM 按硬件范围检查。 |
 
 这些机制依赖软件、固件与传感器正常工作，不能保证应对所有硬件或散热故障。后台高温保护针对它管理的手动设置；没有接管时，macOS 仍负责常规控制。安全判断使用选定 CPU/GPU 传感器中的最热点，可能高于界面显示值，详见[传感器读数说明](#温度与-stats-等工具不一致)。
@@ -402,7 +402,7 @@ sudo tail -n 50 "/var/root/Library/Logs/MacFanPro/macfanpro-$(date +%F).log"
 | 证据来源 | 范围 |
 | --- | --- |
 | 本仓库的 M4 Max MacBook Pro 实测 | 包括[温控与完整睡眠唤醒记录](docs/macfanpro-0.2.3.23-hardware-validation.md)，以及后续逐版本检查。这些证据对应当时测试的版本，不自动代表以后所有构建。 |
-| ThermalForge 上游报告 | [上游兼容性表](https://github.com/ProducerGuy/ThermalForge/blob/ed4cef8116995e67589f43eee6dcbe3fe0143fe5/README.md#compatibility)列出更多 MacBook Pro、Mac Studio 和 Mac mini 配置，芯片系列写至 M6。这属于上游声明，不等同于本仓库的独立验收。 |
+| ThermalForge 上游报告 | [上游兼容性表](https://github.com/ProducerGuy/ThermalForge/blob/93ed7d2df231b079704156b5ae67654a50d31f62/README.md#compatibility)列出更多 MacBook Pro、Mac Studio 和 Mac mini 配置，芯片系列写至 M6。最新补充了 2024 年 14 英寸 M4 Pro MacBook Pro 的用户报告，以及 Mac mini 条目的年份。这属于上游声明，不等同于本仓库的独立验收。 |
 
 在新机器上，可先收集只读信息：
 

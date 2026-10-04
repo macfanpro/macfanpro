@@ -234,7 +234,7 @@ The ramp governor limits how quickly the requested speed changes. Smart and Bala
 
 Earlier cooling can reduce heat buildup during sustained compilation, rendering or inference. Actual temperature, noise and throughput depend on the machine, room temperature and workload. The profile does not guarantee an 85°C maximum, a fixed performance gain or a measured increase in fan lifespan.
 
-The implementation is in [Profile.swift](Sources/MacFanProCore/Profile.swift) and [ThermalMonitor.swift](Sources/MacFanProCore/ThermalMonitor.swift). The concepts are adapted from [ThermalForge's technical documentation](https://github.com/ProducerGuy/ThermalForge/blob/ed4cef8116995e67589f43eee6dcbe3fe0143fe5/README.md#smart-profile), with the descriptions checked against this fork.
+The implementation is in [Profile.swift](Sources/MacFanProCore/Profile.swift) and [ThermalMonitor.swift](Sources/MacFanProCore/ThermalMonitor.swift). The concepts are adapted from [ThermalForge's technical documentation](https://github.com/ProducerGuy/ThermalForge/blob/93ed7d2df231b079704156b5ae67654a50d31f62/README.md#smart-profile), with the descriptions checked against this fork.
 
 ## Safety and permissions
 
@@ -246,7 +246,7 @@ The menu bar app runs as your login user. A root-owned background service perfor
 | Heartbeat watchdog | For app-supervised holds, a heartbeat older than 15 s is treated as expired on the watchdog's next check (normally every 5 s). It attempts to return control to macOS; an active thermal override keeps maximum speed until cooldown. |
 | Terminal ownership | Deliberate `max`/`set` CLI holds are unsupervised: closing the app or losing its heartbeat does not cancel them. Release them with Default, a profile selection, or `macfanpro auto`. |
 | Sleep/wake recovery | The daemon attempts to reapply its current hold after wake, while retaining the safety override and retrying failed releases. Firmware readiness differs by machine. |
-| Local access control | `/var/run/macfanpro.sock` uses mode `0600` and belongs to the installation's designated user. That user and root can send commands. |
+| Local access control | `/var/run/macfanpro.sock` uses mode `0600` and belongs to the installation's designated user. Each connection is also checked against kernel-provided credentials: only that user and root are allowed; unreadable credentials are rejected before a request is read. |
 | Bounded requests | Versioned messages, size limits, timeouts, bounded concurrent clients and write-rate limits protect the service. Hardware writes are serialized and RPM requests are checked against the fan's range. |
 
 The protections depend on working software, firmware and sensor readings; they are not a guarantee against every hardware or thermal failure. The daemon's thermal floor is a backstop for its manual holds, not a replacement for macOS's own control when no hold exists. The safety temperature follows the hottest selected CPU/GPU sensor, which can differ from the value displayed in the menu; see [Sensor readings](#temperatures-dont-match-stats-or-similar-tools).
@@ -402,7 +402,7 @@ Fan control needs **Apple Silicon, macOS 14+, and physical fans**. Intel Macs an
 | Evidence | Scope |
 | --- | --- |
 | MacFanPro testing on an M4 Max MacBook Pro | Includes [documented thermal and full sleep/wake checks](docs/macfanpro-0.2.3.23-hardware-validation.md), plus later per-release checks. These records describe the versions tested, not every future build. |
-| ThermalForge upstream reports | The [upstream compatibility table](https://github.com/ProducerGuy/ThermalForge/blob/ed4cef8116995e67589f43eee6dcbe3fe0143fe5/README.md#compatibility) lists additional MacBook Pro, Mac Studio and Mac mini configurations, with chip families through M6. Those are upstream claims, not independent MacFanPro acceptance results. |
+| ThermalForge upstream reports | The [upstream compatibility table](https://github.com/ProducerGuy/ThermalForge/blob/93ed7d2df231b079704156b5ae67654a50d31f62/README.md#compatibility) lists additional MacBook Pro, Mac Studio and Mac mini configurations, with chip families through M6. The latest additions include a reported 14-inch M4 Pro MacBook Pro (2024) and years on the Mac mini entries. Those are upstream claims, not independent MacFanPro acceptance results. |
 
 For a new machine, collect read-only information first:
 

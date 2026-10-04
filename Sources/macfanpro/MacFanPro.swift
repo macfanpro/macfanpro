@@ -1066,12 +1066,9 @@ struct Install: ParsableCommand {
             }
             try fm.copyItem(atPath: appSource, toPath: appDest)
 
-            // Strip quarantine/extended attributes so Gatekeeper won't block launch.
-            let xattr = Process()
-            xattr.executableURL = URL(fileURLWithPath: "/usr/bin/xattr")
-            xattr.arguments = ["-cr", appDest]
-            try? xattr.run()
-            xattr.waitUntilExit()
+            // Clear attributes without following bundle symlinks to external files.
+            // A failed cleanup must not be reported as a successful installation.
+            try AppBundleAttributes.clear(in: URL(fileURLWithPath: appDest))
 
             print("Installed MacFanPro.app to \(appDest)")
             freshBundleInstalled = true

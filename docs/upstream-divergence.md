@@ -5,6 +5,9 @@ re-apply it after merging an upstream release. Scope: the 0.2.3.16 sensor
 fixes only. The product rename and earlier fork changes are recorded in
 `docs/upstream-followups-20260921.md` and the changelog.
 
+For the latest connection and installer decisions, see the
+[2026-10-04 upstream merge review](upstream-sync-20261004.md).
+
 The logic lives in new files so merges touch as few upstream lines as possible:
 
 | New file | Purpose |
@@ -36,7 +39,7 @@ key, including `TCDX`/`TCMb`/`Tp06`.
 3. If upstream changes how the CPU row or headline is computed, compare with
    `ThermalStatus+Display.swift` and keep whichever matches the Stats key map;
    `DisplayedTemperatureTests` encodes the measured M4 Max case.
-4. Run `Scripts/test.sh` and `Scripts/test.sh -c release`, then compare the CPU
+4. Run `bash Scripts/test.sh --all-configurations`, then compare the CPU
    and GPU rows with Stats under CPU and GPU load
    (`Scripts/thermal-calibration/`).
 

@@ -23,7 +23,8 @@ Start with [English README](../README.md) or [中文 README](../README.zh-CN.md)
 | Fan ownership, failure recovery, calibration / 控制归属、失败恢复与校准 | [Fan-state fixes](fan-state-fixes-20260927.md) |
 | M4 firmware handoff and transport / M4 固件接管与通信 | [M4 handoff repair](m4-handoff-repair.md) |
 | Fork differences / 上游差异 | [Upstream divergence](upstream-divergence.md) |
-| This upstream merge / 本次上游合并 | [2026-10-03 review](upstream-sync-20261003.md) |
+| Latest upstream merge / 最近上游合并 | [2026-10-04 connection and install hardening](upstream-sync-20261004.md) |
+| Previous upstream merge / 前次上游合并 | [2026-10-03 review](upstream-sync-20261003.md) |
 | Earlier upstream decisions / 早期上游取舍 | [2026-09-21 audit](upstream-followups-20260921.md) |
 | Translation and packaging / 翻译与打包 | [GUI localization](gui-localization.md) |
 | Native menu layout / 原生菜单排版 | [Label validation](menu-bar-label-validation.md) |

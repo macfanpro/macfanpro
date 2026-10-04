@@ -154,7 +154,8 @@ struct LocalHandoffRepairTests {
         defer { close(fd); unlink(path) }
         let lock = NSLock()
         let started = DispatchSemaphore(value: 0)
-        let server = ConnectionServer(listenFD: fd, headerDeadline: 1, requestDeadline: 0.1) { data in
+        let server = ConnectionServer(listenFD: fd, authorizer: PeerAuthorizer(ownerUID: getuid()),
+                                      headerDeadline: 1, requestDeadline: 0.1) { data in
             let req = try! DaemonProtocol.decode(DaemonRequest.self, from: data)
             return DaemonRequestPolicy.perform(req.verb, lock: lock) {
                 if req.verb == .set {
@@ -187,7 +188,7 @@ struct LocalHandoffRepairTests {
         let fd = listener(path)
         defer { close(fd); unlink(path) }
         let started = DispatchSemaphore(value: 0)
-        let server = ConnectionServer(listenFD: fd) { _ in
+        let server = ConnectionServer(listenFD: fd, authorizer: PeerAuthorizer(ownerUID: getuid())) { _ in
             started.signal()
             Thread.sleep(forTimeInterval: 0.1)
             return .ok()

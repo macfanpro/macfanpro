@@ -7,6 +7,11 @@ import Foundation
 struct DisconnectedClients {
     static func main() throws {
         signal(SIGPIPE, SIG_DFL)
+        try daemonSurvivesVanishedClients()
+        try clientSurvivesVanishedDaemon()
+    }
+
+    static func daemonSurvivesVanishedClients() throws {
         let path = "/tmp/tfp-disconnect-\(UUID().uuidString).sock"
 
         func address() -> sockaddr_un {
@@ -30,7 +35,7 @@ struct DisconnectedClients {
         precondition(result == 0 && listen(listener, 16) == 0)
         defer { close(listener); unlink(path) }
 
-        let server = ConnectionServer(listenFD: listener) { _ in
+        let server = ConnectionServer(listenFD: listener, authorizer: PeerAuthorizer(ownerUID: getuid())) { _ in
             Thread.sleep(forTimeInterval: 0.02)
             return .statusResponse(String(repeating: "A", count: 12000))
         }
@@ -78,5 +83,49 @@ struct DisconnectedClients {
             DaemonProtocol.readFrame(next, max: DaemonProtocol.maxResponseBytes))
         precondition(response.ok)
         print("PASS: 108 abandoned replies and a subsequent request with default SIGPIPE disposition")
+    }
+
+    /// Upstream's client-side scenario, run here with fatal SIGPIPE enabled rather
+    /// than changing the signal handler of the shared Swift Testing process.
+    static func clientSurvivesVanishedDaemon() throws {
+        let path = "/tmp/mfp-vanished-daemon-\(UUID().uuidString).sock"
+        let listener = socket(AF_UNIX, SOCK_STREAM, 0)
+        precondition(listener >= 0)
+        defer { close(listener); unlink(path) }
+        var addr = sockaddr_un()
+        addr.sun_family = sa_family_t(AF_UNIX)
+        withUnsafeMutablePointer(to: &addr.sun_path) { pointer in
+            pointer.withMemoryRebound(to: CChar.self, capacity: 104) {
+                _ = strlcpy($0, path, 104)
+            }
+        }
+        let result = withUnsafePointer(to: &addr) { pointer in
+            pointer.withMemoryRebound(to: sockaddr.self, capacity: 1) {
+                bind(listener, $0, socklen_t(MemoryLayout<sockaddr_un>.size))
+            }
+        }
+        precondition(result == 0 && listen(listener, 16) == 0)
+
+        let rounds = 300
+        let finished = DispatchGroup()
+        finished.enter()
+        let acceptor = Thread {
+            defer { finished.leave() }
+            for _ in 0..<rounds {
+                let fd = accept(listener, nil, nil)
+                precondition(fd >= 0, "accept failed: \(errno)")
+                close(fd)
+            }
+        }
+        acceptor.start()
+        let client = DaemonClient(socketPath: path)
+        var failures = 0
+        for _ in 0..<rounds {
+            do { _ = try client.request(DaemonRequest(verb: .version), timeout: 1) }
+            catch { failures += 1 }
+        }
+        precondition(failures == rounds, "A vanished daemon must never produce a successful reply")
+        precondition(finished.wait(timeout: .now() + 5) == .success)
+        print("PASS: 300 vanished-daemon requests failed cleanly with default SIGPIPE disposition")
     }
 }
