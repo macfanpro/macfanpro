@@ -17,7 +17,26 @@
 - `python3 Scripts/build-website.py`：18 种语言页面构建与完整性检查通过。
 - `git diff --check` 通过。
 
-正式草稿附件需在工作流构建后下载并单独核验；完成后补入工作流链接与附件校验和。
+## 标签、CI 与草稿附件
+
+- 发布源码：`4063506a0db131a6fa8d6ada381817fd73f67b47`；先推送 `main`，再创建并推送注释标签 `v0.2.3.50`。
+- [主分支 CI](https://github.com/macfanpro/macfanpro/actions/runs/37226133615)、[发行工作流](https://github.com/macfanpro/macfanpro/actions/runs/37226140808)与[官网部署](https://github.com/macfanpro/macfanpro/actions/runs/37226133516)均成功。
+- 从 GitHub 发行草稿下载全部 6 个附件，并校验 DMG、tar、安装脚本各自的 SHA-256；`SHA256SUMS` 仍只包含 tar 包。
+- 使用实际安装器的 `verify_archive` / `verify_package` 校验并解包 tar，未调用安装入口。
+- 只读挂载 DMG；应用通过 `codesign --verify --deep --strict`，确认 ad-hoc 签名。DMG 与 tar 内应用逐文件 SHA-256 一致。
+- App、内置 CLI 与独立 CLI 版本均为 0.2.3.50；三个二进制均以 macOS 14.0 为最低版本。
+- 18 种语言资源与标签源码一致，内嵌安装脚本与发行附件一致；“应用程序”链接、安装说明与许可文件齐全。
+- 内置 CLI 的非 root 安装调用被拒绝；没有触发管理员授权或服务安装。
+
+| GitHub 草稿附件 | SHA-256 |
+| --- | --- |
+| `MacFanPro-0.2.3.50-macos-arm64.dmg` | `6f430ed033ba49cb565b483bf6391f6f8bfcf11e88b05322261e204555570c9c` |
+| `MacFanPro-0.2.3.50-macos-arm64.tar.gz` | `fd71134a57f070ab3f794702c203e642fdf6fb2c7a0d254dc350c60b641f1db6` |
+| `install.sh` | `24a6c4a046873147ecb6c2bc11b6c8a531136f6bbf26b5984a4e8649b4692be2` |
+
+## 公开发布后的检查
+
+官网真实 DMG 下载入口、公开安装脚本 `--check` 与 Homebrew 自动更新在发行公开后继续验证。
 
 ## 验证限制
 
