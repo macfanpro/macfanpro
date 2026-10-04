@@ -23,7 +23,7 @@ Open <http://127.0.0.1:8765/>. The generated site lives in `.build/website/`; re
 - The entry page detects the first supported browser language, defaulting to English for unsupported browser languages. A manual selection is stored locally and takes precedence. An explicit localized URL always keeps its own language.
 - `/macfanpro/?lang=zh-Hans` explicitly selects Simplified Chinese, including when browser storage is unavailable.
 - Arabic uses RTL layout, while shell commands remain LTR.
-- Chinese pages show proxy installation first; other pages show direct installation first. Both support HTTP and SOCKS5 proxy ports, and Homebrew.
+- All languages show direct installation first. Proxy installation is a fallback when GitHub cannot be reached; HTTP, SOCKS5 and Homebrew remain available.
 - Each page has its own title, description, canonical URL, `hreflang` links and sitemap entry.
 - Translations must have the same keys and array shapes as English. Missing/empty translations fail the build rather than silently falling back to English.
 
@@ -41,5 +41,5 @@ For a copy or layout change, build the site and check the affected languages in 
 
 - 网站和应用均支持 18 种语言；修改文案后同步各语言 JSON，构建会检查缺漏。
 - 首页按浏览器语言选择页面，手动选择会在本机保存；明确访问某语言网址时不自动跳转。
-- 中文安装区优先展示代理方式；代理端口由访客自行填写，不提供代理服务。
+- 所有语言默认展示直接安装，无法正常访问 GitHub 时再切换到代理方式；代理端口由访客自行填写，不提供代理服务。
 - 只发布构建结果，网站更新与应用发行独立；不会修改本机风扇模式或安装应用。

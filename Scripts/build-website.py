@@ -114,7 +114,7 @@ def build():
         chinese = lang.startswith('zh-')
         prefix = '../' if route(lang) else './'
         doc = REPO + '/blob/main/' + ('README.zh-CN.md' if chinese else 'README.md')
-        methods = ['proxy', 'direct', 'brew'] if chinese else ['direct', 'proxy', 'brew']
+        methods = ['direct', 'proxy', 'brew']
         panels = []
         for method in methods:
             fields = ''
