@@ -36,7 +36,12 @@
 
 ## 公开发布后的检查
 
-官网真实 DMG 下载入口、公开安装脚本 `--check` 与 Homebrew 自动更新在发行公开后继续验证。
+- GitHub 最新正式发行确认为 `v0.2.3.50`，非草稿、非预发布，共 6 个公开附件。北京时区发布时间：2026-10-05 02:59。
+- 执行本发行附件 `install.sh --check`，从公开下载地址重新下载 tar 并完成校验，输出 `MacFanPro 0.2.3.50 package verification passed; no installation performed.`。
+- 使用独立无头浏览器访问线上中文官网，确认 DMG 下载按钮可见，并实际指向本版 DMG；没有模拟发行 API 响应。
+- [Homebrew 自动更新](https://github.com/macfanpro/homebrew-tap/actions/runs/37226551880)成功：构建并公开 `arm64_sonoma` bottle、重新从网络安装预编译包、通过 `brew test` 和 CLI 版本检查，再提交配方。
+- tap 提交 `9d18745`；配方指向 `v0.2.3.50` 与源码 `4063506a0db131a6fa8d6ada381817fd73f67b47`。bottle SHA-256：`8d68d2abda79057e79f3f2b7e5a539a45dec092b850dc77cf28818daaea54126`。
+- Homebrew 验证在 GitHub runner 上完成；没有在用户本机执行 `brew upgrade` 或特权安装。
 
 ## 验证限制
 
