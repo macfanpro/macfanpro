@@ -112,7 +112,7 @@
     ],
     [
       "Can I just drag the app into Applications?",
-      "The background service must also be installed, so we recommend the online command above. For manual downloads, follow the README and keep the app and bin folder together. Current releases are ad-hoc signed and not notarized by Apple; macOS may show a security prompt on first launch."
+      "0.2.3.50+ · DMG — Drag MacFanPro into Applications, then open it from there. MacFanPro needs a background service to control fans. macOS will ask for administrator authorization. Current releases are ad-hoc signed and not notarized by Apple; macOS may show a security prompt on first launch."
     ],
     [
       "The installer stopped at Password. What now?",

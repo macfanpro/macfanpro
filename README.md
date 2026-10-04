@@ -91,7 +91,7 @@ MacBook Pro, Mac mini, Mac Studio and iMac configurations with Apple Silicon and
 
 | Method | Best for | Builds on your Mac? |
 | --- | --- | --- |
-| DMG (when included in a release) | Drag the app into Applications, then authorize setup | No, works offline after download |
+| DMG | Drag the app into Applications, then authorize setup | No, works offline after download |
 | Online installer | One command; downloads and verifies a release | No, no Xcode needed |
 | Homebrew | Installing and managing versions with Homebrew | No, prebuilt |
 | Release download | Using the prebuilt app and CLI | No, no Xcode needed |
@@ -99,7 +99,7 @@ MacBook Pro, Mac mini, Mac Studio and iMac configurations with Apple Silicon and
 
 ### Drag to Applications (DMG)
 
-Releases that include `MacFanPro-<version>-macos-arm64.dmg` support graphical installation:
+Starting with **0.2.3.50**, download `MacFanPro-<version>-macos-arm64.dmg` for graphical installation:
 
 1. Download the DMG from [Releases](https://github.com/macfanpro/macfanpro/releases/latest), open it, and drag **MacFanPro.app** into **Applications**.
 2. Open the app from Applications. If macOS blocks it, follow the [first-launch instructions](#macos-says-it-cant-verify-the-developer); these builds are not notarized.
@@ -107,7 +107,7 @@ Releases that include `MacFanPro-<version>-macos-arm64.dmg` support graphical in
 
 For updates, quit the app, replace it with the newer copy, and reopen it. The setup window appears when the service needs synchronization. Homebrew installations continue to use Homebrew. To remove a DMG installation, choose **Background service… → Remove background service…**, then quit and move the app to the Trash; settings and logs are retained.
 
-**The currently published `0.2.3.37` release has no DMG.** Until a release with this asset is published, use one of the methods below. [DMG setup, proxy downloads and developer verification](docs/dmg-installation.md).
+[DMG setup, proxy downloads and developer verification](docs/dmg-installation.md).
 
 ### Online installer
 
@@ -140,7 +140,7 @@ less install.sh
 bash install.sh
 ```
 
-Use `bash install.sh --check` to download and validate without installing, `--no-open` to leave the app closed, or `--version 0.2.3.37` to select a package version (a minimum version on Homebrew). The script bundled in each release defaults to that exact release. See [installer details and verification](docs/online-installer.md).
+Use `bash install.sh --check` to download and validate without installing, `--no-open` to leave the app closed, or `--version 0.2.3.50` to select a package version (a minimum version on Homebrew). The script bundled in each release defaults to that exact release. See [installer details and verification](docs/online-installer.md).
 
 ### Option 1: Homebrew
 
@@ -166,17 +166,17 @@ No Homebrew or Xcode needed.
 2. Double-click to extract it. Keep `MacFanPro.app` and the `bin` folder together.
 3. In Terminal, go into the extracted folder, install, and open the app.
 
-For example, with `0.2.3.37` extracted in Downloads:
+For example, with `0.2.3.50` extracted in Downloads:
 
 ```bash
-cd ~/Downloads/MacFanPro-0.2.3.37-macos-arm64
+cd ~/Downloads/MacFanPro-0.2.3.50-macos-arm64
 sudo ./bin/macfanpro install
 open /Applications/MacFanPro.app
 ```
 
 For another version or location, change the folder path. After a successful install you can delete the archive and the extracted folder.
 
-Dragging `MacFanPro.app` into Applications alone does not install the background service. Release packages are ad-hoc signed and not yet notarized by Apple, so macOS may warn you the first time; see the [FAQ](#faq).
+For drag-and-drop installation with a graphical service setup window, use the DMG above. Administrator authorization is still required to install the background service. Release packages are ad-hoc signed and not yet notarized by Apple, so macOS may warn you the first time; see the [FAQ](#faq).
 
 ### Option 3: From source
 
@@ -190,7 +190,7 @@ cd macfanpro
 
 `setup.sh` builds the code, assembles the app, asks for your administrator password to install, and opens MacFanPro. No further install command is needed.
 
-This builds the repository's `main` branch, which may include unreleased changes. To build a specific release, run `git checkout v0.2.3.37` (with the version you want) before `./setup.sh`.
+This builds the repository's `main` branch, which may include unreleased changes. To build a specific release, run `git checkout v0.2.3.50` (with the version you want) before `./setup.sh`.
 
 ### After installing
 

@@ -112,7 +112,7 @@
     ],
     [
       "Kan ik de app gewoon naar Apps slepen?",
-      "De achtergrondservice moet ook geïnstalleerd worden. Gebruik bij voorkeur de opdracht hierboven. Volg bij handmatige installatie de README en houd de app en bin-map samen. Releases zijn ad-hoc ondertekend en niet door Apple genotariseerd; bij de eerste start kan een waarschuwing verschijnen."
+      "0.2.3.50+ · DMG — Sleep MacFanPro naar Programma’s en open het van daaruit. MacFanPro heeft een achtergrondservice nodig om ventilatoren te regelen. macOS vraagt om beheerdersmachtiging. Releases zijn ad-hoc ondertekend en niet door Apple genotariseerd; bij de eerste start kan een waarschuwing verschijnen."
     ],
     [
       "Het stopt bij Password. Wat nu?",

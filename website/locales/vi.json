@@ -112,7 +112,7 @@
     ],
     [
       "Chỉ kéo ứng dụng vào Applications là đủ?",
-      "Cần cài cả dịch vụ nền. Nên dùng lệnh ở trên. Nếu cài thủ công, làm theo README và giữ ứng dụng cùng thư mục bin. Bản hiện tại dùng chữ ký ad-hoc, chưa được Apple công chứng; lần đầu mở có thể có cảnh báo bảo mật."
+      "0.2.3.50+ · DMG — Kéo MacFanPro vào Ứng dụng rồi mở từ đó. MacFanPro cần dịch vụ nền để điều khiển quạt. macOS sẽ yêu cầu quyền quản trị viên. Bản hiện tại dùng chữ ký ad-hoc, chưa được Apple công chứng; lần đầu mở có thể có cảnh báo bảo mật."
     ],
     [
       "Dừng ở Password thì làm gì?",

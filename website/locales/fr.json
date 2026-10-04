@@ -112,7 +112,7 @@
     ],
     [
       "Suffit-il de glisser l’application dans Applications ?",
-      "Le service en arrière-plan doit aussi être installé. Utilisez la commande ci-dessus ou suivez le README en gardant l’application et le dossier bin ensemble. Les versions actuelles ont une signature ad-hoc et ne sont pas notariées par Apple ; un avertissement peut apparaître au premier lancement."
+      "0.2.3.50+ · DMG — Glissez MacFanPro dans Applications, puis ouvrez-le depuis ce dossier. MacFanPro a besoin d’un service en arrière-plan pour contrôler les ventilateurs. macOS demandera une autorisation administrateur. Les versions actuelles ont une signature ad-hoc et ne sont pas notariées par Apple ; un avertissement peut apparaître au premier lancement."
     ],
     [
       "Le Terminal attend à Password. Que faire ?",

@@ -92,7 +92,7 @@
 
 | 安装方式 | 适合场景 | 是否需要本机编译 |
 | --- | --- | --- |
-| DMG（发行页提供时） | 拖入应用程序，通过图形界面授权安装 | 否，下载后可离线安装 |
+| DMG | 拖入应用程序，通过图形界面授权安装 | 否，下载后可离线安装 |
 | 在线安装脚本 | 一条命令下载、校验并安装发行包 | 否，无需 Xcode |
 | Homebrew | 使用 Homebrew 安装和管理版本 | 否，使用预编译版本 |
 | 下载发行包 | 直接使用已编译的应用和 CLI | 否，无需 Xcode |
@@ -100,7 +100,7 @@
 
 ### 拖入应用程序安装（DMG）
 
-发行页提供 `MacFanPro-<版本>-macos-arm64.dmg` 时，可以使用图形化安装：
+从 **0.2.3.50** 起，可下载 `MacFanPro-<版本>-macos-arm64.dmg` 使用图形化安装：
 
 1. 从[发行页](https://github.com/macfanpro/macfanpro/releases/latest)下载并打开 DMG，将 **MacFanPro.app** 拖入 **“应用程序”**。国内下载不畅时，请先开启浏览器可用的代理。
 2. 从“应用程序”打开。遇到系统拦截时，按[首次运行说明](#下载后提示无法验证开发者)处理；当前构建尚未经过 Apple 公证。
@@ -108,7 +108,7 @@
 
 更新时先退出应用，再拖入新版替换并重新打开；需要同步后台服务时，会显示设置窗口。Homebrew 用户继续使用 Homebrew。卸载 DMG 安装时，先通过 **“后台服务… → 移除后台服务…”** 移除服务，再退出应用并移入废纸篓；配置和日志会保留。
 
-**当前已发布的 `0.2.3.37` 尚无 DMG 附件。** 包含该附件的新版本发布前，请使用下方原有安装方式。[DMG 安装、代理下载与开发验证说明](docs/dmg-installation.md)。
+[DMG 安装、代理下载与开发验证说明](docs/dmg-installation.md)。
 
 ### 在线安装脚本
 
@@ -143,7 +143,7 @@ less install.sh
 bash install.sh
 ```
 
-`bash install.sh --check` 只下载和校验，不安装；`--no-open` 安装后不打开应用；`--version 0.2.3.37` 指定发行包版本（在 Homebrew 路径中表示最低版本）。每个发行附件中的脚本默认固定到所属版本。更多说明见[安装器与验证](docs/online-installer.md)。
+`bash install.sh --check` 只下载和校验，不安装；`--no-open` 安装后不打开应用；`--version 0.2.3.50` 指定发行包版本（在 Homebrew 路径中表示最低版本）。每个发行附件中的脚本默认固定到所属版本。更多说明见[安装器与验证](docs/online-installer.md)。
 
 ### 方式一：通过 Homebrew 安装
 
@@ -169,17 +169,17 @@ Homebrew 7 起默认不加载第三方 tap 的配方，需要先用 `brew trust`
 2. 双击解压，保留文件夹内的 `MacFanPro.app` 和 `bin` 目录。
 3. 在终端中进入解压后的文件夹，执行安装并打开应用。
 
-例如，`0.2.3.37` 解压在“下载”目录时：
+例如，`0.2.3.50` 解压在“下载”目录时：
 
 ```bash
-cd ~/Downloads/MacFanPro-0.2.3.37-macos-arm64
+cd ~/Downloads/MacFanPro-0.2.3.50-macos-arm64
 sudo ./bin/macfanpro install
 open /Applications/MacFanPro.app
 ```
 
 其他版本或下载位置，请相应替换文件夹路径。安装成功后，可以删除压缩包和解压文件夹。
 
-仅将 `MacFanPro.app` 拖入“应用程序”目录，无法完成后台服务安装。当前发行包使用 ad-hoc 签名，尚未经过 Apple 公证，首次运行可能出现 macOS 安全提示，见[常见问题](#常见问题)。
+如需拖拽安装并使用图形授权向导，请下载上方 DMG；后台服务仍需管理员授权安装。当前发行包使用 ad-hoc 签名，尚未经过 Apple 公证，首次运行可能出现 macOS 安全提示，见[常见问题](#常见问题)。
 
 ### 方式三：从源码构建安装
 
@@ -193,7 +193,7 @@ cd macfanpro
 
 `setup.sh` 会编译源码、组装应用、请求管理员权限完成安装，并打开 MacFanPro，无需再执行其他安装命令。
 
-此方式默认构建仓库的 `main` 分支，可能包含尚未发行的修改。如需构建指定发行版，可在运行 `./setup.sh` 前执行 `git checkout v0.2.3.37`，版本号按需替换。
+此方式默认构建仓库的 `main` 分支，可能包含尚未发行的修改。如需构建指定发行版，可在运行 `./setup.sh` 前执行 `git checkout v0.2.3.50`，版本号按需替换。
 
 ### 安装完成后
 

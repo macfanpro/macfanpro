@@ -112,7 +112,7 @@
     ],
     [
       "Czy wystarczy przeciągnąć aplikację do Aplikacji?",
-      "Trzeba też zainstalować usługę w tle. Zalecamy polecenie powyżej. Przy ręcznej instalacji postępuj według README i trzymaj aplikację z katalogiem bin. Wydania mają podpis ad-hoc, bez poświadczenia Apple; przy pierwszym starcie może pojawić się ostrzeżenie."
+      "0.2.3.50+ · DMG — Przenieś MacFanPro do folderu Aplikacje i otwórz go stamtąd. MacFanPro potrzebuje usługi w tle do sterowania wentylatorami. macOS poprosi o uprawnienia administratora. Wydania mają podpis ad-hoc, bez poświadczenia Apple; przy pierwszym starcie może pojawić się ostrzeżenie."
     ],
     [
       "Terminal zatrzymał się na Password. Co robić?",

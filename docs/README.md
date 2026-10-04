@@ -8,6 +8,7 @@ Start with [English README](../README.md) or [中文 README](../README.zh-CN.md)
 
 | Topic / 主题 | Guide / 文档 |
 | --- | --- |
+| Drag-and-drop installation / 拖拽安装 | [DMG and service setup / DMG 与服务向导](dmg-installation.md) |
 | Installation and proxy access / 安装与代理 | [Online installer / 在线安装器](online-installer.md) |
 | Fan curves, Smart and calibration / 曲线、智能与校准 | [English](../README.md#fan-curves-and-smart-mode) · [中文](../README.zh-CN.md#风扇曲线与智能模式原理) |
 | Sensor readings and comparison with Stats / 传感器读数对照 | [Sensor calibration / 传感器校准记录](thermal-sensor-calibration-20260924.md) |
@@ -43,6 +44,7 @@ Start with [English README](../README.md) or [中文 README](../README.zh-CN.md)
 | 0.2.3.25–28 | [Update checks](macfanpro-0.2.3.25-validation.md) · [Update row](macfanpro-0.2.3.26-validation.md) · [Button label](macfanpro-0.2.3.27-validation.md) · [Result state](macfanpro-0.2.3.28-validation.md) |
 | 0.2.3.29–30 | [Languages](macfanpro-0.2.3.29-validation.md) · [Arabic](macfanpro-0.2.3.30-validation.md) |
 | 0.2.3.31–35 | [Install-aware updates](macfanpro-0.2.3.31-validation.md) · [Terminal update](macfanpro-0.2.3.32-validation.md) · [Online installer](macfanpro-0.2.3.33-validation.md) · [Homebrew update](macfanpro-0.2.3.34-validation.md) · [Source commands](macfanpro-0.2.3.35-validation.md) |
+| 0.2.3.50 | [DMG, upstream integration and website / DMG、上游合并与官网](macfanpro-0.2.3.50-validation.md) |
 | 0.2.3.36–37 | [Icon](macfanpro-0.2.3.36-validation.md) · [Proxy and icon cleanup](macfanpro-0.2.3.37-validation.md) |
 
 Automated tests, package checks, installed-app checks and real hardware acceptance answer different questions. A passing build does not establish thermal or sleep/wake behavior on every Mac.

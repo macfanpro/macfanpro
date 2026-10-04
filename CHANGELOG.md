@@ -1,5 +1,13 @@
 # MacFanPro changelog
 
+## 0.2.3.50
+
+- Add a DMG with a self-contained app: drag it into Applications, open it, and authorize background service setup through a macOS dialog. The setup window supports all 18 app languages, service synchronization, retry after cancellation, and service removal while retaining settings and logs. Existing Homebrew, online script and source installation remain available.
+- Validate the service owner, app identity, signature and installation paths before graphical setup. Serialize service changes and restore previous service files if graphical installation fails. Preserve Homebrew management and explicit CLI fan holds.
+- Merge upstream connection identity checks and accept/log limits, plus app attribute cleanup that does not follow symlinks outside the bundle. Retain MacFanPro's disconnect protection and hardware-operation timeout handling. Thermal curves and the 95/90°C safety thresholds are unchanged.
+- Launch the 18-language project website at https://macfanpro.github.io/macfanpro/ and reorganize the English and Chinese README for installation, everyday use and technical reference. The website shows a DMG download when the latest release includes the asset.
+- Continue ad-hoc signing without Apple notarization. This release's verification record distinguishes automated/package checks from real administrator installation and hardware testing.
+
 ## 0.2.3.37
 
 - Installation and updates can use a local HTTP or SOCKS5 proxy. The online installer detects macOS system proxy settings, while the README gives a command that also proxies the initial script download. The in-app update flow explains how to handle GitHub connectivity problems; Homebrew refreshes only the MacFanPro tap where possible.

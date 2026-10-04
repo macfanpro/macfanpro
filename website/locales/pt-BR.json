@@ -112,7 +112,7 @@
     ],
     [
       "Basta arrastar o aplicativo para Aplicativos?",
-      "O serviço também precisa ser instalado. Recomendamos o comando acima. Na instalação manual, siga o README e mantenha juntos o aplicativo e a pasta bin. As versões atuais têm assinatura ad-hoc e não são autenticadas pela Apple; um alerta pode aparecer na primeira abertura."
+      "0.2.3.50+ · DMG — Arraste o MacFanPro para Aplicativos e abra-o de lá. O MacFanPro precisa de um serviço em segundo plano para controlar as ventoinhas. O macOS solicitará autorização de administrador. As versões atuais têm assinatura ad-hoc e não são autenticadas pela Apple; um alerta pode aparecer na primeira abertura."
     ],
     [
       "Parou em Password. O que fazer?",

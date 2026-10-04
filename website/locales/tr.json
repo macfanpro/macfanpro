@@ -112,7 +112,7 @@
     ],
     [
       "Uygulamayı Uygulamalar’a sürüklemek yeterli mi?",
-      "Arka plan hizmeti de kurulmalıdır. Yukarıdaki komutu öneriyoruz. Elle kurulumda README’yi izleyin, uygulama ve bin klasörünü birlikte tutun. Sürümler ad-hoc imzalıdır ve Apple noter onayı yoktur; ilk açılışta güvenlik uyarısı görülebilir."
+      "0.2.3.50+ · DMG — MacFanPro’yu Uygulamalar’a sürükleyin ve oradan açın. MacFanPro, fanları kontrol etmek için bir arka plan hizmetine ihtiyaç duyar. macOS yönetici yetkisi isteyecek. Sürümler ad-hoc imzalıdır ve Apple noter onayı yoktur; ilk açılışta güvenlik uyarısı görülebilir."
     ],
     [
       "Password yazısında kaldı. Ne yapmalıyım?",

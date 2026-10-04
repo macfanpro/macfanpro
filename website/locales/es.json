@@ -112,7 +112,7 @@
     ],
     [
       "¿Basta con arrastrar la aplicación a Aplicaciones?",
-      "También hay que instalar el servicio. Recomendamos el comando anterior. Para hacerlo manualmente, sigue el README y conserva juntos la aplicación y el directorio bin. Las versiones actuales tienen firma ad-hoc y no están notarizadas por Apple; puede aparecer un aviso al abrirlas por primera vez."
+      "0.2.3.50+ · DMG — Arrastra MacFanPro a Aplicaciones y ábrelo desde allí. MacFanPro necesita un servicio en segundo plano para controlar los ventiladores. macOS solicitará autorización de administrador. Las versiones actuales tienen firma ad-hoc y no están notarizadas por Apple; puede aparecer un aviso al abrirlas por primera vez."
     ],
     [
       "Se ha detenido en Password. ¿Qué hago?",

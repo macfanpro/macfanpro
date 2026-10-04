@@ -112,7 +112,7 @@
     ],
     [
       "Reicht es, die App in Programme zu ziehen?",
-      "Der Hintergrunddienst muss ebenfalls installiert werden. Nutze bevorzugt den Befehl oben oder folge der README; App und bin-Ordner zusammen aufbewahren. Releases sind ad-hoc signiert, nicht von Apple notarisiert. Beim ersten Start kann ein Sicherheitshinweis erscheinen."
+      "0.2.3.50+ · DMG — Ziehe MacFanPro in „Programme“ und öffne es von dort. MacFanPro benötigt einen Hintergrunddienst zur Lüftersteuerung. macOS fragt nach der Administratorfreigabe. Releases sind ad-hoc signiert, nicht von Apple notarisiert. Beim ersten Start kann ein Sicherheitshinweis erscheinen."
     ],
     [
       "Das Terminal wartet bei Password. Was tun?",

@@ -112,7 +112,7 @@
     ],
     [
       "Basta spostare l’app in Applicazioni?",
-      "Occorre anche installare il servizio. Consigliamo il comando sopra. Per l’installazione manuale segui il README e mantieni insieme app e cartella bin. Le versioni attuali usano una firma ad-hoc e non sono autenticate da Apple; al primo avvio può apparire un avviso di sicurezza."
+      "0.2.3.50+ · DMG — Trascina MacFanPro in Applicazioni, poi aprilo da lì. MacFanPro necessita di un servizio in background per controllare le ventole. macOS richiederà l’autorizzazione di un amministratore. Le versioni attuali usano una firma ad-hoc e non sono autenticate da Apple; al primo avvio può apparire un avviso di sicurezza."
     ],
     [
       "Si è fermato su Password. Che faccio?",
