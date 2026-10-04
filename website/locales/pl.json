@@ -137,5 +137,8 @@
   "image_alt": "Panel MacFanPro z temperaturami, obrotami, trybami i językami",
   "main_nav": "Nawigacja główna",
   "languages": "Wybierz język",
-  "copyright": "Współtwórcy MacFanPro"
+  "copyright": "Współtwórcy MacFanPro",
+  "dmg_title": "Instalacja z DMG",
+  "dmg_download": "Pobierz DMG",
+  "dmg_body": "Przenieś MacFanPro do folderu Aplikacje i otwórz go stamtąd. MacFanPro potrzebuje usługi w tle do sterowania wentylatorami. macOS poprosi o uprawnienia administratora."
 }

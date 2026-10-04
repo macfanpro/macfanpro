@@ -137,5 +137,8 @@
   "image_alt": "MacFanPro panel: temperatures, fan speeds, control modes, and language settings",
   "main_nav": "Main navigation",
   "languages": "Choose a language",
-  "copyright": "MacFanPro contributors"
+  "copyright": "MacFanPro contributors",
+  "dmg_title": "Install from a DMG",
+  "dmg_download": "Download DMG",
+  "dmg_body": "Drag MacFanPro into Applications, then open it from there. MacFanPro needs a background service to control fans. macOS will ask for administrator authorization."
 }

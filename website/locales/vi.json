@@ -137,5 +137,8 @@
   "image_alt": "Bảng MacFanPro hiển thị nhiệt độ, tốc độ, chế độ và ngôn ngữ",
   "main_nav": "Điều hướng chính",
   "languages": "Chọn ngôn ngữ",
-  "copyright": "Những người đóng góp cho MacFanPro"
+  "copyright": "Những người đóng góp cho MacFanPro",
+  "dmg_title": "Cài đặt từ DMG",
+  "dmg_download": "Tải DMG",
+  "dmg_body": "Kéo MacFanPro vào Ứng dụng rồi mở từ đó. MacFanPro cần dịch vụ nền để điều khiển quạt. macOS sẽ yêu cầu quyền quản trị viên."
 }

@@ -137,5 +137,8 @@
   "image_alt": "Painel do MacFanPro com temperaturas, velocidades, modos e idiomas",
   "main_nav": "Navegação principal",
   "languages": "Escolher idioma",
-  "copyright": "Colaboradores do MacFanPro"
+  "copyright": "Colaboradores do MacFanPro",
+  "dmg_title": "Instalar por DMG",
+  "dmg_download": "Baixar DMG",
+  "dmg_body": "Arraste o MacFanPro para Aplicativos e abra-o de lá. O MacFanPro precisa de um serviço em segundo plano para controlar as ventoinhas. O macOS solicitará autorização de administrador."
 }

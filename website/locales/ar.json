@@ -137,5 +137,8 @@
   "image_alt": "لوحة MacFanPro تعرض الحرارة وسرعة المراوح والأوضاع وإعدادات اللغة",
   "main_nav": "التنقل الرئيسي",
   "languages": "اختر اللغة",
-  "copyright": "المساهمون في MacFanPro"
+  "copyright": "المساهمون في MacFanPro",
+  "dmg_title": "التثبيت من DMG",
+  "dmg_download": "تنزيل DMG",
+  "dmg_body": "اسحب MacFanPro إلى التطبيقات، ثم افتحه من هناك. يحتاج MacFanPro إلى خدمة خلفية للتحكم بالمراوح. سيطلب macOS تفويض المسؤول."
 }

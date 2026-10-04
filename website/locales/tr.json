@@ -137,5 +137,8 @@
   "image_alt": "Sıcaklıkları, hızları, modları ve dilleri gösteren MacFanPro paneli",
   "main_nav": "Ana gezinme",
   "languages": "Dil seçin",
-  "copyright": "MacFanPro katkıda bulunanları"
+  "copyright": "MacFanPro katkıda bulunanları",
+  "dmg_title": "DMG ile kurulum",
+  "dmg_download": "DMG indir",
+  "dmg_body": "MacFanPro’yu Uygulamalar’a sürükleyin ve oradan açın. MacFanPro, fanları kontrol etmek için bir arka plan hizmetine ihtiyaç duyar. macOS yönetici yetkisi isteyecek."
 }

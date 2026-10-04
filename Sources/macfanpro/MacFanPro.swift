@@ -707,9 +707,33 @@ struct Install: ParsableCommand {
     @Flag(name: .long, help: "Back up and replace an existing ThermalForge installation")
     var migrateThermalforge = false
 
+    @Option(name: .long, help: .hidden)
+    var embeddedOwnerUID: UInt32?
+
     func run() throws {
         guard geteuid() == 0 else {
             throw ValidationError("Run with sudo: sudo macfanpro install")
+        }
+
+        let installationLock = try ServiceInstallationLock()
+        defer { withExtendedLifetime(installationLock) {} }
+        let embedded = embeddedOwnerUID != nil
+        if let owner = embeddedOwnerUID {
+            try EmbeddedServiceInstallation.validateOwner(owner)
+            try EmbeddedServiceInstallation.validateBundle(
+                URL(fileURLWithPath: EmbeddedServiceInstallation.appPath),
+                executable: URL(fileURLWithPath: ProcessInfo.processInfo.arguments[0]),
+                version: MacFanProVersion.current)
+            guard !EmbeddedServiceInstallation.homebrewPaths.contains(where: FileManager.default.fileExists(atPath:))
+                else { throw EmbeddedServiceInstallation.Failure.homebrew }
+            try EmbeddedServiceInstallation.verifySignature()
+            let plist = FileManager.default.fileExists(atPath: MacFanProDaemon.plistPath)
+                ? try Data(contentsOf: URL(fileURLWithPath: MacFanProDaemon.plistPath)) : nil
+            try EmbeddedServiceInstallation.validateExistingPlist(plist, owner: owner)
+            let client = DaemonClient()
+            try EmbeddedServiceInstallation.validateLiveService(
+                version: try? client.request(DaemonRequest(verb: .version)).version,
+                target: MacFanProVersion.current, state: try? client.readState())
         }
 
         // The daemon runs under launchd with no SUDO_UID of its own, so capture the
@@ -717,8 +741,8 @@ struct Install: ParsableCommand {
         // "already root, not via sudo" (a root shell) — refuse rather than default to
         // 0, which would make the socket root-only and brick the user's app. A
         // non-root user never reaches this line — the geteuid() guard above stops them.
-        guard let sudoUIDString = ProcessInfo.processInfo.environment["SUDO_UID"],
-              let ownerUID = Int(sudoUIDString), ownerUID != 0 else {
+        guard let ownerUID = embeddedOwnerUID.map(Int.init) ?? ProcessInfo.processInfo.environment["SUDO_UID"].flatMap(Int.init),
+              ownerUID > 0 else {
             throw ValidationError("""
                 Can't determine who should own fan control: SUDO_UID isn't set.
                 Run the install with sudo from your normal user account:
@@ -738,7 +762,7 @@ struct Install: ParsableCommand {
         let resyncKeg = sourceBinary.path == URL(fileURLWithPath: MacFanProDaemon.installPath).resolvingSymlinksInPath().path
             ? Self.newerHomebrewKeg(than: MacFanProVersion.current) : nil
         let installVersion = resyncKeg?.version ?? MacFanProVersion.current
-        let appCandidates = [
+        let appCandidates = embedded ? [EmbeddedServiceInstallation.appPath] : [
             sourceBinary.deletingLastPathComponent().appendingPathComponent("MacFanPro.app").path,
             sourceBinary.deletingLastPathComponent().deletingLastPathComponent().appendingPathComponent("MacFanPro.app").path,
             "/opt/homebrew/opt/macfanpro/MacFanPro.app",
@@ -903,6 +927,28 @@ struct Install: ParsableCommand {
             }
         }
 
+        try EmbeddedServiceInstallation.validateDirectory(URL(fileURLWithPath: "/usr/local/bin"))
+        try EmbeddedServiceInstallation.validateDirectory(URL(fileURLWithPath: "/Library/LaunchDaemons"))
+        let snapshot = embedded ? try ServiceFileSnapshot() : nil
+        let wasRegistered = embedded && MacFanProDaemon.isRegisteredWithLaunchd
+        var installationSucceeded = false
+        defer {
+            if let snapshot, !installationSucceeded {
+                do {
+                    try snapshot.restoreService(stop: { try MacFanProDaemon.bootoutIfRegistered() }) {
+                        guard wasRegistered else { return }
+                        let restore = Process()
+                        restore.executableURL = URL(fileURLWithPath: "/bin/launchctl")
+                        restore.arguments = ["bootstrap", "system", MacFanProDaemon.plistPath]
+                        try restore.run(); restore.waitUntilExit()
+                        guard restore.terminationStatus == 0 else { throw EmbeddedServiceInstallation.Failure.identity }
+                    }
+                } catch {
+                    FileHandle.standardError.write(Data("Service rollback failed: \(error)\n".utf8))
+                }
+            }
+        }
+
         if resolvedBinary != resolvedInstall {
             // Install the binary the user invoked.
             try installBinary(from: binaryPath)
@@ -957,10 +1003,8 @@ struct Install: ParsableCommand {
             </dict>
             </plist>
             """
-        try plist.write(
-            toFile: MacFanProDaemon.plistPath,
-            atomically: true, encoding: .utf8
-        )
+        try ServiceFileSnapshot.replace(URL(fileURLWithPath: MacFanProDaemon.plistPath),
+                                        data: Data(plist.utf8), mode: 0o644)
         // Tear down any existing job before bootstrapping — but only if launchd
         // actually has the label registered. Checking registration (not
         // isRunning) still catches a loaded-but-failing job that retry-loops on a
@@ -1011,6 +1055,12 @@ struct Install: ParsableCommand {
         let liveDaemon = try DaemonClient().request(DaemonRequest(verb: .version))
         guard liveDaemon.ok, liveDaemon.version == installVersion else {
             throw ValidationError("The live daemon did not confirm installed version \(installVersion). Re-run the installer; the service may still be restarting.")
+        }
+
+        installationSucceeded = true
+        if embedded {
+            print("Background service installed and verified.")
+            return // The running bundle is already installed. Never delete/copy it onto itself.
         }
 
         // Copy the menu bar app into /Applications. Homebrew's post_install is
@@ -1180,11 +1230,39 @@ struct Uninstall: ParsableCommand {
     @Flag(name: .long, help: "Also delete this user's MacFanPro profiles, calibration and logs, and the daemon's logs")
     var purgeData = false
 
+    @Option(name: .long, help: .hidden)
+    var embeddedOwnerUID: UInt32?
+
     func run() throws {
         guard geteuid() == 0 else {
             throw ValidationError("Run with sudo: sudo macfanpro uninstall")
         }
 
+        let installationLock = try ServiceInstallationLock()
+        defer { withExtendedLifetime(installationLock) {} }
+        if let owner = embeddedOwnerUID {
+            guard !purgeData else { throw EmbeddedServiceInstallation.Failure.account }
+            try EmbeddedServiceInstallation.validateOwner(owner)
+            try EmbeddedServiceInstallation.validateBundle(
+                URL(fileURLWithPath: EmbeddedServiceInstallation.appPath),
+                executable: URL(fileURLWithPath: ProcessInfo.processInfo.arguments[0]),
+                version: MacFanProVersion.current)
+            try EmbeddedServiceInstallation.verifySignature()
+            try EmbeddedServiceInstallation.validateDirectory(URL(fileURLWithPath: "/usr/local/bin"))
+            try EmbeddedServiceInstallation.validateDirectory(URL(fileURLWithPath: "/Library/LaunchDaemons"))
+            let plist = FileManager.default.fileExists(atPath: MacFanProDaemon.plistPath)
+                ? try Data(contentsOf: URL(fileURLWithPath: MacFanProDaemon.plistPath)) : nil
+            try EmbeddedServiceInstallation.validateExistingPlist(plist, owner: owner)
+            // User explicitly confirmed removal and return to automatic control.
+            // Stop the daemon first; otherwise its next ramp can undo the reset.
+            try MacFanProDaemon.bootoutIfRegistered()
+            try FanControl().resetAuto()
+            for path in [MacFanProDaemon.plistPath, MacFanProDaemon.installPath, MacFanProDaemon.socketPath] {
+                if FileManager.default.fileExists(atPath: path) { try FileManager.default.removeItem(atPath: path) }
+            }
+            print("Background service removed. Application and user data preserved.")
+            return
+        }
         let fm = FileManager.default
         let ownerUID = ProcessInfo.processInfo.environment["SUDO_UID"].flatMap(UInt32.init) ?? getuid()
         guard ownerUID != 0, let account = getpwuid(ownerUID), let directory = account.pointee.pw_dir else {
@@ -1298,6 +1376,10 @@ struct BuildApp: ParsableCommand {
             throw ValidationError("Localization resources missing or invalid: \(resourceSource.path)")
         }
 
+        let helperSource = URL(fileURLWithPath: binary).deletingLastPathComponent().appendingPathComponent("macfanpro")
+        guard fm.isExecutableFile(atPath: helperSource.path) else {
+            throw ValidationError("Bundled service executable missing: \(helperSource.path)")
+        }
         let contents = "\(dest)/Contents"
         let macOSDir = "\(contents)/MacOS"
         let resources = "\(contents)/Resources"
@@ -1309,9 +1391,17 @@ struct BuildApp: ParsableCommand {
         try fm.createDirectory(atPath: macOSDir, withIntermediateDirectories: true)
         try fm.createDirectory(atPath: resources, withIntermediateDirectories: true)
 
+        try fm.createDirectory(atPath: "\(contents)/Helpers", withIntermediateDirectories: true)
+        try fm.copyItem(at: helperSource, to: URL(fileURLWithPath: "\(contents)/Helpers/macfanpro"))
         try fm.copyItem(atPath: binary, toPath: "\(macOSDir)/MacFanProApp")
         try fm.copyItem(atPath: icon, toPath: "\(resources)/AppIcon.icns")
         try fm.copyItem(atPath: licenseFile, toPath: "\(resources)/LICENSE")
+        if fm.fileExists(atPath: "NOTICE.md") {
+            try fm.copyItem(atPath: "NOTICE.md", toPath: "\(resources)/NOTICE.md")
+        }
+        if fm.fileExists(atPath: "ThirdPartyNotices") {
+            try fm.copyItem(atPath: "ThirdPartyNotices", toPath: "\(resources)/ThirdPartyNotices")
+        }
         try installer.write(toFile: "\(resources)/install.sh", atomically: true, encoding: .utf8)
         try fm.copyItem(at: resourceSource,
                         to: URL(fileURLWithPath: resources).appendingPathComponent(LocalizationCatalog.resourceBundleName))

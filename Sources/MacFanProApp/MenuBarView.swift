@@ -10,6 +10,7 @@ import MacFanProCore
 import MacFanProLocalization
 
 struct MenuBarView: View {
+    var onServiceSetup: (() -> Void)? = nil
     @EnvironmentObject var appState: AppState
     @EnvironmentObject var language: AppLanguageStore
 
@@ -231,8 +232,15 @@ struct MenuBarView: View {
 
             Divider().padding(.vertical, 6)
 
-            Button(action: { NSApp.terminate(nil) }) {
-                Text(language.text("Quit"))
+            HStack {
+                Button(action: { NSApp.terminate(nil) }) {
+                    Text(language.text("Quit"))
+                }
+                Spacer()
+                if let onServiceSetup {
+                    Button(language.text("Background service…"), action: onServiceSetup)
+                        .font(.caption)
+                }
             }
             .buttonStyle(.plain)
             .foregroundStyle(.secondary)
@@ -401,6 +409,12 @@ private struct UpdateAvailableBanner: View {
                 .foregroundStyle(.secondary)
                 .fixedSize(horizontal: false, vertical: true)
 
+            if !homebrew, let url = URL(string: update.url) {
+                Link(language.text("Download DMG"), destination: url)
+                    .font(.caption.bold()).padding(.top, 4)
+                    .help(language.text("Quit MacFanPro, replace it with the new app, then reopen it."))
+            }
+
             // Option 1 is the one-click path for how MacFanPro was installed;
             // building from source is for developers.
             optionTitle(homebrew ? "Option 1 (recommended): Homebrew" : "Option 1 (recommended): Release package")
@@ -433,7 +447,7 @@ private struct UpdateAvailableBanner: View {
 
             HStack {
                 if let url = URL(string: update.url) {
-                    Link(homebrew ? language.text("What's new") : language.text("Download"), destination: url)
+                    Link(language.text("What's new"), destination: url)
                         .font(.caption2)
                 }
                 Spacer()

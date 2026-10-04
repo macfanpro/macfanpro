@@ -137,5 +137,8 @@
   "image_alt": "MacFanPro mit Temperaturen, Drehzahlen, Modi und Spracheinstellungen",
   "main_nav": "Hauptnavigation",
   "languages": "Sprache wählen",
-  "copyright": "MacFanPro-Mitwirkende"
+  "copyright": "MacFanPro-Mitwirkende",
+  "dmg_title": "Mit DMG installieren",
+  "dmg_download": "DMG herunterladen",
+  "dmg_body": "Ziehe MacFanPro in „Programme“ und öffne es von dort. MacFanPro benötigt einen Hintergrunddienst zur Lüftersteuerung. macOS fragt nach der Administratorfreigabe."
 }

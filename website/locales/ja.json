@@ -137,5 +137,8 @@
   "image_alt": "温度、回転数、制御モード、言語設定を表示する MacFanPro パネル",
   "main_nav": "メインナビゲーション",
   "languages": "言語を選択",
-  "copyright": "MacFanPro の貢献者"
+  "copyright": "MacFanPro の貢献者",
+  "dmg_title": "DMG からインストール",
+  "dmg_download": "DMG をダウンロード",
+  "dmg_body": "MacFanPro を「アプリケーション」に移動してから開いてください。 ファン制御にはバックグラウンドサービスが必要です。macOS が管理者の認証を求めます。"
 }

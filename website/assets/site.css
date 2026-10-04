@@ -1110,3 +1110,19 @@ html[dir=rtl] .hero h1 {
     animation:none!important
   }
 }
+
+/* Shown only when the latest published release actually includes a DMG. */
+.dmg-install:not([hidden]) {
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+  padding: 1.5rem;
+  margin-bottom: 2rem;
+  border: 1px solid var(--line, #dae4ef);
+  border-radius: 16px;
+}
+.dmg-install p { margin: 0.75rem 0; }
+.dmg-install .button { flex-shrink: 0; }
+@media (max-width: 640px) {
+  .dmg-install:not([hidden]) { flex-direction: column; align-items: stretch; }
+}

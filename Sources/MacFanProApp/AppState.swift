@@ -62,7 +62,7 @@ final class AppState: ObservableObject {
         case available(String)
     }
 
-    private let servicesEnabled: Bool
+    private var servicesEnabled = false
     private var monitor: ThermalMonitor?
     private let executor = PrivilegedExecutor()
     private var heartbeatTimer: DispatchSourceTimer?
@@ -104,9 +104,13 @@ final class AppState: ObservableObject {
     }()
 
     init(startServices: Bool = true) {
-        servicesEnabled = startServices
         // Offscreen presentation tests must never start monitors or contact SMC.
-        guard startServices else { return }
+        if startServices { activateServices() }
+    }
+
+    func activateServices() {
+        guard !servicesEnabled else { return }
+        servicesEnabled = true
         // launchAtLogin is initialized from SMAppService status as its property default
         // (above), NOT reassigned here — reassigning would fire didSet and re-register on
         // every launch. Reflecting state is a read; only a user toggle should register.
@@ -125,6 +129,15 @@ final class AppState: ObservableObject {
         // so the first heartbeat poll can never land before adopt has applied the
         // launch state. The original synchronous adopt gave this ordering for free;
         // the async version must restore it explicitly.
+    }
+
+    func pauseForServiceRemoval() async {
+        servicesEnabled = false
+        monitor?.stop(); monitor = nil
+        heartbeatTimer?.cancel(); heartbeatTimer = nil
+        await withCheckedContinuation { continuation in
+            commandPump.runAtLaunch { continuation.resume() }
+        }
     }
 
     /// Sync to whatever the daemon is actually holding at launch instead of
@@ -178,7 +191,7 @@ final class AppState: ObservableObject {
             }
 
             Task { @MainActor [weak self] in
-                guard let self else { return }
+                guard let self, self.servicesEnabled else { return }
                 self.externalHold = adopted
                 // Restore the user's last chosen profile, but NEVER over a reflected CLI
                 // hold — that hold is the most recent explicit intent and wins. With no
@@ -414,7 +427,7 @@ final class AppState: ObservableObject {
         }
         monitor.onFanCommandAsync = { [weak self] command, complete in
             Task { @MainActor [weak self] in
-                guard let self, self.externalHold == nil,
+                guard let self, self.servicesEnabled, self.externalHold == nil,
                       self.profileSwitch.allows(command) else { complete(false); return }
                 // A cooldown or retry has no authority over a CLI hold. The daemon
                 // checks that at execution time; the five-second UI poll is advisory.

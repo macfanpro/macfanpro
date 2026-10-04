@@ -137,5 +137,8 @@
   "image_alt": "MacFanPro-paneel met temperaturen, snelheden, modi en talen",
   "main_nav": "Hoofdnavigatie",
   "languages": "Taal kiezen",
-  "copyright": "MacFanPro-bijdragers"
+  "copyright": "MacFanPro-bijdragers",
+  "dmg_title": "Installeren via DMG",
+  "dmg_download": "DMG downloaden",
+  "dmg_body": "Sleep MacFanPro naar Programma’s en open het van daaruit. MacFanPro heeft een achtergrondservice nodig om ventilatoren te regelen. macOS vraagt om beheerdersmachtiging."
 }

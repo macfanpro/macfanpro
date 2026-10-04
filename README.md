@@ -91,10 +91,23 @@ MacBook Pro, Mac mini, Mac Studio and iMac configurations with Apple Silicon and
 
 | Method | Best for | Builds on your Mac? |
 | --- | --- | --- |
+| DMG (when included in a release) | Drag the app into Applications, then authorize setup | No, works offline after download |
 | Online installer | One command; downloads and verifies a release | No, no Xcode needed |
 | Homebrew | Installing and managing versions with Homebrew | No, prebuilt |
 | Release download | Using the prebuilt app and CLI | No, no Xcode needed |
 | From source | Changing the code, debugging, or building yourself | Yes, needs Xcode |
+
+### Drag to Applications (DMG)
+
+Releases that include `MacFanPro-<version>-macos-arm64.dmg` support graphical installation:
+
+1. Download the DMG from [Releases](https://github.com/macfanpro/macfanpro/releases/latest), open it, and drag **MacFanPro.app** into **Applications**.
+2. Open the app from Applications. If macOS blocks it, follow the [first-launch instructions](#macos-says-it-cant-verify-the-developer); these builds are not notarized.
+3. Choose **Install and enable** in the setup window and approve the macOS administrator authorization dialog. The app includes the service executable, so this step needs no network, Homebrew or Xcode.
+
+For updates, quit the app, replace it with the newer copy, and reopen it. The setup window appears when the service needs synchronization. Homebrew installations continue to use Homebrew. To remove a DMG installation, choose **Background service… → Remove background service…**, then quit and move the app to the Trash; settings and logs are retained.
+
+**The currently published `0.2.3.37` release has no DMG.** Until a release with this asset is published, use one of the methods below. [DMG setup, proxy downloads and developer verification](docs/dmg-installation.md).
 
 ### Online installer
 

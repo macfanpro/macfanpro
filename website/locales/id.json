@@ -137,5 +137,8 @@
   "image_alt": "Panel MacFanPro dengan suhu, kecepatan, mode, dan bahasa",
   "main_nav": "Navigasi utama",
   "languages": "Pilih bahasa",
-  "copyright": "Kontributor MacFanPro"
+  "copyright": "Kontributor MacFanPro",
+  "dmg_title": "Pasang melalui DMG",
+  "dmg_download": "Unduh DMG",
+  "dmg_body": "Seret MacFanPro ke Aplikasi, lalu buka dari sana. MacFanPro memerlukan layanan latar belakang untuk mengontrol kipas. macOS akan meminta otorisasi administrator."
 }

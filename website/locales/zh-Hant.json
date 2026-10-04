@@ -137,5 +137,8 @@
   "image_alt": "MacFanPro 面板：溫度、轉速、控制模式與語言設定",
   "main_nav": "主導覽",
   "languages": "選擇語言",
-  "copyright": "MacFanPro 貢獻者"
+  "copyright": "MacFanPro 貢獻者",
+  "dmg_title": "拖入應用程式安裝",
+  "dmg_download": "下載 DMG",
+  "dmg_body": "將 MacFanPro 拖入“應用程序”，然後從那裡打開。 MacFanPro 需要後台服務來控制風扇。macOS 將請求管理員授權。"
 }

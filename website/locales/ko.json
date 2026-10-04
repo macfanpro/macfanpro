@@ -137,5 +137,8 @@
   "image_alt": "온도, 회전수, 제어 모드와 언어 설정을 보여 주는 MacFanPro 패널",
   "main_nav": "주 탐색",
   "languages": "언어 선택",
-  "copyright": "MacFanPro 기여자"
+  "copyright": "MacFanPro 기여자",
+  "dmg_title": "DMG로 설치",
+  "dmg_download": "DMG 다운로드",
+  "dmg_body": "MacFanPro를 응용 프로그램으로 옮긴 다음 실행하세요. 팬 제어를 위해 백그라운드 서비스가 필요합니다. macOS가 관리자 인증을 요청합니다."
 }

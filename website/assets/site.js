@@ -38,6 +38,24 @@
     if (event.key === 'Escape' && menu?.open) { menu.open = false; menu.querySelector('summary').focus(); }
   });
 
+  // Older releases have no DMG. Never advertise a nonexistent asset or replace
+  // the working proxy installer when GitHub's API is unavailable.
+  const dmg = document.querySelector('.dmg-install');
+  if (dmg) {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 5000);
+    fetch('https://api.github.com/repos/macfanpro/macfanpro/releases/latest', { signal: controller.signal })
+      .then(response => { if (!response.ok) throw new Error('Release unavailable'); return response.json(); })
+      .then(release => {
+        if (release.draft || release.prerelease || !/^v[0-9]+(?:\.[0-9]+){2,3}$/.test(release.tag_name)) return;
+        const name = `MacFanPro-${release.tag_name.slice(1)}-macos-arm64.dmg`;
+        const url = `https://github.com/macfanpro/macfanpro/releases/download/${release.tag_name}/${name}`;
+        if (!Array.isArray(release.assets) || !release.assets.some(asset => asset.name === name && asset.browser_download_url === url)) return;
+        dmg.querySelector('[data-dmg-download]').href = url;
+        dmg.hidden = false;
+      }).catch(() => {}).finally(() => clearTimeout(timeout));
+  }
+
   const installer = document.querySelector('.installer');
   const tabs = [...installer.querySelectorAll('[role=tab]')];
   const status = installer.querySelector('.copy-status');

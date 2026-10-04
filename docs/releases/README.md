@@ -34,3 +34,6 @@ Release 正文中的文件链接应使用完整 GitHub URL。对会随时间变�
 - [GitHub 自动生成发布说明文档](https://docs.github.com/en/repositories/releasing-projects-on-github/automatically-generated-release-notes)：完整变更与贡献者信息仍需人工检查是否适合该次发行。
 
 在线安装器：打包时把 `Scripts/install.sh` 固定到当前发行版本，同时嵌入 App 并生成 `install.sh` / `install.sh.sha256` 两个附件。`SHA256SUMS` 必须继续只含发行包，以兼容已部署的 0.2.3.32 更新器。草稿验收需检查附件脚本与包内脚本一致、两个校验文件正确，并按 [安装器验证](../online-installer.md) 检查。首次上线要发布新版本，不能覆盖既有标签或向旧版本上传其他源码构建的产物。
+
+
+DMG 发行：同时上传 `MacFanPro-<版本>-macos-arm64.dmg` 及其 `.dmg.sha256`，不要把 DMG 加入旧 `SHA256SUMS`。核验挂载后的应用签名、内置服务程序、语言资源和“应用程序”链接，并在干净的 macOS 上完成首次授权安装、更新与卸载验收（见 [DMG 验证说明](../dmg-installation.md)）。首次发布时更新 README 和 DMG 文档中的“尚未发布”说明。官网在最新正式发行确实包含 DMG 时自动显示下载入口；不往旧标签补传新代码构建的 DMG。

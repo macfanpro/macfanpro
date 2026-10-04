@@ -137,5 +137,8 @@
   "image_alt": "Pannello MacFanPro con temperature, velocità, modalità e lingue",
   "main_nav": "Navigazione principale",
   "languages": "Scegli la lingua",
-  "copyright": "Collaboratori MacFanPro"
+  "copyright": "Collaboratori MacFanPro",
+  "dmg_title": "Installa da DMG",
+  "dmg_download": "Scarica DMG",
+  "dmg_body": "Trascina MacFanPro in Applicazioni, poi aprilo da lì. MacFanPro necessita di un servizio in background per controllare le ventole. macOS richiederà l’autorizzazione di un amministratore."
 }
