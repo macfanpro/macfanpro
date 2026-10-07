@@ -45,7 +45,7 @@ final class ServiceSetup: ObservableObject {
     @Published private(set) var message: String?
     @Published private(set) var diagnostics = ""
     private let environment: Environment
-    private var window: NSWindow?
+    private(set) var window: NSWindow?
     private var checkedAtLaunch = false
     private var checkInFlight = false
     var onReady: () -> Void = {}
@@ -76,6 +76,11 @@ final class ServiceSetup: ObservableObject {
             window.identifier = NSUserInterfaceItemIdentifier("io.github.macfanpro.settings-window")
             window.styleMask = [.titled, .closable]
             window.isReleasedWhenClosed = false
+            // Size to the content before centering: preferredContentSize only takes
+            // effect after layout, so centering the initial frame left the grown
+            // window off-center. Later opens in a session keep wherever it was moved.
+            controller.view.layoutSubtreeIfNeeded()
+            window.setContentSize(controller.view.fittingSize)
             window.center()
             self.window = window
             titleSubscription = language.$language.receive(on: DispatchQueue.main).sink { [weak self, weak language] _ in

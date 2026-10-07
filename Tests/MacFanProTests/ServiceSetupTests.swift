@@ -95,6 +95,29 @@ struct ServiceSetupTests {
         #expect(ServiceSetup.command(.install, owner: 501) == "'/Applications/MacFanPro.app/Contents/Helpers/macfanpro' install --embedded-owner-uid 501")
     }
 
+    @Test("The settings window opens at its content size, centered on the screen")
+    func settingsWindowOpensCentered() async throws {
+        let suite = "MacFanPro.SetupWindowTests.\(UUID().uuidString)"
+        let defaults = try #require(UserDefaults(suiteName: suite))
+        defer { defaults.removePersistentDomain(forName: suite) }
+        let language = AppLanguageStore(defaults: defaults)
+        let fixture = Fixture()
+        let setup = ServiceSetup(environment: fixture.environment())
+        await setup.check()
+        setup.windowContent = {
+            AnyView(SettingsView(setup: setup).environmentObject(AppState(startServices: false)).environmentObject(language))
+        }
+        setup.present(language: language)
+        defer { setup.window?.close() }
+        let window = try #require(setup.window)
+        #expect(window.frame.width >= 460 && window.frame.height > 300)
+        if let screen = window.screen ?? NSScreen.main {
+            #expect(abs(window.frame.midX - screen.visibleFrame.midX) <= 1, "centered horizontally")
+            #expect(window.frame.minY >= screen.visibleFrame.minY && window.frame.maxY <= screen.visibleFrame.maxY)
+        }
+        #expect(fixture.authorizationCount == 0)
+    }
+
     @Test("Settings window renders every language in light and dark without starting app services")
     func localizedWindow() async throws {
         let suite = "MacFanPro.SetupTests.\(UUID().uuidString)"
