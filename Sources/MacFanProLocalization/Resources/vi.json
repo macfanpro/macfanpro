@@ -84,7 +84,7 @@
   "MacFanPro setup": "Thiết lập MacFanPro",
   "Remove": "Gỡ",
   "Remove background service?": "Gỡ dịch vụ nền?",
-  "Remove background service…": "Gỡ dịch vụ nền…",
+  "Remove background service": "Gỡ dịch vụ nền",
   "Setup did not finish. Please retry or view the details.": "Thiết lập chưa hoàn tất. Hãy thử lại hoặc xem chi tiết.",
   "Setup needs your attention.": "Thiết lập cần bạn xử lý.",
   "Terminal currently controls the fans. Finish manual control before replacing the service.": "Terminal đang điều khiển quạt. Hãy kết thúc điều khiển thủ công trước khi thay dịch vụ.",
@@ -96,7 +96,7 @@
   "This stops fan control and returns fans to macOS automatic control. Your settings and logs will be kept.": "Thao tác này dừng điều khiển quạt và trả về điều khiển tự động của macOS. Cài đặt và nhật ký được giữ lại.",
   "Quit MacFanPro, replace it with the new app, then reopen it.": "Thoát MacFanPro, thay bằng ứng dụng mới rồi mở lại.",
   "Download DMG": "Tải DMG",
-  "View Update…": "Xem bản cập nhật…",
+  "View Update": "Xem bản cập nhật",
   "Retry": "Thử lại",
   "MacFanPro update": "Cập nhật MacFanPro",
   "Current version: {version}": "Phiên bản hiện tại: {version}",
@@ -109,6 +109,6 @@
   "Could not open the release page. Try again.": "Không thể mở trang phát hành. Hãy thử lại.",
   "Could not open Terminal. Try again or use the command below Other update methods.": "Không thể mở Terminal. Hãy thử lại hoặc dùng lệnh trong mục Cách cập nhật khác.",
   "Continue the update in Terminal. Close and reopen this window to try again.": "Tiếp tục cập nhật trong Terminal. Đóng rồi mở lại cửa sổ này để thử lại.",
-  "Open download page…": "Trang tải xuống…",
+  "Open download page": "Trang tải xuống",
   "Opening Terminal…": "Đang mở Terminal…"
 }

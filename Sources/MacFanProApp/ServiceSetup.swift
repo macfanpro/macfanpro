@@ -228,7 +228,7 @@ struct SettingsView: View {
                         .fixedSize(horizontal: false, vertical: true)
                         .accessibilityIdentifier("io.github.macfanpro.update-status")
                     Spacer(minLength: 8)
-                    Button(language.text(appState.availableUpdate != nil ? "View Update…" :
+                    Button(language.text(appState.availableUpdate != nil ? "View Update" :
                         appState.manualUpdateCheck == .failed ? "Retry" : "Check for Updates")) {
                         if appState.availableUpdate != nil { onViewUpdate() } else { appState.checkForUpdatesNow() }
                     }
@@ -290,7 +290,7 @@ private struct ServiceSection: View {
             HStack(spacing: 6) {
                 switch setup.phase {
                 case .ready:
-                    Label(language.text("Running {version}", ["version": MacFanProVersion.current]), systemImage: "checkmark.circle")
+                    IconLabel(title: language.text("Running {version}", ["version": MacFanProVersion.current]), systemImage: "checkmark.circle")
                         .foregroundStyle(.green)
                 case .checking, .working:
                     ProgressView().controlSize(.small)
@@ -299,7 +299,7 @@ private struct ServiceSection: View {
                 case .removed:
                     Text(language.text("Removed")).foregroundStyle(.secondary)
                 default:
-                    Label(language.text("Needs attention"), systemImage: "exclamationmark.circle").foregroundStyle(.orange)
+                    IconLabel(title: language.text("Needs attention"), systemImage: "exclamationmark.circle").foregroundStyle(.orange)
                 }
             }
         }
@@ -340,7 +340,7 @@ private struct ServiceSection: View {
                 Text(language.text("Removing it returns the fans to macOS automatic control."))
                     .font(.callout).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
                 Spacer(minLength: 8)
-                Button(language.text("Remove background service…"), role: .destructive) { confirmRemoval = true }
+                Button(language.text("Remove background service"), role: .destructive) { confirmRemoval = true }
                     .fixedSize()
             }
         case .install, .update:

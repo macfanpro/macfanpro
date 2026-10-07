@@ -84,7 +84,7 @@
   "MacFanPro setup": "Pengaturan MacFanPro",
   "Remove": "Hapus",
   "Remove background service?": "Hapus layanan latar belakang?",
-  "Remove background service…": "Hapus layanan…",
+  "Remove background service": "Hapus layanan",
   "Setup did not finish. Please retry or view the details.": "Pengaturan belum selesai. Coba lagi atau lihat detailnya.",
   "Setup needs your attention.": "Pengaturan memerlukan perhatian Anda.",
   "Terminal currently controls the fans. Finish manual control before replacing the service.": "Terminal sedang mengontrol kipas. Akhiri kontrol manual sebelum mengganti layanan.",
@@ -96,7 +96,7 @@
   "This stops fan control and returns fans to macOS automatic control. Your settings and logs will be kept.": "Ini menghentikan kontrol kipas dan mengembalikannya ke kontrol otomatis macOS. Pengaturan dan log akan tetap disimpan.",
   "Quit MacFanPro, replace it with the new app, then reopen it.": "Tutup MacFanPro, ganti dengan aplikasi baru, lalu buka kembali.",
   "Download DMG": "Unduh DMG",
-  "View Update…": "Lihat pembaruan…",
+  "View Update": "Lihat pembaruan",
   "Retry": "Coba lagi",
   "MacFanPro update": "Pembaruan MacFanPro",
   "Current version: {version}": "Versi saat ini: {version}",
@@ -109,6 +109,6 @@
   "Could not open the release page. Try again.": "Tidak dapat membuka halaman rilis. Coba lagi.",
   "Could not open Terminal. Try again or use the command below Other update methods.": "Tidak dapat membuka Terminal. Coba lagi atau gunakan perintah pada Cara pembaruan lainnya.",
   "Continue the update in Terminal. Close and reopen this window to try again.": "Lanjutkan pembaruan di Terminal. Tutup lalu buka kembali jendela ini untuk mencoba lagi.",
-  "Open download page…": "Halaman unduhan…",
+  "Open download page": "Halaman unduhan",
   "Opening Terminal…": "Membuka Terminal…"
 }

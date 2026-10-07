@@ -152,7 +152,7 @@ struct UpdateDetailsView: View {
                     if model.homebrew {
                         terminalButton.buttonStyle(.borderedProminent)
                     } else {
-                        Button(language.text("Open download page…"), action: model.openReleasePage)
+                        Button(language.text("Open download page"), action: model.openReleasePage)
                             .buttonStyle(.borderedProminent)
                             .accessibilityIdentifier("io.github.macfanpro.download-update")
                     }

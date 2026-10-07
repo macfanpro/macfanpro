@@ -170,7 +170,7 @@ struct MenuBarView: View {
             // what is checked or changed often, plus an update offer while one exists.
             if let update = appState.availableUpdate {
                 // One clickable row (no separate button), so long translations of
-                // "View Update…" never squeeze the version into a narrow column.
+                // "View Update" never squeeze the version into a narrow column.
                 Button {
                     menuWindow.window?.orderOut(nil)
                     onViewUpdate()
@@ -188,7 +188,7 @@ struct MenuBarView: View {
                 }
                 .buttonStyle(.plain)
                 .foregroundStyle(.blue)
-                .help(language.text("View Update…"))
+                .help(language.text("View Update"))
                 .accessibilityIdentifier("io.github.macfanpro.view-update")
                 .padding(.horizontal, 12)
                 .padding(.bottom, 4)
@@ -260,23 +260,6 @@ struct MenuBarView: View {
         guard let temps = appState.latestStatus?.temperatures else { return nil }
         let values = temps.filter { key, _ in prefixes.contains(where: { key.hasPrefix($0) }) }.values
         return values.max()
-    }
-}
-
-/// Button content for the panel (Smart/Default and the footer): a symbol scaled
-/// down to the text's height, centered on the text rather than on its own taller
-/// bounding box, 4pt apart, so every button's icon reads the same.
-private struct IconLabel: View {
-    let title: String
-    let systemImage: String
-
-    var body: some View {
-        HStack(alignment: .center, spacing: 4) {
-            Image(systemName: systemImage)
-                .imageScale(.small)
-                .font(.body.weight(.regular))
-            Text(title)
-        }
     }
 }
 

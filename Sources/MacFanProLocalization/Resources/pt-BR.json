@@ -84,7 +84,7 @@
   "MacFanPro setup": "Configuração do MacFanPro",
   "Remove": "Remover",
   "Remove background service?": "Remover o serviço?",
-  "Remove background service…": "Remover serviço…",
+  "Remove background service": "Remover serviço",
   "Setup did not finish. Please retry or view the details.": "A configuração não terminou. Tente novamente ou veja os detalhes.",
   "Setup needs your attention.": "A configuração precisa da sua atenção.",
   "Terminal currently controls the fans. Finish manual control before replacing the service.": "O Terminal está controlando as ventoinhas. Encerre o controle manual antes de substituir o serviço.",
@@ -96,7 +96,7 @@
   "This stops fan control and returns fans to macOS automatic control. Your settings and logs will be kept.": "Isso interrompe o controle das ventoinhas e devolve o controle automático ao macOS. Seus ajustes e registros serão mantidos.",
   "Quit MacFanPro, replace it with the new app, then reopen it.": "Encerre o MacFanPro, substitua-o pelo novo app e abra-o novamente.",
   "Download DMG": "Baixar DMG",
-  "View Update…": "Ver atualização…",
+  "View Update": "Ver atualização",
   "Retry": "Tentar de novo",
   "MacFanPro update": "Atualização do MacFanPro",
   "Current version: {version}": "Versão atual: {version}",
@@ -109,6 +109,6 @@
   "Could not open the release page. Try again.": "Não foi possível abrir a página da versão. Tente novamente.",
   "Could not open Terminal. Try again or use the command below Other update methods.": "Não foi possível abrir o Terminal. Tente novamente ou use o comando em “Outras formas de atualizar”.",
   "Continue the update in Terminal. Close and reopen this window to try again.": "Continue a atualização no Terminal. Feche e reabra esta janela para tentar novamente.",
-  "Open download page…": "Página de download…",
+  "Open download page": "Página de download",
   "Opening Terminal…": "Abrindo o Terminal…"
 }

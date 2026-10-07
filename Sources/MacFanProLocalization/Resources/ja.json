@@ -84,7 +84,7 @@
   "MacFanPro setup": "MacFanPro の設定",
   "Remove": "削除",
   "Remove background service?": "サービスを削除しますか？",
-  "Remove background service…": "サービスを削除…",
+  "Remove background service": "サービスを削除",
   "Setup did not finish. Please retry or view the details.": "設定が完了しませんでした。再試行するか詳細を確認してください。",
   "Setup needs your attention.": "設定を確認してください。",
   "Terminal currently controls the fans. Finish manual control before replacing the service.": "ターミナルがファンを制御しています。手動制御を終了してからサービスを置き換えてください。",
@@ -96,7 +96,7 @@
   "This stops fan control and returns fans to macOS automatic control. Your settings and logs will be kept.": "ファン制御を停止し、macOS の自動制御に戻します。設定とログは保持されます。",
   "Quit MacFanPro, replace it with the new app, then reopen it.": "MacFanPro を終了し、新しいアプリに置き換えてから開き直してください。",
   "Download DMG": "DMG をダウンロード",
-  "View Update…": "更新を表示…",
+  "View Update": "更新を表示",
   "Retry": "再試行",
   "MacFanPro update": "MacFanPro の更新",
   "Current version: {version}": "現在のバージョン：{version}",
@@ -109,6 +109,6 @@
   "Could not open the release page. Try again.": "リリースページを開けませんでした。再試行してください。",
   "Could not open Terminal. Try again or use the command below Other update methods.": "ターミナルを開けませんでした。再試行するか、「その他の更新方法」のコマンドを使用してください。",
   "Continue the update in Terminal. Close and reopen this window to try again.": "ターミナルで更新を続けてください。再試行するには、このウインドウを閉じて開き直してください。",
-  "Open download page…": "ダウンロードへ…",
+  "Open download page": "ダウンロードへ",
   "Opening Terminal…": "ターミナルを開いています…"
 }

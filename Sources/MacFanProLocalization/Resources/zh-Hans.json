@@ -84,7 +84,7 @@
   "MacFanPro setup": "MacFanPro 设置",
   "Remove": "移除",
   "Remove background service?": "移除后台服务？",
-  "Remove background service…": "移除后台服务…",
+  "Remove background service": "移除后台服务",
   "Setup did not finish. Please retry or view the details.": "设置未完成，请重试或查看详情。",
   "Setup needs your attention.": "设置需要你处理。",
   "Terminal currently controls the fans. Finish manual control before replacing the service.": "终端当前正在控制风扇。请先结束手动控制，再替换服务。",
@@ -96,7 +96,7 @@
   "This stops fan control and returns fans to macOS automatic control. Your settings and logs will be kept.": "这将停止风扇控制，并恢复 macOS 自动控制。配置和日志会保留。",
   "Quit MacFanPro, replace it with the new app, then reopen it.": "退出 MacFanPro，拖入新版替换应用，然后重新打开。",
   "Download DMG": "下载 DMG",
-  "View Update…": "查看更新…",
+  "View Update": "查看更新",
   "Retry": "重试",
   "MacFanPro update": "MacFanPro 更新",
   "Current version: {version}": "当前版本：{version}",
@@ -109,6 +109,6 @@
   "Could not open the release page. Try again.": "无法打开发布页面，请重试。",
   "Could not open Terminal. Try again or use the command below Other update methods.": "无法打开终端，请重试，或使用“其他更新方式”中的命令。",
   "Continue the update in Terminal. Close and reopen this window to try again.": "请在终端中继续更新。如需重新尝试，请关闭并重新打开此窗口。",
-  "Open download page…": "前往下载…",
+  "Open download page": "前往下载",
   "Opening Terminal…": "正在打开终端…"
 }

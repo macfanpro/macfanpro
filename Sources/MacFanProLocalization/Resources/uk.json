@@ -84,7 +84,7 @@
   "MacFanPro setup": "Налаштування MacFanPro",
   "Remove": "Видалити",
   "Remove background service?": "Видалити фонову службу?",
-  "Remove background service…": "Видалити службу…",
+  "Remove background service": "Видалити службу",
   "Setup did not finish. Please retry or view the details.": "Налаштування не завершено. Повторіть спробу або перегляньте подробиці.",
   "Setup needs your attention.": "Налаштування потребує вашої уваги.",
   "Terminal currently controls the fans. Finish manual control before replacing the service.": "Вентиляторами керує Термінал. Завершіть ручне керування перед заміною служби.",
@@ -96,7 +96,7 @@
   "This stops fan control and returns fans to macOS automatic control. Your settings and logs will be kept.": "Керування вентиляторами припиниться, і macOS повернеться до автоматичного режиму. Налаштування та журнали буде збережено.",
   "Quit MacFanPro, replace it with the new app, then reopen it.": "Закрийте MacFanPro, замініть його новим застосунком і відкрийте знову.",
   "Download DMG": "Завантажити DMG",
-  "View Update…": "Оновлення…",
+  "View Update": "Оновлення",
   "Retry": "Повторити",
   "MacFanPro update": "Оновлення MacFanPro",
   "Current version: {version}": "Поточна версія: {version}",
@@ -109,6 +109,6 @@
   "Could not open the release page. Try again.": "Не вдалося відкрити сторінку випуску. Спробуйте ще раз.",
   "Could not open Terminal. Try again or use the command below Other update methods.": "Не вдалося відкрити Термінал. Спробуйте ще раз або скористайтеся командою з розділу «Інші способи оновлення».",
   "Continue the update in Terminal. Close and reopen this window to try again.": "Продовжте оновлення в Терміналі. Щоб повторити спробу, закрийте й знову відкрийте це вікно.",
-  "Open download page…": "Сторінка завантаження…",
+  "Open download page": "Сторінка завантаження",
   "Opening Terminal…": "Відкриття Термінала…"
 }

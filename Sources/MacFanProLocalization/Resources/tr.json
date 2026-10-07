@@ -84,7 +84,7 @@
   "MacFanPro setup": "MacFanPro kurulumu",
   "Remove": "Kaldır",
   "Remove background service?": "Arka plan hizmeti kaldırılsın mı?",
-  "Remove background service…": "Hizmeti kaldır…",
+  "Remove background service": "Hizmeti kaldır",
   "Setup did not finish. Please retry or view the details.": "Kurulum tamamlanmadı. Yeniden deneyin veya ayrıntıları inceleyin.",
   "Setup needs your attention.": "Kurulum için işlem yapmanız gerekiyor.",
   "Terminal currently controls the fans. Finish manual control before replacing the service.": "Fanları Terminal kontrol ediyor. Hizmeti değiştirmeden önce elle kontrolü sonlandırın.",
@@ -96,7 +96,7 @@
   "This stops fan control and returns fans to macOS automatic control. Your settings and logs will be kept.": "Fan kontrolü durdurulacak ve macOS otomatik kontrole dönecek. Ayarlarınız ve günlükleriniz korunacak.",
   "Quit MacFanPro, replace it with the new app, then reopen it.": "MacFanPro’yu kapatın, yeni uygulamayla değiştirin ve yeniden açın.",
   "Download DMG": "DMG indir",
-  "View Update…": "Güncellemeyi gör…",
+  "View Update": "Güncellemeyi gör",
   "Retry": "Yeniden dene",
   "MacFanPro update": "MacFanPro güncellemesi",
   "Current version: {version}": "Geçerli sürüm: {version}",
@@ -109,6 +109,6 @@
   "Could not open the release page. Try again.": "Sürüm sayfası açılamadı. Yeniden deneyin.",
   "Could not open Terminal. Try again or use the command below Other update methods.": "Terminal açılamadı. Yeniden deneyin veya Diğer güncelleme yöntemleri altındaki komutu kullanın.",
   "Continue the update in Terminal. Close and reopen this window to try again.": "Güncellemeye Terminal’de devam edin. Yeniden denemek için bu pencereyi kapatıp tekrar açın.",
-  "Open download page…": "İndirme sayfası…",
+  "Open download page": "İndirme sayfası",
   "Opening Terminal…": "Terminal açılıyor…"
 }

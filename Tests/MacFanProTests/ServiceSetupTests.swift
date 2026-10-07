@@ -125,6 +125,10 @@ struct ServiceSetupTests {
         defer { defaults.removePersistentDomain(forName: suite) }
         let language = AppLanguageStore(defaults: defaults)
         let fixture = Fixture()
+        // Both the first-run state and a running service, which shows the removal action.
+        for (state, snapshot) in [("install", ServiceSetup.Snapshot()),
+                                  ("ready", ServiceSetup.Snapshot(version: MacFanProVersion.current))] {
+        fixture.snapshot = snapshot
         let setup = ServiceSetup(environment: fixture.environment())
         await setup.check()
         for theme in [ColorScheme.light, .dark] {
@@ -146,9 +150,10 @@ struct ServiceSetupTests {
                 if let dir = ProcessInfo.processInfo.environment["MACFANPRO_PREVIEW_DIR"] {
                     let url = URL(fileURLWithPath: dir)
                     try FileManager.default.createDirectory(at: url, withIntermediateDirectories: true)
-                    try png.write(to: url.appendingPathComponent("setup-\(choice.rawValue)-\(theme).png"))
+                    try png.write(to: url.appendingPathComponent("setup-\(state)-\(choice.rawValue)-\(theme).png"))
                 }
             }
+        }
         }
         #expect(fixture.authorizationCount == 0)
     }
