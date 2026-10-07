@@ -1,5 +1,10 @@
 # MacFanPro changelog
 
+## 0.2.3.62
+
+- The service status in Settings (running or needs attention) uses the same compact, centered icon as the panel's buttons.
+- Buttons no longer end in "…": **Remove background service**, **View Update** and **Open download page**. Messages for actions in progress, such as "Checking…", keep it.
+
 ## 0.2.3.61
 
 - Give the **Smart** and **Default** buttons the same icon treatment as **Quit** and **Settings**: the symbol is one size smaller, matches the text height, sits centered on the text with 4 points of spacing. All four panel buttons now match.
