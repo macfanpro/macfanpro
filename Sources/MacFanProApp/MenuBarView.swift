@@ -148,14 +148,14 @@ struct MenuBarView: View {
                         }
                     }
                 )) {
-                    Label(language.text("Smart"), systemImage: "fan.fill")
+                    IconLabel(title: language.text("Smart"), systemImage: "fan.fill")
                         .frame(maxWidth: .infinity)
                 }
                 .toggleStyle(.button)
                 .tint(.orange)
 
                 Button(action: { appState.resetAuto() }) {
-                    Label(language.text("Default"), systemImage: "arrow.counterclockwise")
+                    IconLabel(title: language.text("Default"), systemImage: "arrow.counterclockwise")
                         .frame(maxWidth: .infinity)
                 }
                 .buttonStyle(.bordered)
@@ -198,7 +198,7 @@ struct MenuBarView: View {
             HStack {
                 // A button like Settings…, so the two footer actions read as a pair.
                 Button(action: { NSApp.terminate(nil) }) {
-                    FooterLabel(title: language.text("Quit"), systemImage: "rectangle.portrait.and.arrow.right")
+                    IconLabel(title: language.text("Quit"), systemImage: "rectangle.portrait.and.arrow.right")
                 }
                 .keyboardShortcut("q", modifiers: .command)
                 .fixedSize()
@@ -215,7 +215,7 @@ struct MenuBarView: View {
                                 Circle().fill(Color.blue).frame(width: 6, height: 6)
                                     .accessibilityLabel(language.text("Update available"))
                             }
-                            FooterLabel(title: language.text("Settings"), systemImage: "gearshape")
+                            IconLabel(title: language.text("Settings"), systemImage: "gearshape")
                         }
                     }
                     .keyboardShortcut(",", modifiers: .command)
@@ -263,9 +263,10 @@ struct MenuBarView: View {
     }
 }
 
-/// Footer button content: a symbol scaled down to sit inside the text's height,
-/// centered on the text rather than on its own taller bounding box, 4pt apart.
-private struct FooterLabel: View {
+/// Button content for the panel (Smart/Default and the footer): a symbol scaled
+/// down to the text's height, centered on the text rather than on its own taller
+/// bounding box, 4pt apart, so every button's icon reads the same.
+private struct IconLabel: View {
     let title: String
     let systemImage: String
 
