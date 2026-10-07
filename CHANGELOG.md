@@ -1,5 +1,9 @@
 # MacFanPro changelog
 
+## 0.2.3.61
+
+- Give the **Smart** and **Default** buttons the same icon treatment as **Quit** and **Settings**: the symbol is one size smaller, matches the text height, sits centered on the text with 4 points of spacing. All four panel buttons now match.
+
 ## 0.2.3.60
 
 - Align the icons in the **Quit** and **Settings** buttons: each symbol is one size smaller, matches the text height, sits centered on the text, and keeps 4 points of spacing. The tall exit symbol no longer looks larger than its label.
