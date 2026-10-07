@@ -1,5 +1,12 @@
 # MacFanPro changelog
 
+## 0.2.3.51
+
+- Move release notices to a compact Updates row and a separate native window. Keep fan readings visible, provide installation-channel-specific actions, and show failed handoffs with retry in all 18 languages.
+- Merge upstream installation improvements: verify matching app and CLI builds, prepare complete app bundles before atomic replacement, and wait for actual launchd state with actionable failures.
+- Restore previous service files when installation fails after stopping the service. Stop uninstall when service shutdown or fan reset fails, and distinguish launchd query failures from an absent service.
+- Keep existing fan curves, safety thresholds, disconnect protection, logging, proxy support and installation channels. DMG updates replace the app without removing its background service first.
+
 ## 0.2.3.50
 
 - Add a DMG with a self-contained app: drag it into Applications, open it, and authorize background service setup through a macOS dialog. The setup window supports all 18 app languages, service synchronization, retry after cancellation, and service removal while retaining settings and logs. Existing Homebrew, online script and source installation remain available.
