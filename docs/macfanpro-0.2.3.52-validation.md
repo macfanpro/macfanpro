@@ -39,7 +39,12 @@
 
 ## 公开后的渠道检查
 
-附件验收通过，公开后的在线安装器和 Homebrew 渠道检查继续补记。
+- 2026-10-07 14:51（北京时间）公开发布，GitHub `/releases/latest` 返回 `v0.2.3.52`，非草稿、非预发布，共 6 个公开附件；API 的附件摘要与本地校验一致。
+- 对发行附件执行 `bash install.sh --check`，通过公开地址重新下载、校验 tar，输出 `MacFanPro 0.2.3.52 package verification passed; no installation performed.`。日志：`/tmp/macfanpro-0.2.3.52-public-installer-check.log`。
+- [Homebrew 更新工作流](https://github.com/macfanpro/homebrew-tap/actions/runs/37583839533) 成功：构建并发布 `arm64_sonoma` bottle，实际从网络下载并安装预编译包，运行 `brew test`、版本与严格签名验证，然后提交配方。
+- tap 提交 `0525e4582e1480ead868fdfd7cdf7a8c486ab708`，配方版本为 `v0.2.3.52`，源码指向 `1c1153a7796284c3d6e94fdeb50c43659f0ce91e`。
+- bottle SHA-256 为 `60427ea04a84f19a734e4b629014fd79e6124ffa5007a99866cf4ef34eec1f04`，与 GitHub 附件摘要一致。日志：`/tmp/macfanpro-0.2.3.52-homebrew-ci.log`。
+- Homebrew 安装检查在 GitHub runner 上执行；未在用户本机运行升级或特权安装。
 
 ## 验证边界
 
