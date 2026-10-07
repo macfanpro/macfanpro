@@ -949,7 +949,7 @@ struct Install: ParsableCommand {
         let previousVersion = wasRegistered ? (try? DaemonClient().request(DaemonRequest(verb: .version)).version) : nil
         try ServiceLifecycle.install(stop: {
             // Release the fans to Apple before stopping the daemon (ThermalForge #31).
-            // A bootout of a daemon from before 0.2.3.54 has no SIGTERM release, and
+            // A bootout of a daemon from before 0.2.3.55 has no SIGTERM release, and
             // the new daemon starts holding nothing. Through the daemon when it's up,
             // so it also clears the daemon's record; direct otherwise. Best effort:
             // the new daemon's startup reconcile is the backstop.

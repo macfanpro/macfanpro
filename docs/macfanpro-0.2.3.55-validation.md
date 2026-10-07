@@ -1,4 +1,4 @@
-# MacFanPro 0.2.3.54 验证记录
+# MacFanPro 0.2.3.55 验证记录
 
 ## 范围
 
@@ -15,6 +15,10 @@
 
 - 新增 `DaemonStartStopTests` 6 项：上游的启动与停止判定；用模拟 SMC 驱动真实 `DaemonServer` 验证手动状态检测、启动时交回、失败后看门狗重试、SIGTERM 只在持有控制时写入。
 - `bash Scripts/test.sh --all-configurations`：Debug、Release 各 166 项测试 / 31 个套件通过；断连回归与 17 项安装脚本测试通过。
+
+## 版本号说明
+
+同样内容先以 0.2.3.54 打标签，CI 与发行草稿均通过（[发行 CI](https://github.com/macfanpro/macfanpro/actions/runs/37607491044)），未公开发布。按维护者要求改为 0.2.3.55：删除 0.2.3.54 草稿与标签，代码不变，仅改版本号与文档。
 
 ## 远端 CI、发行附件与实机验证
 

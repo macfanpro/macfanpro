@@ -69,5 +69,5 @@ while the thermal floor holds the fans at max. MacFanPro keeps its own bounded
 file logs, its calibration and recording ownership code (audited in
 [code-audit-20261007.md](code-audit-20261007.md)), and its watchdog keeps the
 fans at max until cooldown in that case. The startup reconcile and SIGTERM
-release from #31 are adopted as upstream wrote them (0.2.3.54). See
+release from #31 are adopted as upstream wrote them (0.2.3.55). See
 [upstream-sync-20261007.md](upstream-sync-20261007.md).

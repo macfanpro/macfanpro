@@ -1,6 +1,8 @@
 # MacFanPro changelog
 
-## 0.2.3.54
+## 0.2.3.55
+
+Version 0.2.3.54 was a candidate with the same changes; it was never published.
 
 - Adopt ThermalForge's fan release on daemon start and stop. A starting background service returns fans left under manual control (by a crashed or killed service, or a direct write) to Apple's automatic control. The service releases the fans it controls when it is stopped (SIGTERM). Installation releases fans before restarting the service, also when upgrading from a version without this. MacFanPro keeps its own behavior when the app stops responding while the thermal floor holds the fans at maximum: the fans stay at maximum until the Mac cools down.
 - Add contributor and AI-agent rules (`AGENTS.md`): one branch and pull request per change, one release at a time, and how upstream merges are recorded.
