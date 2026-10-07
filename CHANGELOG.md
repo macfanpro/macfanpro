@@ -3,6 +3,7 @@
 ## 0.2.3.60
 
 - Align the icons in the **Quit** and **Settings** buttons: each symbol is one size smaller, matches the text height, sits centered on the text, and keeps 4 points of spacing. The tall exit symbol no longer looks larger than its label.
+- The settings window now opens centered on the screen. It was centered before it grew to fit its content, so it appeared off to one side.
 
 ## 0.2.3.59
 
