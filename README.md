@@ -444,6 +444,12 @@ Background service logs belong to root and need administrator rights to read, fo
 sudo tail -n 50 "/var/root/Library/Logs/MacFanPro/macfanpro-$(date +%F).log"
 ```
 
+The background service also writes its diagnostics to the system log (from 0.2.3.56): starting, fan release at start and stop, the thermal floor, sleep/wake and each request's outcome. No administrator rights are needed to read them:
+
+```bash
+log show --last 1h --style compact --predicate 'subsystem == "io.github.macfanpro.daemon"'
+```
+
 A temporary sample stops and keeps its data when it reaches its size limit. Its expiry is set when it ends normally, on Ctrl-C or on SIGTERM; an abnormal exit also leaves a marker so it can be cleaned up. Expired samples that are no longer being written are removed at app launch, hourly while the app runs, and when the next sample starts. While the app isn't running, your samples stay until the next cleanup. Sample folders left by older versions without an expiry marker can't be told apart from manual exports, so they are never deleted automatically; remove them yourself if you don't need them.
 
 **The 100 MiB limit applies to each recording, not to the sample folder as a whole.** Samples made with `--output <folder>` or `--no-expire` are kept permanently without that limit; manage them yourself. Older samples without an expiry marker and other files are not deleted automatically.

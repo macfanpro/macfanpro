@@ -1,5 +1,9 @@
 # MacFanPro changelog
 
+## 0.2.3.56
+
+- Make the background service's diagnostics readable. Since the macOS 26 SDK, everything it wrote with `NSLog` appeared in the system log as `<private>`, which hid startup, fan release, thermal floor and wake messages. It now uses ThermalForge's `DaemonLog` channel, with public messages under the subsystem `io.github.macfanpro.daemon`. To read them, run `log show --last 1h --predicate 'subsystem == "io.github.macfanpro.daemon"'`. The bounded runtime log files are unchanged.
+
 ## 0.2.3.55
 
 Version 0.2.3.54 was a candidate with the same changes; it was never published.
