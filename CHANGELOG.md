@@ -1,5 +1,10 @@
 # MacFanPro changelog
 
+## 0.2.3.57
+
+- The menu's background-service entry is now a row below Updates, with a **Manage…** button that matches **Check for Updates**, instead of a small link next to Quit. In Chinese its label is the two-character 服务 / 服務, like the rows above it.
+- The setup window no longer has its own language picker. It follows the language chosen in the menu.
+
 ## 0.2.3.56
 
 - Make the background service's diagnostics readable. Since the macOS 26 SDK, everything it wrote with `NSLog` appeared in the system log as `<private>`, which hid startup, fan release, thermal floor and wake messages. It now uses ThermalForge's `DaemonLog` channel, with public messages under the subsystem `io.github.macfanpro.daemon`. To read them, run `log show --last 1h --predicate 'subsystem == "io.github.macfanpro.daemon"'`. The bounded runtime log files are unchanged.
