@@ -60,24 +60,22 @@ public enum MacFanProDaemon {
         }
     }
 
-    /// Boot out our launchd job, but only if the label is actually registered —
-    /// so a fresh install (nothing loaded) doesn't provoke a spurious
-    /// "Boot-out failed: No such process". If a bootout IS attempted and fails
-    /// for a real reason, it throws rather than swallowing it.
-    public static func bootoutIfRegistered() throws {
-        guard isRegisteredWithLaunchd else { return }
+    /// Wait for launchd to finish removing the old job before a new bootstrap.
+    public static func bootoutIfRegistered(rerun: String = "sudo macfanpro install") throws {
+        try LaunchdControl.system.bootoutIfRegistered(label: label, rerun: rerun)
+    }
 
-        let p = Process()
-        p.executableURL = URL(fileURLWithPath: "/bin/launchctl")
-        p.arguments = ["bootout", "system/\(label)"]
-        try p.run()
-        p.waitUntilExit()
-        guard p.terminationStatus == 0 else {
-            throw MacFanProError.writeFailed(
-                "launchctl bootout system/\(label) failed (exit \(p.terminationStatus))"
-            )
+    public static func bootstrap(rerun: String = "sudo macfanpro install", note: (String) -> Void = { _ in }) throws {
+        try LaunchdControl.system.bootstrap(plist: plistPath, rerun: rerun, note: note)
+    }
+
+    /// A listening socket alone may still belong to an old service. Retry the
+    /// actual version handshake so a slow start cannot be reported as success.
+    public static func waitUntilRunning(version: String, limit: TimeInterval = 10) -> Bool {
+        LaunchdControl.system.waitUntil(limit: limit) {
+            guard let response = try? DaemonClient().request(DaemonRequest(verb: .version)) else { return false }
+            return response.ok && response.version == version
         }
-        Thread.sleep(forTimeInterval: 0.5)   // let launchd settle before re-bootstrap
     }
 }
 

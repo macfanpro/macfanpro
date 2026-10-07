@@ -6,22 +6,22 @@ public enum AppBundleAttributes {
     struct CleanupError: LocalizedError {
         let path: String
         let status: Int32
+        let output: String
 
         var errorDescription: String? {
-            "Could not clear extended attributes in \(path) (exit \(status))."
+            "Could not clear extended attributes in \(path) (\(SystemTools.exitDetail(tool: "find/xattr", status: status, output: output)))."
         }
     }
 
     public static func clear(in bundle: URL) throws {
-        let process = Process()
-        process.executableURL = URL(fileURLWithPath: "/usr/bin/find")
         // find's default traversal does not follow symlinks. xattr -s also acts
         // on the link itself, so neither layer reaches a link's external target.
-        process.arguments = [bundle.path, "-exec", "/usr/bin/xattr", "-cs", "{}", "+"]
-        try process.run()
-        process.waitUntilExit()
-        guard process.terminationReason == .exit, process.terminationStatus == 0 else {
-            throw CleanupError(path: bundle.path, status: process.terminationStatus)
+        switch SystemTools.run("/usr/bin/find", [bundle.path, "-exec", "/usr/bin/xattr", "-cs", "{}", "+"]) {
+        case .exited(0, _): break
+        case .exited(let status, let output):
+            throw CleanupError(path: bundle.path, status: status, output: output)
+        case .notLaunched(let reason):
+            throw CleanupError(path: bundle.path, status: -1, output: reason)
         }
     }
 }

@@ -44,4 +44,16 @@ if "$bin_dir/macfanpro" build-app --binary "$check_dir/unbundled/MacFanProApp" -
  exit 1
 fi
 test "$(cat "$check_dir/Check.app/sentinel")" = preserve
+# A late copy failure must also preserve the old app, after staging has begun.
+ln -s "$check_dir/icon.icns" "$check_dir/linked-icon.icns"
+if "$bin_dir/macfanpro" build-app --binary "$bin_dir/MacFanProApp" --icon "$check_dir/linked-icon.icns" --dest "$check_dir/Check.app" > "$check_dir/rejection.log" 2>&1; then
+ echo "Unexpected success copying a symlinked icon" >&2
+ exit 1
+fi
+test "$(cat "$check_dir/Check.app/sentinel")" = preserve
+# A successful replacement contains only the complete new build, and remains signable.
+"$bin_dir/macfanpro" build-app --binary "$bin_dir/MacFanProApp" --icon "$check_dir/icon.icns" --dest "$check_dir/Check.app"
+test ! -e "$check_dir/Check.app/sentinel"
+codesign --force --deep --sign - "$check_dir/Check.app"
+codesign --verify --deep --strict "$check_dir/Check.app"
 printf 'Localization/installer packaging and missing-resource protection passed.\n'

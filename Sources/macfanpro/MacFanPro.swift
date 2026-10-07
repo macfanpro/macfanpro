@@ -165,12 +165,17 @@ struct Auto: ParsableCommand {
         // restore fans (scripts, benchmark harnesses) would otherwise silently
         // lose their GUI. The app-override concern is real, so it's preserved
         // behind --stop-app rather than removed.
+        var appStopped = false
         if stopApp {
-            let kill = Process()
-            kill.executableURL = URL(fileURLWithPath: "/usr/bin/killall")
-            kill.arguments = ["MacFanProApp"]
-            try? kill.run()
-            kill.waitUntilExit()
+            let uid: uid_t? = geteuid() == 0 ? nil : getuid()
+            switch SystemTools.stopApp(
+                isRunning: { SystemTools.processRunning(uid: uid) },
+                kill: { SystemTools.run("/usr/bin/killall", ["MacFanProApp"]) }) {
+            case .stopped: appStopped = true
+            case .notRunning: break
+            case .failed(let message):
+                FileHandle.standardError.write(Data("Warning: \(message).\n".utf8))
+            }
         }
 
         // Route through the daemon (coordinates its state, no sudo) when running;
@@ -180,7 +185,7 @@ struct Auto: ParsableCommand {
         // update, where a newer CLI reaching the old daemon is expected; the plain
         // mismatch nudge there reads like a failure. Other routes still report.
         if case .daemon = route, stopApp {} else { reportRoute(route) }
-        print(stopApp
+        print(appStopped
             ? "Menu bar app stopped; fans reset to Apple defaults"
             : "Fans reset to Apple defaults")
     }
@@ -715,6 +720,9 @@ struct Install: ParsableCommand {
             throw ValidationError("Run with sudo: sudo macfanpro install")
         }
 
+        guard let executable = SystemTools.currentExecutablePath() else {
+            throw ValidationError("Could not locate the running MacFanPro executable. Re-run the installer by its full path.")
+        }
         let installationLock = try ServiceInstallationLock()
         defer { withExtendedLifetime(installationLock) {} }
         let embedded = embeddedOwnerUID != nil
@@ -722,7 +730,7 @@ struct Install: ParsableCommand {
             try EmbeddedServiceInstallation.validateOwner(owner)
             try EmbeddedServiceInstallation.validateBundle(
                 URL(fileURLWithPath: EmbeddedServiceInstallation.appPath),
-                executable: URL(fileURLWithPath: ProcessInfo.processInfo.arguments[0]),
+                executable: URL(fileURLWithPath: executable),
                 version: MacFanProVersion.current)
             guard !EmbeddedServiceInstallation.homebrewPaths.contains(where: FileManager.default.fileExists(atPath:))
                 else { throw EmbeddedServiceInstallation.Failure.homebrew }
@@ -755,26 +763,26 @@ struct Install: ParsableCommand {
                 """)
         }
 
-        let sourceBinary = URL(fileURLWithPath: ProcessInfo.processInfo.arguments[0]).resolvingSymlinksInPath()
+        let sourceBinary = URL(fileURLWithPath: executable)
         // The version this run installs: this binary's, or a newer Homebrew keg's when
         // this is the installed copy re-run after `brew upgrade`. The app bundle must
         // match it, both here and when the bundle is copied below.
         let resyncKeg = sourceBinary.path == URL(fileURLWithPath: MacFanProDaemon.installPath).resolvingSymlinksInPath().path
             ? Self.newerHomebrewKeg(than: MacFanProVersion.current) : nil
         let installVersion = resyncKeg?.version ?? MacFanProVersion.current
+        let selectedBinary = resyncKeg.map { URL(fileURLWithPath: $0.path) } ?? sourceBinary
         let appCandidates = embedded ? [EmbeddedServiceInstallation.appPath] : [
-            sourceBinary.deletingLastPathComponent().appendingPathComponent("MacFanPro.app").path,
-            sourceBinary.deletingLastPathComponent().deletingLastPathComponent().appendingPathComponent("MacFanPro.app").path,
+            selectedBinary.deletingLastPathComponent().appendingPathComponent("MacFanPro.app").path,
+            selectedBinary.deletingLastPathComponent().deletingLastPathComponent().appendingPathComponent("MacFanPro.app").path,
             "/opt/homebrew/opt/macfanpro/MacFanPro.app",
             "/usr/local/opt/macfanpro/MacFanPro.app",
         ]
-        guard appCandidates.contains(where: {
-            let info = NSDictionary(contentsOfFile: "\($0)/Contents/Info.plist")
-            return info?["CFBundleShortVersionString"] as? String == installVersion
-                && info?["CFBundleIdentifier"] as? String == "io.github.macfanpro.app"
+        guard let appSource = appCandidates.map({ URL(fileURLWithPath: $0) }).first(where: {
+            AppInstallSource.matches($0, binary: selectedBinary, version: installVersion)
         }) else {
-            throw ValidationError("No matching MacFanPro.app was found. Install with Homebrew or run ./setup.sh before installing the daemon.")
+            throw ValidationError("No MacFanPro.app matching this exact build was found. Reinstall with Homebrew or run ./setup.sh from its source checkout.")
         }
+        try AppInstallSource.verifySignature(of: appSource)
 
         let migration: LegacyMigration?
         if LegacyMigration.isPresent {
@@ -792,26 +800,12 @@ struct Install: ParsableCommand {
         // a later pkill, so it can't be confused by whatever killed the app first
         // (./setup.sh quits it before calling install; brew leaves it running).
         func runTool(_ path: String, _ args: [String]) -> Int32 {
-            let p = Process()
-            p.executableURL = URL(fileURLWithPath: path)
-            p.arguments = args
-            do { try p.run(); p.waitUntilExit(); return p.terminationStatus }
-            catch { return -1 }
+            if case .exited(let status, _) = SystemTools.run(path, args) { return status }
+            return -1
         }
-        // Like runTool but returns stdout (first line, trimmed) or nil — used to
-        // capture a pid so the relaunch below can confirm a genuinely NEW process.
         func runToolOutput(_ path: String, _ args: [String]) -> String? {
-            let p = Process()
-            p.executableURL = URL(fileURLWithPath: path)
-            p.arguments = args
-            let pipe = Pipe()
-            p.standardOutput = pipe
-            do { try p.run() } catch { return nil }
-            let data = pipe.fileHandleForReading.readDataToEndOfFile()
-            p.waitUntilExit()
-            let out = String(data: data, encoding: .utf8)?
-                .trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
-            return out.split(separator: "\n").first.map(String.init)
+            guard case .exited(0, let output) = SystemTools.run(path, args) else { return nil }
+            return output.split(separator: "\n").first.map(String.init)
         }
         // Capture the controlling user's app PID now — before this install kills
         // anything — both as the signal for whether to relaunch (upgrade recovery)
@@ -819,13 +813,8 @@ struct Install: ParsableCommand {
         let prePid = runToolOutput("/usr/bin/pgrep", ["-x", "-u", "\(ownerUID)", "MacFanProApp"])
         let appWasRunning = prePid != nil || migration?.appWasRunning == true
 
-        // Resolve symlinks first. Launched via Homebrew (`sudo macfanpro
-        // install`), argv[0] is /opt/homebrew/bin/macfanpro — itself a symlink
-        // into the Cellar. Copying that verbatim produces a symlink whose relative
-        // target (../Cellar/...) doesn't exist under /usr/local, i.e. a dangling
-        // link launchd can't exec. Resolve it so the REAL binary gets copied.
-        let binaryPath = URL(fileURLWithPath: ProcessInfo.processInfo.arguments[0])
-            .resolvingSymlinksInPath().path
+        // dyld identifies the actual executable even for a bare-name invocation.
+        let binaryPath = executable
         let installPath = MacFanProDaemon.installPath
 
         // Copy the real binary to /usr/local/bin as a root-owned regular file
@@ -860,9 +849,9 @@ struct Install: ParsableCommand {
         // replaced too — what the old removeItem was for.
         //
         // SOURCE (re-sync, path-independent): install the binary the user invoked
-        // (argv[0]) when it's a DISTINCT file from installPath — right for a
+        // (dyld's executable path) when it's a DISTINCT file from installPath — right for a
         // from-source build (.build/release: even same version, newer code) and for
-        // Homebrew-via-/opt/homebrew (the keg). When argv[0] IS installPath — re-run
+        // Homebrew-via-/opt/homebrew (the keg). When this path IS installPath — re-run
         // install from the installed binary, e.g. sudo's secure_path resolving to the
         // stale /usr/local/bin copy after `brew upgrade` — copying it onto itself is a
         // permanent no-op that would leave the daemon stale and the mismatch warning
@@ -875,26 +864,12 @@ struct Install: ParsableCommand {
         let resolvedBinary = URL(fileURLWithPath: binaryPath).resolvingSymlinksInPath().path
         let resolvedInstall = URL(fileURLWithPath: installPath).resolvingSymlinksInPath().path
 
-        // Atomically replace installPath with a copy of `source`, never removing
-        // installPath. Throws on failure, leaving the existing install intact.
-        //
-        // Considered: the temp (installPath + ".new") briefly holds the SOURCE's mode
-        // bits between copyItem and setAttributes. copyItem runs as root, so the temp
-        // is root-OWNED throughout — only the permission bits are the source's. A
-        // pre-planted temp can't redirect us: removeItem clears it first and acts on
-        // the link itself, never following a symlink. setAttributes then forces
-        // root:wheel 0755 and rename() is atomic, so installPath's committed state is
-        // always the root-owned binary. The residual window would only matter if the
-        // source binary were itself group/other-writable (ours isn't) — a
-        // user-writable /usr/local/bin is the pre-existing bad state item 1's throw
-        // covers, not something this staging introduces. Documented so safe-here isn't
-        // mistaken for unaudited.
+        // Stage a checked regular executable beside the destination, creating it
+        // as the installer (root) with its final 0755 permissions. rename keeps
+        // the previous executable available until the replacement is complete.
         func installBinary(from source: String) throws {
-            // Enforce the assumption the comment above relies on rather than trusting
-            // it: a group/other-writable source would briefly yield a root-owned but
-            // other-writable temp in /usr/local/bin — a write-into-root-binary window.
-            // Reject it up front, with the exact fix. No effect on a correctly-built
-            // source (0755/0555 keg or from-source binary).
+            // Refuse an unexpectedly writable source; staged permissions are also
+            // enforced independently by SafeFileCopy on its opened output handle.
             if let perms = (try? fm.attributesOfItem(atPath: source))?[.posixPermissions] as? Int,
                perms & 0o022 != 0 {
                 throw ValidationError("""
@@ -907,7 +882,7 @@ struct Install: ParsableCommand {
             let tempPath = installPath + ".new"
             try? fm.removeItem(atPath: tempPath)   // clear a stale temp from a prior crash
             do {
-                try fm.copyItem(atPath: source, toPath: tempPath)
+                try SafeFileCopy.copyRegularFile(from: source, to: tempPath, requireExecutable: true, permissions: 0o755)
                 try fm.setAttributes(attrs, ofItemAtPath: tempPath)
             } catch {
                 try? fm.removeItem(atPath: tempPath)
@@ -937,11 +912,7 @@ struct Install: ParsableCommand {
                 do {
                     try snapshot.restoreService(stop: { try MacFanProDaemon.bootoutIfRegistered() }) {
                         guard wasRegistered else { return }
-                        let restore = Process()
-                        restore.executableURL = URL(fileURLWithPath: "/bin/launchctl")
-                        restore.arguments = ["bootstrap", "system", MacFanProDaemon.plistPath]
-                        try restore.run(); restore.waitUntilExit()
-                        guard restore.terminationStatus == 0 else { throw EmbeddedServiceInstallation.Failure.identity }
+                        try MacFanProDaemon.bootstrap()
                     }
                 } catch {
                     FileHandle.standardError.write(Data("Service rollback failed: \(error)\n".utf8))
@@ -1028,33 +999,9 @@ struct Install: ParsableCommand {
         //     the return, so it's a harmless no-op.
         unlink("/tmp/macfanpro.sock")
 
-        // Start new daemon
-        let load = Process()
-        load.executableURL = URL(fileURLWithPath: "/bin/launchctl")
-        load.arguments = ["bootstrap", "system", MacFanProDaemon.plistPath]
-        try load.run()
-        load.waitUntilExit()
-
-        // Verify
-        Thread.sleep(forTimeInterval: 1.0)
-        guard MacFanProDaemon.isRunning else {
-            throw ValidationError("""
-                The background daemon didn't come up after install, so the menu bar
-                app won't be able to control fans yet.
-
-                What to do:
-                  1. Run it again:  sudo macfanpro install
-                  2. If it still fails, the copy at \(installPath) may not be
-                     executable or is crashing on launch. Open Console.app, search
-                     "io.github.macfanpro.daemon", and check the most recent error.
-                """)
-        }
-
-        // A registered process/socket alone can belong to a stale daemon. Confirm
-        // the live protocol reports the version we just installed before success.
-        let liveDaemon = try DaemonClient().request(DaemonRequest(verb: .version))
-        guard liveDaemon.ok, liveDaemon.version == installVersion else {
-            throw ValidationError("The live daemon did not confirm installed version \(installVersion). Re-run the installer; the service may still be restarting.")
+        try MacFanProDaemon.bootstrap { print($0) }
+        guard MacFanProDaemon.waitUntilRunning(version: installVersion) else {
+            throw ValidationError("The background service did not confirm installed version \(installVersion) within the startup wait. Re-run the installer; check Console.app for io.github.macfanpro.daemon if it still fails.")
         }
 
         installationSucceeded = true
@@ -1063,87 +1010,31 @@ struct Install: ParsableCommand {
             return // The running bundle is already installed. Never delete/copy it onto itself.
         }
 
-        // Copy the menu bar app into /Applications. Homebrew's post_install is
-        // sandboxed and can't write outside its prefix (EPERM on mkdir under
-        // /Applications), so the copy lives here instead — we're root under sudo,
-        // unsandboxed.
-        //
-        // Find the .app in priority order:
-        //   1. Next to the running binary (<keg>/bin/macfanpro -> <keg>/MacFanPro.app):
-        //      the normal `sudo macfanpro install` path, via Homebrew's bin symlink.
-        //   2. Homebrew's stable opt symlink — needed when the copy that this command
-        //      places in /usr/local/bin is what's run (there "up two dirs" is /usr,
-        //      no app). /opt/homebrew and /usr/local are the only two Homebrew
-        //      prefixes on macOS (Apple Silicon / Intel), and opt/<formula> always
-        //      points at the current keg, so this stays version-independent.
         let appDest = "/Applications/MacFanPro.app"
-
-        let candidates = appCandidates
-
-        // Only copy a bundle whose version matches THIS install — never a stale one
-        // (a leftover Homebrew 0.1.x keg the `opt` symlink still points at) over a
-        // correct /Applications bundle. On a from-source install there is no
-        // pre-assembled current bundle here yet (build-app assembles it right after),
-        // so reject stale candidates and leave /Applications untouched rather than
-        // grab whatever exists — the bug where a direct install clobbered /Applications
-        // with an old Cellar bundle.
-        func bundleVersion(_ appPath: String) -> String? {
-            NSDictionary(contentsOfFile: "\(appPath)/Contents/Info.plist")?["CFBundleShortVersionString"] as? String
-        }
-        let wantedVersion = installVersion
-
-        // Whether a version-matching bundle was actually installed THIS run. The
-        // relaunch at the end keys off this: reopening a stale /Applications bundle
-        // (old /tmp socket compiled in) is exactly the daemon-down-banner bug to avoid.
-        var freshBundleInstalled = false
-        if let appSource = candidates.first(where: {
-            fm.fileExists(atPath: $0) && bundleVersion($0) == wantedVersion
-        }) {
-            print("Using app bundle at \(appSource) (\(wantedVersion))")
-
-            // Replace any existing bundle. If removal fails, FAIL LOUD — do not
-            // swallow it. Homebrew silently ignoring this is exactly what left a
-            // stale bundle in place and produced the nested-path confusion.
-            if fm.fileExists(atPath: appDest) {
-                do {
-                    try fm.removeItem(atPath: appDest)
-                } catch {
-                    throw ValidationError(
-                        "Could not remove existing \(appDest): \(error.localizedDescription). " +
-                        "Remove it manually (sudo rm -rf \"\(appDest)\") and re-run."
-                    )
-                }
+        print("Using app bundle at \(appSource.path) (\(installVersion))")
+        if let warning = try AppBundleReplacement.replace(at: URL(fileURLWithPath: appDest), prepare: { staged in
+            try fm.copyItem(at: appSource, to: staged)
+            // Validate the actual staged bytes, not only the source checked earlier.
+            guard AppInstallSource.matches(staged, binary: URL(fileURLWithPath: installPath), version: installVersion) else {
+                throw ValidationError("The staged app does not match the installed service. The previous app is untouched.")
             }
-            try fm.copyItem(atPath: appSource, toPath: appDest)
+            try AppInstallSource.verifySignature(of: staged)
+            try AppBundleAttributes.clear(in: staged)
+            guard let account = getpwuid(uid_t(ownerUID)) else { throw EmbeddedServiceInstallation.Failure.account }
+            try AppBundleReplacement.handOver(staged, uid: uid_t(ownerUID), gid: account.pointee.pw_gid)
+        }) { print("Warning: \(warning)") }
+        print("Installed MacFanPro.app to \(appDest)")
 
-            // Clear attributes without following bundle symlinks to external files.
-            // A failed cleanup must not be reported as a successful installation.
-            try AppBundleAttributes.clear(in: URL(fileURLWithPath: appDest))
-
-            print("Installed MacFanPro.app to \(appDest)")
-            freshBundleInstalled = true
-        } else {
-            print("Note: no \(wantedVersion) app bundle found — leaving /Applications untouched. Checked:")
-            for path in candidates {
-                let tag = bundleVersion(path) ?? (fm.fileExists(atPath: path) ? "unreadable" : "absent")
-                print("  \(path)  [\(tag)]")
+        let moveGuidance = "MacFanPro.app was updated but could not be reopened automatically. Quit it if it is still open, then open it from Applications."
+        if appWasRunning {
+            let stopped = SystemTools.stopApp(
+                isRunning: { SystemTools.processRunning(uid: uid_t(ownerUID)) },
+                kill: { SystemTools.run("/usr/bin/pkill", ["-x", "-u", "\(ownerUID)", "MacFanProApp"]) }, toolName: "pkill")
+            if case .failed(let message) = stopped {
+                print("Warning: \(message). \(moveGuidance)")
+                migration?.complete()
+                return
             }
-            print("The CLI and daemon are installed. A from-source build assembles the app next (build-app); otherwise reinstall via ./setup.sh or Homebrew.")
-        }
-
-        // Upgrade recovery: if the controlling user's app was running when this
-        // install STARTED (captured above, before anything killed it), it has the OLD
-        // /tmp socket path compiled in and would now connect to the removed /tmp and
-        // show the misleading daemon-down banner. Restart it so it reloads the new
-        // binary + /var/run path. appWasRunning also confirms a live GUI session to
-        // relaunch into (a menu bar app only runs in one) — a not-logged-in user
-        // (app not running) is a clean no-op. ENTIRELY non-fatal: the daemon is
-        // already verified up, so a failed GUI relaunch prints guidance and never
-        // fails the install.
-        let moveGuidance = "Quit and reopen MacFanPro — the fan-control socket moved this version."
-        if appWasRunning && freshBundleInstalled {
-            _ = runTool("/usr/bin/pkill", ["-x", "-u", "\(ownerUID)", "MacFanProApp"])
-            Thread.sleep(forTimeInterval: 0.5)   // let it fully exit before relaunch
             _ = runTool("/bin/launchctl",
                 ["asuser", "\(ownerUID)", "/usr/bin/open", appDest])
             // Don't trust open's exit code — on some macOS versions it returns 0
@@ -1167,12 +1058,6 @@ struct Install: ParsableCommand {
             if !relaunched {
                 print(moveGuidance)
             }
-        } else if appWasRunning {
-            // App was running but NO fresh bundle was installed this run, so
-            // /Applications holds a stale (or missing) bundle with the old /tmp socket
-            // compiled in. Reopening it would only reproduce the daemon-down banner —
-            // tell the user instead of relaunching the wrong binary.
-            print(moveGuidance)
         }
 
         migration?.complete()
@@ -1243,9 +1128,12 @@ struct Uninstall: ParsableCommand {
         if let owner = embeddedOwnerUID {
             guard !purgeData else { throw EmbeddedServiceInstallation.Failure.account }
             try EmbeddedServiceInstallation.validateOwner(owner)
+            guard let executable = SystemTools.currentExecutablePath() else {
+                throw EmbeddedServiceInstallation.Failure.location
+            }
             try EmbeddedServiceInstallation.validateBundle(
                 URL(fileURLWithPath: EmbeddedServiceInstallation.appPath),
-                executable: URL(fileURLWithPath: ProcessInfo.processInfo.arguments[0]),
+                executable: URL(fileURLWithPath: executable),
                 version: MacFanProVersion.current)
             try EmbeddedServiceInstallation.verifySignature()
             try EmbeddedServiceInstallation.validateDirectory(URL(fileURLWithPath: "/usr/local/bin"))
@@ -1255,7 +1143,7 @@ struct Uninstall: ParsableCommand {
             try EmbeddedServiceInstallation.validateExistingPlist(plist, owner: owner)
             // User explicitly confirmed removal and return to automatic control.
             // Stop the daemon first; otherwise its next ramp can undo the reset.
-            try MacFanProDaemon.bootoutIfRegistered()
+            try MacFanProDaemon.bootoutIfRegistered(rerun: "sudo macfanpro uninstall")
             try FanControl().resetAuto()
             for path in [MacFanProDaemon.plistPath, MacFanProDaemon.installPath, MacFanProDaemon.socketPath] {
                 if FileManager.default.fileExists(atPath: path) { try FileManager.default.removeItem(atPath: path) }
@@ -1270,12 +1158,11 @@ struct Uninstall: ParsableCommand {
         }
         let home = URL(fileURLWithPath: String(cString: directory))
 
-        // Kill app if running
-        let kill = Process()
-        kill.executableURL = URL(fileURLWithPath: "/usr/bin/killall")
-        kill.arguments = ["MacFanProApp"]
-        try? kill.run()
-        kill.waitUntilExit()
+        if case .failed(let message) = SystemTools.stopApp(
+            isRunning: { SystemTools.processRunning(uid: nil) },
+            kill: { SystemTools.run("/usr/bin/killall", ["MacFanProApp"]) }) {
+            throw ValidationError("Could not stop the app: \(message). Quit MacFanPro and retry uninstall.")
+        }
 
         // Reset fans
         try FanControl().resetAuto()
@@ -1283,7 +1170,7 @@ struct Uninstall: ParsableCommand {
         // Unload the daemon if it's registered. Surface a genuine bootout failure
         // but keep going — uninstall's job is to remove everything regardless.
         do {
-            try MacFanProDaemon.bootoutIfRegistered()
+            try MacFanProDaemon.bootoutIfRegistered(rerun: "sudo macfanpro uninstall")
         } catch {
             FileHandle.standardError.write(Data("Warning: \(error) — continuing removal.\n".utf8))
         }
@@ -1380,77 +1267,80 @@ struct BuildApp: ParsableCommand {
         guard fm.isExecutableFile(atPath: helperSource.path) else {
             throw ValidationError("Bundled service executable missing: \(helperSource.path)")
         }
-        let contents = "\(dest)/Contents"
-        let macOSDir = "\(contents)/MacOS"
-        let resources = "\(contents)/Resources"
+        if let warning = try AppBundleReplacement.replace(at: URL(fileURLWithPath: dest), prepare: { staged in
+            let contents = "\(staged.path)/Contents"
+            let macOSDir = "\(contents)/MacOS"
+            let resources = "\(contents)/Resources"
 
-        // Replace any existing bundle so a rebuild is clean.
-        if fm.fileExists(atPath: dest) {
-            try fm.removeItem(atPath: dest)
-        }
-        try fm.createDirectory(atPath: macOSDir, withIntermediateDirectories: true)
-        try fm.createDirectory(atPath: resources, withIntermediateDirectories: true)
+            try fm.createDirectory(atPath: macOSDir, withIntermediateDirectories: true)
+            try fm.createDirectory(atPath: resources, withIntermediateDirectories: true)
 
-        try fm.createDirectory(atPath: "\(contents)/Helpers", withIntermediateDirectories: true)
-        try fm.copyItem(at: helperSource, to: URL(fileURLWithPath: "\(contents)/Helpers/macfanpro"))
-        try fm.copyItem(atPath: binary, toPath: "\(macOSDir)/MacFanProApp")
-        try fm.copyItem(atPath: icon, toPath: "\(resources)/AppIcon.icns")
-        try fm.copyItem(atPath: licenseFile, toPath: "\(resources)/LICENSE")
-        if fm.fileExists(atPath: "NOTICE.md") {
-            try fm.copyItem(atPath: "NOTICE.md", toPath: "\(resources)/NOTICE.md")
-        }
-        if fm.fileExists(atPath: "ThirdPartyNotices") {
-            try fm.copyItem(atPath: "ThirdPartyNotices", toPath: "\(resources)/ThirdPartyNotices")
-        }
-        try installer.write(toFile: "\(resources)/install.sh", atomically: true, encoding: .utf8)
-        try fm.copyItem(at: resourceSource,
-                        to: URL(fileURLWithPath: resources).appendingPathComponent(LocalizationCatalog.resourceBundleName))
+            try fm.createDirectory(atPath: "\(contents)/Helpers", withIntermediateDirectories: true)
+            try SafeFileCopy.copyRegularFile(from: helperSource.path, to: "\(contents)/Helpers/macfanpro", requireExecutable: true)
+            try SafeFileCopy.copyRegularFile(from: binary, to: "\(macOSDir)/MacFanProApp", requireExecutable: true)
+            try SafeFileCopy.copyRegularFile(from: icon, to: "\(resources)/AppIcon.icns", requireExecutable: false)
+            try SafeFileCopy.copyRegularFile(from: licenseFile, to: "\(resources)/LICENSE", requireExecutable: false)
+            if fm.fileExists(atPath: "NOTICE.md") {
+                try SafeFileCopy.copyRegularFile(from: "NOTICE.md", to: "\(resources)/NOTICE.md", requireExecutable: false)
+            }
+            if fm.fileExists(atPath: "ThirdPartyNotices") {
+                try fm.copyItem(atPath: "ThirdPartyNotices", toPath: "\(resources)/ThirdPartyNotices")
+            }
+            try installer.write(toFile: "\(resources)/install.sh", atomically: true, encoding: .utf8)
+            try fm.copyItem(at: resourceSource,
+                            to: URL(fileURLWithPath: resources).appendingPathComponent(LocalizationCatalog.resourceBundleName))
 
-        // Only setup.sh passes it: release and Homebrew builds come from temporary
-        // directories that are gone after the build.
-        let sourceDirEntry = sourceDir.map { dir in
-            let escaped = dir.replacingOccurrences(of: "&", with: "&amp;")
-                .replacingOccurrences(of: "<", with: "&lt;").replacingOccurrences(of: ">", with: "&gt;")
-            return "<key>MacFanProSourceDirectory</key><string>\(escaped)</string>"
-        } ?? ""
+            // Only setup.sh passes it: release and Homebrew builds come from temporary
+            // directories that are gone after the build.
+            let sourceDirEntry = sourceDir.map { dir in
+                let escaped = dir.replacingOccurrences(of: "&", with: "&amp;")
+                    .replacingOccurrences(of: "<", with: "&lt;").replacingOccurrences(of: ">", with: "&gt;")
+                return "<key>MacFanProSourceDirectory</key><string>\(escaped)</string>"
+            } ?? ""
 
-        let plist = """
-            <?xml version="1.0" encoding="UTF-8"?>
-            <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" \
-            "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-            <plist version="1.0">
-            <dict>
-                <key>CFBundleName</key>
-                <string>MacFanPro</string>
-                <key>CFBundleDisplayName</key>
-                <string>MacFanPro</string>
-                <key>CFBundleIdentifier</key>
-                <string>io.github.macfanpro.app</string>
-                <key>CFBundleDevelopmentRegion</key>
-                <string>en</string>
-                <key>CFBundleLocalizations</key>
-                <array>\(LocalizationCatalog.supportedLanguages.map { "<string>\($0.rawValue)</string>" }.joined())</array>
-                <key>CFBundleVersion</key>
-                <string>\(MacFanProVersion.current)</string>
-                <key>CFBundleShortVersionString</key>
-                <string>\(MacFanProVersion.current)</string>
-                <key>CFBundleExecutable</key>
-                <string>MacFanProApp</string>
-                <key>CFBundleIconFile</key>
-                <string>AppIcon</string>
-                <key>CFBundlePackageType</key>
-                <string>APPL</string>
-                <key>LSMinimumSystemVersion</key>
-                <string>\(MacFanProVersion.minimumMacOS)</string>
-                <key>LSUIElement</key>
-                <true/>
-                <key>NSHighResolutionCapable</key>
-                <true/>
-                \(sourceDirEntry)
-            </dict>
-            </plist>
-            """
-        try plist.write(toFile: "\(contents)/Info.plist", atomically: true, encoding: .utf8)
+            let plist = """
+                <?xml version="1.0" encoding="UTF-8"?>
+                <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" \
+                "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+                <plist version="1.0">
+                <dict>
+                    <key>CFBundleName</key>
+                    <string>MacFanPro</string>
+                    <key>CFBundleDisplayName</key>
+                    <string>MacFanPro</string>
+                    <key>CFBundleIdentifier</key>
+                    <string>io.github.macfanpro.app</string>
+                    <key>CFBundleDevelopmentRegion</key>
+                    <string>en</string>
+                    <key>CFBundleLocalizations</key>
+                    <array>\(LocalizationCatalog.supportedLanguages.map { "<string>\($0.rawValue)</string>" }.joined())</array>
+                    <key>CFBundleVersion</key>
+                    <string>\(MacFanProVersion.current)</string>
+                    <key>CFBundleShortVersionString</key>
+                    <string>\(MacFanProVersion.current)</string>
+                    <key>CFBundleExecutable</key>
+                    <string>MacFanProApp</string>
+                    <key>CFBundleIconFile</key>
+                    <string>AppIcon</string>
+                    <key>CFBundlePackageType</key>
+                    <string>APPL</string>
+                    <key>LSMinimumSystemVersion</key>
+                    <string>\(MacFanProVersion.minimumMacOS)</string>
+                    <key>LSUIElement</key>
+                    <true/>
+                    <key>NSHighResolutionCapable</key>
+                    <true/>
+                    \(sourceDirEntry)
+                </dict>
+                </plist>
+                """
+            try plist.write(toFile: "\(contents)/Info.plist", atomically: true, encoding: .utf8)
+
+            if let owner = ProcessInfo.processInfo.environment["SUDO_UID"].flatMap(uid_t.init),
+               geteuid() == 0, owner > 0, let account = getpwuid(owner) {
+                try AppBundleReplacement.handOver(staged, uid: owner, gid: account.pointee.pw_gid)
+            }
+        }) { print("Warning: \(warning)") }
 
         print("Assembled \(dest) (version \(MacFanProVersion.current))")
     }
