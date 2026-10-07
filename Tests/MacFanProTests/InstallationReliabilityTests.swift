@@ -135,7 +135,7 @@ struct InstallationReliabilityTests {
     func teardown() throws {
         var elapsed: TimeInterval = 0, calls = [[String]]()
         var control = LaunchdControl(launchctl: { calls.append($0); return (0, "") },
-            isRegistered: { elapsed < 0.4 }, now: { Date(timeIntervalSince1970: elapsed) },
+            isRegistered: { elapsed < 0.4 }, now: { elapsed },
             pause: { elapsed += $0 }, teardownLimit: 1)
         try control.bootoutIfRegistered(label: "fixture", rerun: "retry")
         #expect(calls == [["bootout", "system/fixture"]] && elapsed >= 0.4)
@@ -152,18 +152,34 @@ struct InstallationReliabilityTests {
             try control.bootoutIfRegistered(label: "fixture", rerun: "retry")
         }
         #expect(elapsed >= 1 && elapsed < 1.5)
+        #expect(try LaunchdControl.registrationStatus(.exited(0, output: "loaded")))
+        #expect(try !LaunchdControl.registrationStatus(.exited(113, output: "missing")))
+        for run in [SystemTools.ToolRun.exited(5, output: "denied"), .notLaunched("missing tool")] {
+            calls = []
+            control.isRegistered = { try LaunchdControl.registrationStatus(run) }
+            control.launchctl = { calls.append($0); return (0, "") }
+            #expect(throws: LaunchdError.self) {
+                try control.bootoutIfRegistered(label: "fixture", rerun: "retry")
+            }
+            #expect(calls.isEmpty)
+        }
     }
 
     @Test("Bootstrap retries once only when unregistered; readiness polling tolerates a slow service")
     func startup() throws {
         var attempts = 0, notes = [String](), elapsed: TimeInterval = 0
         var control = LaunchdControl(launchctl: { _ in attempts += 1; return (attempts == 1 ? 5 : 0, "busy") },
-            isRegistered: { false }, now: { Date(timeIntervalSince1970: elapsed) }, pause: { elapsed += $0 })
+            isRegistered: { false }, now: { elapsed }, pause: { elapsed += $0 })
         try control.bootstrap(plist: "fixture", rerun: "retry", note: { notes.append($0) })
         #expect(attempts == 2 && notes.count == 1 && notes[0].contains("busy"))
         attempts = 0; control.isRegistered = { true }
         try control.bootstrap(plist: "fixture", rerun: "retry", note: { _ in })
         #expect(attempts == 1)
+        attempts = 0
+        control.launchctl = { _ in attempts += 1; return (5, "loaded despite error") }
+        control.isRegistered = { attempts == 2 }
+        try control.bootstrap(plist: "fixture", rerun: "retry", note: { _ in })
+        #expect(attempts == 2)
         control.isRegistered = { false }; control.launchctl = { _ in (5, "denied") }
         #expect(throws: LaunchdError.bootstrapFailed(exitStatus: 5, detail: "denied", rerun: "retry")) {
             try control.bootstrap(plist: "fixture", rerun: "retry", note: { _ in })
@@ -172,6 +188,98 @@ struct InstallationReliabilityTests {
         elapsed = 0
         #expect(!control.waitUntil(limit: 1) { false })
         #expect(elapsed >= 1 && elapsed < 1.5)
+    }
+
+    @Test("Every installation failure preserves the app and restores service files on upgrades and first installs")
+    func installationRecovery() throws {
+        enum Failure: Error { case injected }
+        let fm = FileManager.default, root = try temporaryDirectory()
+        defer { try? fm.removeItem(at: root) }
+        for existing in [true, false] {
+            for failure in ["none", "stop", "files", "start", "verify", "commit"] {
+                let run = root.appendingPathComponent("\(existing)-\(failure)")
+                try fm.createDirectory(at: run, withIntermediateDirectories: true)
+                let cli = run.appendingPathComponent("cli"), plist = run.appendingPathComponent("daemon.plist")
+                let app = run.appendingPathComponent("MacFanPro.app")
+                if existing {
+                    try ServiceFileSnapshot.replace(cli, data: Data("old CLI".utf8), mode: 0o755)
+                    try ServiceFileSnapshot.replace(plist, data: Data("old plist".utf8), mode: 0o644)
+                    try fm.createDirectory(at: app, withIntermediateDirectories: true)
+                    try Data("old app".utf8).write(to: app.appendingPathComponent("content"))
+                }
+                let snapshot = try ServiceFileSnapshot(paths: [(cli, 0o755), (plist, 0o644)])
+                var prepared: AppBundleReplacement.Prepared? = try .init(at: app) { staged in
+                    try fm.createDirectory(at: staged, withIntermediateDirectories: true)
+                    try Data("new app".utf8).write(to: staged.appendingPathComponent("content"))
+                }
+                var events = [String]()
+                func step(_ name: String) throws {
+                    events.append(name)
+                    if name == failure { throw Failure.injected }
+                }
+                func install() throws {
+                    try ServiceLifecycle.install(stop: { try step("stop") }, replaceFiles: {
+                        try ServiceFileSnapshot.replace(cli, data: Data("new CLI".utf8), mode: 0o755)
+                        try step("files") // failure after a partial replacement
+                        try ServiceFileSnapshot.replace(plist, data: Data("new plist".utf8), mode: 0o644)
+                    }, start: { try step("start") }, verify: { try step("verify") }, commitApp: {
+                        // Exercise a real rename failure after service startup.
+                        if failure == "commit" { try fm.removeItem(at: prepared!.staged) }
+                        events.append("commit")
+                        try prepared!.commit()
+                    }, recover: {
+                        try snapshot.restoreService(stop: { events.append("recover-stop") }, start: {
+                            if existing { events.append("recover-start") }
+                        })
+                    })
+                }
+                if failure == "none" {
+                    try install()
+                    #expect(events == ["stop", "files", "start", "verify", "commit"])
+                    #expect(try String(contentsOf: cli) == "new CLI")
+                    #expect(try String(contentsOf: app.appendingPathComponent("content")) == "new app")
+                } else {
+                    #expect(throws: (any Error).self) { try install() }
+                    if failure == "stop" { #expect(events == ["stop"]) }
+                    else { #expect(events.contains("recover-stop")) }
+                    if existing {
+                        #expect(try String(contentsOf: cli) == "old CLI")
+                        #expect(try String(contentsOf: plist) == "old plist")
+                        #expect(try String(contentsOf: app.appendingPathComponent("content")) == "old app")
+                    } else {
+                        #expect(!fm.fileExists(atPath: cli.path))
+                        #expect(!fm.fileExists(atPath: plist.path))
+                        #expect(!fm.fileExists(atPath: app.path))
+                    }
+                }
+                prepared = nil
+                #expect(try fm.contentsOfDirectory(atPath: run.path).allSatisfy { !$0.hasPrefix(".macfanpro-install-") })
+            }
+        }
+        #expect(throws: ServiceLifecycle.RecoveryFailure.self) {
+            try ServiceLifecycle.install(stop: {}, replaceFiles: {}, start: { throw Failure.injected },
+                verify: {}, commitApp: {}, recover: { throw CocoaError(.fileWriteNoPermission) })
+        }
+    }
+
+    @Test("Uninstall never resets or removes after a stop failure and reports removal failures")
+    func uninstallFailureBoundaries() throws {
+        enum Failure: Error { case injected }
+        for failure in ["none", "stop", "reset", "remove"] {
+            var events = [String]()
+            func step(_ name: String) throws {
+                events.append(name)
+                if name == failure { throw Failure.injected }
+            }
+            func uninstall() throws {
+                try ServiceLifecycle.uninstall(stop: { try step("stop") },
+                    resetFans: { try step("reset") }, removeFiles: { try step("remove") })
+            }
+            if failure == "none" { try uninstall() }
+            else { #expect(throws: Failure.self) { try uninstall() } }
+            let expected = failure == "stop" ? ["stop"] : failure == "reset" ? ["stop", "reset"] : ["stop", "reset", "remove"]
+            #expect(events == expected)
+        }
     }
 
     @Test("Tool failures and large output are captured; stopping reports actual process state")

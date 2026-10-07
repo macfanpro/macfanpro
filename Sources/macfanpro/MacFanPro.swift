@@ -750,7 +750,7 @@ struct Install: ParsableCommand {
         // 0, which would make the socket root-only and brick the user's app. A
         // non-root user never reaches this line — the geteuid() guard above stops them.
         guard let ownerUID = embeddedOwnerUID.map(Int.init) ?? ProcessInfo.processInfo.environment["SUDO_UID"].flatMap(Int.init),
-              ownerUID > 0 else {
+              ownerUID > 0, uid_t(exactly: ownerUID) != nil else {
             throw ValidationError("""
                 Can't determine who should own fan control: SUDO_UID isn't set.
                 Run the install with sudo from your normal user account:
@@ -763,6 +763,7 @@ struct Install: ParsableCommand {
                 """)
         }
 
+        try EmbeddedServiceInstallation.validateOwner(uid_t(ownerUID))
         let sourceBinary = URL(fileURLWithPath: executable)
         // The version this run installs: this binary's, or a newer Homebrew keg's when
         // this is the installed copy re-run after `brew upgrade`. The app bundle must
@@ -776,6 +777,7 @@ struct Install: ParsableCommand {
             selectedBinary.deletingLastPathComponent().deletingLastPathComponent().appendingPathComponent("MacFanPro.app").path,
             "/opt/homebrew/opt/macfanpro/MacFanPro.app",
             "/usr/local/opt/macfanpro/MacFanPro.app",
+            EmbeddedServiceInstallation.appPath,
         ]
         guard let appSource = appCandidates.map({ URL(fileURLWithPath: $0) }).first(where: {
             AppInstallSource.matches($0, binary: selectedBinary, version: installVersion)
@@ -783,6 +785,19 @@ struct Install: ParsableCommand {
             throw ValidationError("No MacFanPro.app matching this exact build was found. Reinstall with Homebrew or run ./setup.sh from its source checkout.")
         }
         try AppInstallSource.verifySignature(of: appSource)
+
+        let fm = FileManager.default
+        let appDest = EmbeddedServiceInstallation.appPath
+        let preparedApp = embedded ? nil : try AppBundleReplacement.Prepared(at: URL(fileURLWithPath: appDest)) { staged in
+            try fm.copyItem(at: appSource, to: staged)
+            guard AppInstallSource.matches(staged, binary: selectedBinary, version: installVersion) else {
+                throw ValidationError("The staged app does not match the selected service. The existing installation is untouched.")
+            }
+            try AppInstallSource.verifySignature(of: staged)
+            try AppBundleAttributes.clear(in: staged)
+            guard let account = getpwuid(uid_t(ownerUID)) else { throw EmbeddedServiceInstallation.Failure.account }
+            try AppBundleReplacement.handOver(staged, uid: uid_t(ownerUID), gid: account.pointee.pw_gid)
+        }
 
         let migration: LegacyMigration?
         if LegacyMigration.isPresent {
@@ -823,7 +838,6 @@ struct Install: ParsableCommand {
         // (user-writable → a root daemon exec'ing from there is privilege
         // escalation). Always overwrite so re-running after `brew upgrade`
         // re-syncs the installed copy.
-        let fm = FileManager.default
         // On a clean Apple Silicon machine /usr/local/bin may not exist. Fail
         // loud if it can't be created — silently ignoring it makes every step
         // after this fail for reasons that make no sense.
@@ -904,126 +918,111 @@ struct Install: ParsableCommand {
 
         try EmbeddedServiceInstallation.validateDirectory(URL(fileURLWithPath: "/usr/local/bin"))
         try EmbeddedServiceInstallation.validateDirectory(URL(fileURLWithPath: "/Library/LaunchDaemons"))
-        let snapshot = embedded ? try ServiceFileSnapshot() : nil
-        let wasRegistered = embedded && MacFanProDaemon.isRegisteredWithLaunchd
-        var installationSucceeded = false
-        defer {
-            if let snapshot, !installationSucceeded {
-                do {
-                    try snapshot.restoreService(stop: { try MacFanProDaemon.bootoutIfRegistered() }) {
-                        guard wasRegistered else { return }
-                        try MacFanProDaemon.bootstrap()
-                    }
-                } catch {
-                    FileHandle.standardError.write(Data("Service rollback failed: \(error)\n".utf8))
-                }
-            }
-        }
-
-        if resolvedBinary != resolvedInstall {
-            // Install the binary the user invoked.
-            try installBinary(from: binaryPath)
-        } else {
-            // Self-referential invocation → a re-sync request. The running binary's
-            // version IS installPath's version (same file), so only a strictly-newer
-            // Homebrew keg is worth installing (found above as resyncKeg); never downgrade.
-            let current = MacFanProVersion.current
-            if let keg = resyncKeg {
-                print("Re-syncing daemon binary from Homebrew keg \(keg.version) at \(keg.path).")
-                try installBinary(from: keg.path)
+        let snapshot = try ServiceFileSnapshot()
+        let wasRegistered = try MacFanProDaemon.registrationStatus()
+        let previousVersion = wasRegistered ? (try? DaemonClient().request(DaemonRequest(verb: .version)).version) : nil
+        try ServiceLifecycle.install(stop: {
+            try MacFanProDaemon.bootoutIfRegistered()
+        }, replaceFiles: {
+            if resolvedBinary != resolvedInstall {
+                // Install the binary the user invoked.
+                try installBinary(from: binaryPath)
             } else {
-                // Already current — nothing newer to install. Re-assert ownership/
-                // perms and fail LOUD if it doesn't take. launchd execs installPath as
-                // root at every boot, so if a prior bad state left it user-owned or
-                // user-writable, a silent failure here would leave a local user able to
-                // replace the root daemon binary. This is also the most common path
-                // (re-install when already current), so it must not swallow errors —
-                // every other write in this file throws; so does this.
-                print("Binary at \(installPath) is already current (\(current)) — nothing to copy.")
-                do {
-                    try fm.setAttributes(attrs, ofItemAtPath: installPath)
-                } catch {
-                    throw ValidationError("""
-                        Couldn't re-assert ownership/permissions on \(installPath):
-                        \(error.localizedDescription)
-                        """)
+                // Self-referential invocation → a re-sync request. The running binary's
+                // version IS installPath's version (same file), so only a strictly-newer
+                // Homebrew keg is worth installing (found above as resyncKeg); never downgrade.
+                let current = MacFanProVersion.current
+                if let keg = resyncKeg {
+                    print("Re-syncing daemon binary from Homebrew keg \(keg.version) at \(keg.path).")
+                    try installBinary(from: keg.path)
+                } else {
+                    // Already current — nothing newer to install. Re-assert ownership/
+                    // perms and fail LOUD if it doesn't take. launchd execs installPath as
+                    // root at every boot, so if a prior bad state left it user-owned or
+                    // user-writable, a silent failure here would leave a local user able to
+                    // replace the root daemon binary. This is also the most common path
+                    // (re-install when already current), so it must not swallow errors —
+                    // every other write in this file throws; so does this.
+                    print("Binary at \(installPath) is already current (\(current)) — nothing to copy.")
+                    do {
+                        try fm.setAttributes(attrs, ofItemAtPath: installPath)
+                    } catch {
+                        throw ValidationError("""
+                            Couldn't re-assert ownership/permissions on \(installPath):
+                            \(error.localizedDescription)
+                            """)
+                    }
                 }
             }
-        }
 
-        // Write launchd plist
-        let plist = """
-            <?xml version="1.0" encoding="UTF-8"?>
-            <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" \
-            "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-            <plist version="1.0">
-            <dict>
-                <key>Label</key>
-                <string>\(MacFanProDaemon.label)</string>
-                <key>ProgramArguments</key>
-                <array>
-                    <string>\(installPath)</string>
-                    <string>daemon</string>
-                    <string>--owner-uid</string>
-                    <string>\(ownerUID)</string>
-                </array>
-                <key>RunAtLoad</key>
-                <true/>
-                <key>KeepAlive</key>
-                <true/>
-            </dict>
-            </plist>
-            """
-        try ServiceFileSnapshot.replace(URL(fileURLWithPath: MacFanProDaemon.plistPath),
-                                        data: Data(plist.utf8), mode: 0o644)
-        // Tear down any existing job before bootstrapping — but only if launchd
-        // actually has the label registered. Checking registration (not
-        // isRunning) still catches a loaded-but-failing job that retry-loops on a
-        // dead exec; skipping when nothing is registered avoids a spurious
-        // "Boot-out failed: No such process" on a fresh install. A real bootout
-        // failure throws.
-        try MacFanProDaemon.bootoutIfRegistered()
+            // Write launchd plist
+            let plist = """
+                <?xml version="1.0" encoding="UTF-8"?>
+                <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" \
+                "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+                <plist version="1.0">
+                <dict>
+                    <key>Label</key>
+                    <string>\(MacFanProDaemon.label)</string>
+                    <key>ProgramArguments</key>
+                    <array>
+                        <string>\(installPath)</string>
+                        <string>daemon</string>
+                        <string>--owner-uid</string>
+                        <string>\(ownerUID)</string>
+                    </array>
+                    <key>RunAtLoad</key>
+                    <true/>
+                    <key>KeepAlive</key>
+                    <true/>
+                </dict>
+                </plist>
+                """
+            try ServiceFileSnapshot.replace(URL(fileURLWithPath: MacFanProDaemon.plistPath),
+                                            data: Data(plist.utf8), mode: 0o644)
+            // Migration: drop the legacy world-writable /tmp socket so no old client can
+            // find (or squat) it. The daemon now serves /var/run; a literal path here
+            // because socketPath is /var/run/... from Phase 1a.
+            //
+            // Safe despite being a root unlink() of a path in a world-writable directory
+            // (the classic /tmp symlink/hardlink attack surface), for three reasons:
+            //   - Symlink redirect: unlink() acts on the link itself, never follows it, so
+            //     a planted symlink can't make us delete its target.
+            //   - Hardlink to a victim file: unlink() only removes THIS /tmp directory
+            //     entry and decrements the link count — the victim file persists at its
+            //     original path.
+            //   - Directory planted at that name: unlink() fails with EISDIR; we ignore
+            //     the return, so it's a harmless no-op.
+            unlink("/tmp/macfanpro.sock")
 
-        // Migration: drop the legacy world-writable /tmp socket so no old client can
-        // find (or squat) it. The daemon now serves /var/run; a literal path here
-        // because socketPath is /var/run/... from Phase 1a.
-        //
-        // Safe despite being a root unlink() of a path in a world-writable directory
-        // (the classic /tmp symlink/hardlink attack surface), for three reasons:
-        //   - Symlink redirect: unlink() acts on the link itself, never follows it, so
-        //     a planted symlink can't make us delete its target.
-        //   - Hardlink to a victim file: unlink() only removes THIS /tmp directory
-        //     entry and decrements the link count — the victim file persists at its
-        //     original path.
-        //   - Directory planted at that name: unlink() fails with EISDIR; we ignore
-        //     the return, so it's a harmless no-op.
-        unlink("/tmp/macfanpro.sock")
-
-        try MacFanProDaemon.bootstrap { print($0) }
-        guard MacFanProDaemon.waitUntilRunning(version: installVersion) else {
-            throw ValidationError("The background service did not confirm installed version \(installVersion) within the startup wait. Re-run the installer; check Console.app for io.github.macfanpro.daemon if it still fails.")
-        }
-
-        installationSucceeded = true
+        }, start: {
+            try MacFanProDaemon.bootstrap { print($0) }
+        }, verify: {
+            guard MacFanProDaemon.waitUntilRunning(version: installVersion) else {
+                throw ValidationError("The background service did not confirm installed version \(installVersion) within the startup wait. Re-run the installer; check Console.app for io.github.macfanpro.daemon if it still fails.")
+            }
+        }, commitApp: {
+            if let preparedApp {
+                guard AppInstallSource.matches(preparedApp.staged, binary: URL(fileURLWithPath: installPath), version: installVersion) else {
+                    throw ValidationError("The staged app does not match the installed service. Restoring the previous service.")
+                }
+                if let warning = try preparedApp.commit() { print("Warning: \(warning)") }
+                print("Installed MacFanPro.app to \(appDest)")
+            }
+        }, recover: {
+            try snapshot.restoreService(stop: { try MacFanProDaemon.bootoutIfRegistered() }) {
+                guard wasRegistered else { return }
+                try MacFanProDaemon.bootstrap()
+                if let previousVersion, !MacFanProDaemon.waitUntilRunning(version: previousVersion) {
+                    throw ValidationError("The previous service files were restored, but version \(previousVersion) did not respond. Re-run the installer.")
+                }
+            }
+        })
         if embedded {
+            migration?.complete()
             print("Background service installed and verified.")
             return // The running bundle is already installed. Never delete/copy it onto itself.
         }
-
-        let appDest = "/Applications/MacFanPro.app"
-        print("Using app bundle at \(appSource.path) (\(installVersion))")
-        if let warning = try AppBundleReplacement.replace(at: URL(fileURLWithPath: appDest), prepare: { staged in
-            try fm.copyItem(at: appSource, to: staged)
-            // Validate the actual staged bytes, not only the source checked earlier.
-            guard AppInstallSource.matches(staged, binary: URL(fileURLWithPath: installPath), version: installVersion) else {
-                throw ValidationError("The staged app does not match the installed service. The previous app is untouched.")
-            }
-            try AppInstallSource.verifySignature(of: staged)
-            try AppBundleAttributes.clear(in: staged)
-            guard let account = getpwuid(uid_t(ownerUID)) else { throw EmbeddedServiceInstallation.Failure.account }
-            try AppBundleReplacement.handOver(staged, uid: uid_t(ownerUID), gid: account.pointee.pw_gid)
-        }) { print("Warning: \(warning)") }
-        print("Installed MacFanPro.app to \(appDest)")
 
         let moveGuidance = "MacFanPro.app was updated but could not be reopened automatically. Quit it if it is still open, then open it from Applications."
         if appWasRunning {
@@ -1143,11 +1142,13 @@ struct Uninstall: ParsableCommand {
             try EmbeddedServiceInstallation.validateExistingPlist(plist, owner: owner)
             // User explicitly confirmed removal and return to automatic control.
             // Stop the daemon first; otherwise its next ramp can undo the reset.
-            try MacFanProDaemon.bootoutIfRegistered(rerun: "sudo macfanpro uninstall")
-            try FanControl().resetAuto()
-            for path in [MacFanProDaemon.plistPath, MacFanProDaemon.installPath, MacFanProDaemon.socketPath] {
-                if FileManager.default.fileExists(atPath: path) { try FileManager.default.removeItem(atPath: path) }
-            }
+            try ServiceLifecycle.uninstall(stop: {
+                try MacFanProDaemon.bootoutIfRegistered(rerun: "sudo macfanpro uninstall")
+            }, resetFans: { try FanControl().resetAuto() }, removeFiles: {
+                for path in [MacFanProDaemon.plistPath, MacFanProDaemon.installPath, MacFanProDaemon.socketPath] {
+                    if FileManager.default.fileExists(atPath: path) { try FileManager.default.removeItem(atPath: path) }
+                }
+            })
             print("Background service removed. Application and user data preserved.")
             return
         }
@@ -1164,22 +1165,19 @@ struct Uninstall: ParsableCommand {
             throw ValidationError("Could not stop the app: \(message). Quit MacFanPro and retry uninstall.")
         }
 
-        // Reset fans
-        try FanControl().resetAuto()
-
-        // Unload the daemon if it's registered. Surface a genuine bootout failure
-        // but keep going — uninstall's job is to remove everything regardless.
-        do {
+        try ServiceLifecycle.uninstall(stop: {
             try MacFanProDaemon.bootoutIfRegistered(rerun: "sudo macfanpro uninstall")
-        } catch {
-            FileHandle.standardError.write(Data("Warning: \(error) — continuing removal.\n".utf8))
-        }
-
-        // Remove daemon files
-        try? fm.removeItem(atPath: MacFanProDaemon.plistPath)
-        try? fm.removeItem(atPath: MacFanProDaemon.installPath)
-        try? fm.removeItem(atPath: MacFanProDaemon.socketPath)      // /var/run (current)
-        try? fm.removeItem(atPath: "/tmp/macfanpro.sock")           // legacy path (pre-Phase 1)
+        }, resetFans: { try FanControl().resetAuto() }, removeFiles: {
+            for path in [MacFanProDaemon.plistPath, MacFanProDaemon.installPath,
+                         MacFanProDaemon.socketPath, "/tmp/macfanpro.sock"] {
+                var info = stat()
+                if lstat(path, &info) == 0 {
+                    try fm.removeItem(atPath: path)
+                } else if errno != ENOENT {
+                    throw NSError(domain: NSPOSIXErrorDomain, code: Int(errno))
+                }
+            }
+        })
 
         // Remove user data
         let appSupport = home.appendingPathComponent("Library/Application Support/MacFanPro")
@@ -1195,7 +1193,9 @@ struct Uninstall: ParsableCommand {
         }
 
         // Remove app bundle
-        try? fm.removeItem(atPath: "/Applications/MacFanPro.app")
+        if fm.fileExists(atPath: "/Applications/MacFanPro.app") {
+            try fm.removeItem(atPath: "/Applications/MacFanPro.app")
+        }
 
         print("MacFanPro fully uninstalled.")
         print("Removed: daemon, binary and app.")

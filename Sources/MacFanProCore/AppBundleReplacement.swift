@@ -9,33 +9,59 @@ public enum AppBundleReplacement {
     /// parent also protects a staged bundle after handing it to the login user.
     @discardableResult
     public static func replace(at destination: URL, prepare: (URL) throws -> Void) throws -> String? {
-        let fm = FileManager.default
-        let destination = destination.standardizedFileURL
-        try fm.createDirectory(at: destination.deletingLastPathComponent(), withIntermediateDirectories: true)
-        var template = Array(destination.deletingLastPathComponent()
-            .appendingPathComponent(".macfanpro-install-XXXXXX").path.utf8CString)
-        guard let pointer = mkdtemp(&template) else { throw posixError() }
-        let container = URL(fileURLWithPath: String(cString: pointer), isDirectory: true)
-        var cleanup = true
-        defer { if cleanup { try? fm.removeItem(at: container) } }
-        let staged = container.appendingPathComponent(destination.lastPathComponent)
-        try prepare(staged)
-        var info = stat()
-        guard lstat(staged.path, &info) == 0, info.st_mode & S_IFMT == S_IFDIR else {
-            throw CocoaError(.fileWriteInvalidFileName)
+        try Prepared(at: destination, prepare: prepare).commit()
+    }
+
+    /// Keep preparation separate from commit so the installer can validate the
+    /// entire replacement before stopping or modifying the existing service.
+    public final class Prepared {
+        public let staged: URL
+        private let destination: URL
+        private let container: URL
+        private var cleanup = true
+        private var committed = false
+
+        public init(at destination: URL, prepare: (URL) throws -> Void) throws {
+            let fm = FileManager.default
+            self.destination = destination.standardizedFileURL
+            try fm.createDirectory(at: self.destination.deletingLastPathComponent(), withIntermediateDirectories: true)
+            var template = Array(self.destination.deletingLastPathComponent()
+                .appendingPathComponent(".macfanpro-install-XXXXXX").path.utf8CString)
+            guard let pointer = mkdtemp(&template) else { throw AppBundleReplacement.posixError() }
+            container = URL(fileURLWithPath: String(cString: pointer), isDirectory: true)
+            staged = container.appendingPathComponent(self.destination.lastPathComponent)
+            do {
+                try prepare(staged)
+                var info = stat()
+                guard lstat(staged.path, &info) == 0, info.st_mode & S_IFMT == S_IFDIR else {
+                    throw CocoaError(.fileWriteInvalidFileName)
+                }
+            } catch {
+                try? fm.removeItem(at: container)
+                throw error
+            }
         }
-        let exists = lstat(destination.path, &info) == 0
-        if !exists && errno != ENOENT { throw posixError() }
-        let result = exists ? renamex_np(staged.path, destination.path, UInt32(RENAME_SWAP))
-                            : rename(staged.path, destination.path)
-        guard result == 0 else { throw posixError() }
-        do { try fm.removeItem(at: container) }
-        catch {
+
+        deinit { if cleanup { try? FileManager.default.removeItem(at: container) } }
+
+        @discardableResult
+        public func commit() throws -> String? {
+            guard !committed else { throw CocoaError(.fileWriteFileExists) }
+            var info = stat()
+            let exists = lstat(destination.path, &info) == 0
+            if !exists && errno != ENOENT { throw AppBundleReplacement.posixError() }
+            let result = exists ? renamex_np(staged.path, destination.path, UInt32(RENAME_SWAP))
+                                : rename(staged.path, destination.path)
+            guard result == 0 else { throw AppBundleReplacement.posixError() }
+            committed = true
+            do { try FileManager.default.removeItem(at: container) }
+            catch {
+                cleanup = false
+                return "New app installed, but the previous bundle could not be removed at \(container.path): \(error.localizedDescription)"
+            }
             cleanup = false
-            return "New app installed, but the previous bundle could not be removed at \(container.path): \(error.localizedDescription)"
+            return nil
         }
-        cleanup = false
-        return nil
     }
 
     /// Called only on our private staging copy. chown uses file descriptors and

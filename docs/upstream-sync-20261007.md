@@ -26,7 +26,7 @@
 
 DMG 仍由用户覆盖应用后通过设置窗口同步服务。图形授权取消、失败重试、后台文件回滚、禁止覆盖更高版本及 CLI 手动控制保护继续有效。Homebrew、直接下载、代理和源码更新入口保持兼容。
 
-## 验证
+## 合并时验证
 
 本次新增测试归并为 6 项，覆盖原子替换成功与中途失败、特殊文件与权限、同版本不同构建、真实二进制重新签名、launchd 等待与失败重试，以及工具输出和实际退出状态。所有夹具使用临时目录或模拟依赖。
 
@@ -34,13 +34,35 @@ DMG 仍由用户覆盖应用后通过设置窗口同步服务。图形授权取�
 | --- | --- |
 | `bash Scripts/test.sh` | Debug 149 项测试 / 30 个套件通过；108 次服务端异常断连、300 次客户端断连和 17 项安装脚本检查通过 |
 | `swift build -c release` | Release 构建通过 |
-| `swift test --no-parallel -c release --filter 'InstallationReliabilityTests\|EmbeddedServiceInstallationTests'` | Release 8 项安装及回滚边界测试通过；未重复运行整套 Release 测试 |
+| Release 安装测试（`InstallationReliabilityTests`、`EmbeddedServiceInstallationTests`） | Release 8 项安装及回滚边界测试通过；未重复运行整套 Release 测试 |
 | `bash Scripts/check-localization-package.sh .build/release` | 18 种语言、内嵌 CLI、许可证、安装脚本、缺失资源保护、中途复制失败保留旧包、成功覆盖和严格签名验证通过 |
 | 控制代码核对 | `DaemonServer` 与合并前逐字一致；风扇、温控、校准、配置和断连控制代码无差异 |
 | `git diff --check` | 通过 |
 
 本机执行日志位于 `/tmp/macfanpro-upstream-tests.log`、`/tmp/macfanpro-upstream-release-tests.log` 和 `/tmp/macfanpro-upstream-package.log`；临时目录可能由系统清理，长期回归以仓库测试为准。
 
+## 合并后复查与修复
+
+以合并提交 `4ed500c02f4820eceab7f06c1df569e9ae8fed5e` 为基线，复查发现并修复以下失败路径：
+
+1. **常规安装失败后新旧版本可能不一致。** 完整应用先在私有目录准备、验证，再停止旧服务。常规安装和 DMG 服务同步共用失败恢复流程；写入文件、启动、版本确认或最终应用替换失败时，恢复之前的后台文件，并按原注册状态重新启动旧服务。恢复本身失败时同时报告两次错误。
+2. **命令行卸载在服务停止失败后仍继续删除。** 改为确认停止服务后再重置风扇、删除文件；停止或重置失败即结束，删除失败也明确报告，避免误报卸载成功。
+3. **launchd 查询失败被当成服务不存在。** 安装、卸载及恢复路径区分“未注册”和“查询失败”，状态不明时停止执行。等待使用单调时钟；启动重试后的非零返回也会再次确认是否实际注册成功。
+4. **重装来源与用户校验。** 已安装的应用可作为重装来源，但必须匹配产品、版本、CLI 构建身份及包签名；开始安装前校验控制用户 UID 和账户有效性。
+
+新增测试归并为两项，覆盖首次安装与升级的各阶段故障、实际应用交换失败、恢复失败，以及卸载停止/重置/删除失败。已有 launchd 测试增加查询失败和重试部分成功场景。
+
+| 复查验证 | 结果 |
+| --- | --- |
+| `bash Scripts/test.sh --all-configurations` | Debug、Release 各 151 项测试 / 30 个套件通过；108 次服务端异常断连、300 次客户端断连、17 项安装脚本检查通过 |
+| `bash Scripts/check-localization-package.sh .build/release` | 18 种语言、安装资源、缺失及复制失败保护、应用覆盖和严格签名检查通过 |
+| 控制代码核对 | `DaemonServer` 及温控、风扇、校准、配置、断连和日志实现与合并前一致 |
+| `git diff --check` | 通过 |
+
+验证期间，共享工作区出现另一组更新界面和翻译改动，构建一度在该界面的未完成引用处失败。因此上表结果来自临时导出的合并基线加本次审计修复，不包含另一组正在编辑的内容；修复源文件已逐项核对 SHA-256 与测试快照一致。没有为此新增分支或 Git 仓库。
+
+复查日志：`/tmp/macfanpro-merge-audit-isolated-tests.log`、`/tmp/macfanpro-merge-audit-isolated-package.log`；快照文件清单和哈希：`/tmp/macfanpro-audit-snapshot.json`。
+
 ## 验证边界
 
-本次不执行本机安装、真实 launchd 停启、授权弹窗或风扇模式切换。自动化覆盖与发布打包检查不等于实机安装验收。应用原子替换保护应用目录；整个常规 CLI 安装流程不因此成为事务式回滚，DMG 内嵌服务的原有回滚范围保持不变。
+本次未执行本机安装、真实 launchd 停启、授权弹窗或风扇模式切换。自动化覆盖与发布打包检查不等于实机安装验收。恢复流程覆盖可捕获的安装错误，无法保证断电、进程被强制终止或磁盘不可写时自动恢复；测试通过也不代表不存在任何未知缺陷。共享工作区的另一组界面改动需要独立完成验证。

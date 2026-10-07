@@ -46,18 +46,12 @@ public enum MacFanProDaemon {
     /// it's the right question to ask before deciding to boot out. Requires root
     /// (system domain); the install/uninstall callers already run under sudo.
     public static var isRegisteredWithLaunchd: Bool {
-        let p = Process()
-        p.executableURL = URL(fileURLWithPath: "/bin/launchctl")
-        p.arguments = ["print", "system/\(label)"]
-        p.standardOutput = FileHandle.nullDevice
-        p.standardError = FileHandle.nullDevice
-        do {
-            try p.run()
-            p.waitUntilExit()
-            return p.terminationStatus == 0
-        } catch {
-            return false
-        }
+        (try? registrationStatus()) ?? false
+    }
+
+    /// Mutating callers must distinguish an absent job from a failed query.
+    public static func registrationStatus() throws -> Bool {
+        try LaunchdControl.registrationStatus(SystemTools.run("/bin/launchctl", ["print", "system/\(label)"]))
     }
 
     /// Wait for launchd to finish removing the old job before a new bootstrap.

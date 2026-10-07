@@ -29,7 +29,7 @@ final class LegacyMigration {
 
     init(ownerUID: Int) throws {
         uid = ownerUID
-        guard !MacFanProDaemon.isRegisteredWithLaunchd,
+        guard try !MacFanProDaemon.registrationStatus(),
               !fm.fileExists(atPath: "/Applications/MacFanPro.app") else {
             throw ValidationError("MacFanPro is already installed. Remove the older ThermalForge installation separately before retrying migration.")
         }
