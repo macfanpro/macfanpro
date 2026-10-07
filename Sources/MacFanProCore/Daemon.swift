@@ -325,7 +325,7 @@ public final class DaemonServer {
         // rather than a mystery "daemon-down" banner. Install.run() guarantees a
         // real uid, so reaching here means a hand-edited plist or a dev mistake.
         guard ownerUID != 0 else {
-            NSLog("MacFanPro daemon: refusing to start — owner uid is 0. Reinstall with `sudo macfanpro install` from your user account.")
+            DaemonLog.error("MacFanPro daemon: refusing to start — owner uid is 0. Reinstall with `sudo macfanpro install` from your user account.")
             throw MacFanProError.writeFailed("daemon owner uid must be non-zero")
         }
 
@@ -371,13 +371,13 @@ public final class DaemonServer {
         // puts the errno in Console.app beats a silent lockout.
         guard chown(MacFanProDaemon.socketPath, ownerUID, 0) == 0 else {
             let err = errno
-            NSLog("MacFanPro daemon: chown of the socket to uid %u failed: errno %d", ownerUID, err)
+            DaemonLog.error("MacFanPro daemon: chown of the socket to uid \(ownerUID) failed: errno \(err)")
             close(fd)
             throw MacFanProError.writeFailed("chown() failed: errno \(err)")
         }
         guard chmod(MacFanProDaemon.socketPath, 0o600) == 0 else {
             let err = errno
-            NSLog("MacFanPro daemon: chmod(0600) on the socket failed: errno %d", err)
+            DaemonLog.error("MacFanPro daemon: chmod(0600) on the socket failed: errno \(err)")
             close(fd)
             throw MacFanProError.writeFailed("chmod() failed: errno \(err)")
         }
@@ -392,7 +392,7 @@ public final class DaemonServer {
     /// Run the server loop (blocks forever)
     public func run() {
         guard let socketFD else { preconditionFailure("DaemonServer.run requires a bound socket") }
-        NSLog("MacFanPro daemon: listening on %@", MacFanProDaemon.socketPath)
+        DaemonLog.notice("MacFanPro daemon: listening on \(MacFanProDaemon.socketPath)")
         // Start log maintenance even when no fan command has been issued.
         TFLogger.shared.daemon("Listening on \(MacFanProDaemon.socketPath)")
 
@@ -442,13 +442,13 @@ public final class DaemonServer {
         case .alreadyAuto:
             break
         case .reset:
-            NSLog("MacFanPro daemon: fans were under manual control with no hold at startup; reset to auto")
+            DaemonLog.notice("MacFanPro daemon: fans were under manual control with no hold at startup; reset to auto")
         case .resetAfterUnreadable:
-            NSLog("MacFanPro daemon: couldn't read fan modes at startup; reset to auto as a precaution")
+            DaemonLog.notice("MacFanPro daemon: couldn't read fan modes at startup; reset to auto as a precaution")
         case .resetFailed(let error):
             // The watchdog loop retries a pending release until it succeeds.
             stateLock.lock(); releasePending = true; stateLock.unlock()
-            NSLog("MacFanPro daemon: startup fan reset failed: %@, will retry", error)
+            DaemonLog.error("MacFanPro daemon: startup fan reset failed: \(error), will retry")
         }
     }
 
@@ -484,7 +484,7 @@ public final class DaemonServer {
         stateLock.unlock()
         guard release else { return true }
         let ok = (try? fanControl.resetAuto()) != nil
-        NSLog("MacFanPro daemon: stopping: %@", ok ? "released fans to auto" : "fan release failed")
+        DaemonLog.notice("MacFanPro daemon: stopping: \(ok ? "released fans to auto" : "fan release failed")")
         return ok
     }
 
@@ -513,7 +513,7 @@ public final class DaemonServer {
         stateLock.unlock()
 
         if suspended {
-            NSLog("MacFanPro daemon: supervised hold expired — keeping thermal max until cooldown")
+            DaemonLog.notice("MacFanPro daemon: supervised hold expired — keeping thermal max until cooldown")
             return
         }
         do {
@@ -522,7 +522,7 @@ public final class DaemonServer {
             // A partial reset invalidates the old hardware state, too. Retain a
             // recovery obligation, not a manual hold that heartbeats could keep alive.
             stateLock.lock(); releasePending = true; stateLock.unlock()
-            NSLog("MacFanPro daemon: watchdog reset failed: %@, will retry", "\(error)")
+            DaemonLog.error("MacFanPro daemon: watchdog reset failed: \(error), will retry")
         }
     }
 
@@ -648,8 +648,7 @@ public final class DaemonServer {
             if ok { stateLock.lock(); safetySuspended = true; stateLock.unlock() }
             smcLock.unlock()
             guard ok else { return }
-            NSLog("MacFanPro daemon: thermal floor engaged at %.1f°C — fans held at max (was %@)",
-                  temp, heldCommand ?? "none")
+            DaemonLog.notice("MacFanPro daemon: thermal floor engaged at \(String(format: "%.1f", temp))°C — fans held at max (was \(heldCommand ?? "none"))")
 
         case .restore:
             // Re-read the hold at restore time, under smcLock — the watchdog may have
@@ -679,11 +678,10 @@ public final class DaemonServer {
             }
             smcLock.unlock()
             guard ok else {
-                NSLog("MacFanPro daemon: thermal floor restore failed at %.1f°C — will retry", temp)
+                DaemonLog.error("MacFanPro daemon: thermal floor restore failed at \(String(format: "%.1f", temp))°C — will retry")
                 return
             }
-            NSLog("MacFanPro daemon: thermal floor cleared at %.1f°C — %@",
-                  temp, restoreCommand.map { "restored \($0)" } ?? "reset to auto")
+            DaemonLog.notice("MacFanPro daemon: thermal floor cleared at \(String(format: "%.1f", temp))°C — \(restoreCommand.map { "restored \($0)" } ?? "reset to auto")")
         }
     }
 
@@ -718,13 +716,13 @@ public final class DaemonServer {
         )
 
         guard rootPort != 0, let notifyPort = notifyPort else {
-            NSLog("MacFanPro daemon: failed to register for power notifications")
+            DaemonLog.error("MacFanPro daemon: failed to register for power notifications")
             return
         }
 
         let source = IONotificationPortGetRunLoopSource(notifyPort).takeUnretainedValue()
         CFRunLoopAddSource(CFRunLoopGetMain(), source, .defaultMode)
-        NSLog("MacFanPro daemon: registered for wake notifications")
+        DaemonLog.notice("MacFanPro daemon: registered for wake notifications")
     }
 
     private func handleWake() {
@@ -732,11 +730,11 @@ public final class DaemonServer {
         let heldCommand = hold.command
         stateLock.unlock()
         guard let command = heldCommand else {
-            NSLog("MacFanPro daemon: woke — no profile to re-apply")
+            DaemonLog.notice("MacFanPro daemon: woke — no profile to re-apply")
             return
         }
 
-        NSLog("MacFanPro daemon: woke — re-applying: %@", command)
+        DaemonLog.notice("MacFanPro daemon: woke — re-applying: \(command)")
 
         // Delay slightly — SMC needs a moment after wake
         DispatchQueue.global(qos: .utility).asyncAfter(deadline: .now() + 2.0) { [self] in
@@ -751,14 +749,14 @@ public final class DaemonServer {
             let suspended = safetySuspended
             stateLock.unlock()
             guard current == command, !suspended else {
-                NSLog("MacFanPro daemon: wake re-apply skipped — hold changed during the delay")
+                DaemonLog.notice("MacFanPro daemon: wake re-apply skipped — hold changed during the delay")
                 return
             }
             do {
                 try applyCommandString(command)
-                NSLog("MacFanPro daemon: re-applied after wake")
+                DaemonLog.notice("MacFanPro daemon: re-applied after wake")
             } catch {
-                NSLog("MacFanPro daemon: wake re-apply failed: %@", "\(error)")
+                DaemonLog.error("MacFanPro daemon: wake re-apply failed: \(error)")
                 releaseAfterFailedWrite(.max)
             }
         }
@@ -784,8 +782,7 @@ public final class DaemonServer {
             process(request)
         }
         // Verb + outcome only — never raw client bytes.
-        NSLog("MacFanPro daemon: verb=%@ outcome=%@", request.verb.rawValue,
-              response.ok ? "ok" : (response.error?.rawValue ?? "error"))
+        DaemonLog.notice("MacFanPro daemon: verb=\(request.verb.rawValue) outcome=\(response.ok ? "ok" : (response.error?.rawValue ?? "error"))")
         return response
     }
 
@@ -965,7 +962,7 @@ public final class DaemonServer {
         // keep the suspension; its cooldown resets to auto, as there is no hold left.
         // Explicit auto still hands control back.
         if suspended, verb != .auto, verb != .autoIfApp, (try? fanControl.setMax()) != nil {
-            NSLog("MacFanPro daemon: fan write failed during thermal suspension — max re-asserted")
+            DaemonLog.error("MacFanPro daemon: fan write failed during thermal suspension — max re-asserted")
             return
         }
         stateLock.lock()
@@ -974,7 +971,7 @@ public final class DaemonServer {
         stateLock.unlock()
         let released = (try? fanControl.resetAuto()) != nil
         stateLock.lock(); releasePending = !released; stateLock.unlock()
-        NSLog("MacFanPro daemon: fan write failed — %@", released ? "reset to auto" : "reset failed, will retry")
+        DaemonLog.error("MacFanPro daemon: fan write failed — \(released ? "reset to auto" : "reset failed, will retry")")
     }
 
     /// Called with smcLock held before accepting another manual command, so a
@@ -990,7 +987,7 @@ public final class DaemonServer {
         smcLock.lock()
         defer { smcLock.unlock() }
         do { try finishPendingRelease() }
-        catch { NSLog("MacFanPro daemon: pending reset failed, will retry") }
+        catch { DaemonLog.error("MacFanPro daemon: pending reset failed, will retry") }
     }
 
     deinit {

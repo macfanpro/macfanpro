@@ -46,7 +46,7 @@ final class ConnectionServer: @unchecked Sendable {
          headerDeadline: TimeInterval = 1.0,
          requestDeadline: TimeInterval = 5.0,
          summaryDelay: TimeInterval = 60,
-         log: @escaping (String) -> Void = { NSLog("%@", $0) },
+         log: @escaping (String) -> Void = { DaemonLog.notice($0) },
          handle: @escaping (Data) -> DaemonResponse) {
         self.listenFD = listenFD
         self.authorizer = authorizer
@@ -172,11 +172,11 @@ final class ConnectionServer: @unchecked Sendable {
             case .legacyPeer:
                 // Reply in the pre-Phase-2 client's own "error:" format (raw, not a frame)
                 // so its hasPrefix("error:") surfaces guidance instead of misreading a frame.
-                NSLog("MacFanPro daemon: legacy (pre-Phase-2) client — advising reinstall")
+                DaemonLog.notice("MacFanPro daemon: legacy (pre-Phase-2) client — advising reinstall")
                 writeRaw(io, "error: daemon protocol updated; reinstall the CLI: sudo macfanpro install\n",
                          queue: q, completion: finish)
             case .oversized:
-                NSLog("MacFanPro daemon: rejected oversized request frame")
+                DaemonLog.error("MacFanPro daemon: rejected oversized request frame")
                 writeResponse(io, .failure(.usage, "request exceeds \(DaemonProtocol.maxRequestBytes) bytes"),
                               queue: q, completion: finish)
             case .length(let len):
@@ -211,7 +211,7 @@ final class ConnectionServer: @unchecked Sendable {
     private func writeResponse(_ io: DispatchIO, _ response: DaemonResponse, queue: DispatchQueue,
                                completion: @escaping () -> Void) {
         guard let frame = try? DaemonProtocol.encodeFrame(response, max: DaemonProtocol.maxResponseBytes) else {
-            NSLog("MacFanPro daemon: response exceeds frame cap; dropping connection")
+            DaemonLog.error("MacFanPro daemon: response exceeds frame cap; dropping connection")
             completion(); return
         }
         writeBytes(io, frame, queue: queue, completion: completion)
