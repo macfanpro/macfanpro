@@ -36,7 +36,15 @@
 | `MacFanPro-0.2.3.53-macos-arm64.tar.gz` | `185a135da8ca083bbb9b57ab6671b5c7ae00317379e6b22d3b52969c1149eadd` |
 | `install.sh` | `c06c27164af56707e98e55047e3c684a77eb3303faa51a685fc7ae6dc20019c9` |
 
-公开后的在线安装器和 Homebrew 渠道结果将在完成后补充。
+## 公开后的渠道检查
+
+- 2026-10-07 15:55（北京时间）公开发布；GitHub `/releases/latest` 返回 `v0.2.3.53`，非草稿、非预发布，6 个附件的 API 摘要与已验收下载文件一致。
+- 对发行附件执行 `bash install.sh --check`，通过公开地址重新下载并校验 tar，输出 `MacFanPro 0.2.3.53 package verification passed; no installation performed.`。日志：`/tmp/macfanpro-0.2.3.53-public-installer.log`。
+- 线上官网脚本从 `/releases/latest` 获取 DMG，在线与代理命令也使用 latest 入口，本次发布无需修改版本链接。
+- [Homebrew 通知](https://github.com/macfanpro/macfanpro/actions/runs/37590398809)与 [Homebrew 更新任务](https://github.com/macfanpro/homebrew-tap/actions/runs/37590413368)均成功。预编译包已经公开，GitHub runner 实际下载安装 bottle，通过 `brew test`、版本与严格签名校验后提交配方。
+- tap 提交为 `bdf17bf217e660ba4406552a88286b4a90bee4c3`，配方标签为 `v0.2.3.53`，源码指向 `e6162c587345a83e73dfd707fd866baf508c0e3f`。
+- `arm64_sonoma` bottle SHA-256 为 `9a2f8b72847f0427654feed43a981dac836cfaa6704851457d41f54be21beed0`，配方与公开附件 API 摘要一致；日志为 `/tmp/macfanpro-0.2.3.53-homebrew-ci.log`。
+- 发布结束再次核对本机：应用与 CLI 仍为 0.2.3.37，应用 PID 89041、后台 PID 89036，保存的模式仍为 Smart。Homebrew 安装验收在 GitHub runner 执行。
 
 ## 验证边界
 
