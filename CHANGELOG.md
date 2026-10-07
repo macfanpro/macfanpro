@@ -1,5 +1,9 @@
 # MacFanPro changelog
 
+## 0.2.3.58
+
+- Add a settings window and slim the menu bar panel. **Settings…** at the bottom of the panel (⌘,) opens a native window with three groups: General (language, temperature unit and Launch at Login), Updates (version and update checks), and Background service (status, setup and removal). The panel keeps the readings and profiles. When a release is available, it shows one "{version} available" row that opens the update details, and a dot on **Settings…**. First-run and service synchronization use the same window.
+
 ## 0.2.3.57
 
 - The menu's background-service entry is now a row below Updates, with a **Manage…** button that matches **Check for Updates**, instead of a small link next to Quit. In Chinese its label is the two-character 服务 / 服務, like the rows above it.
