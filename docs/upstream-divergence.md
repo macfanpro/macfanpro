@@ -59,3 +59,15 @@ A ready change is on branch
 at most one line per fan every 5 seconds, counting the skipped ramp steps;
 max and reset still log at once. Merge it if the step lines get in the way of
 diagnosing problems, or if upstream changes its fan logging.
+
+### Daemon logging, user data and thermal-suspension watchdog
+
+Since ThermalForge #31, upstream's daemon logs only to the unified log, and root
+processes write no log files. Upstream also moved sudo user data into a
+`UserData` module, and its watchdog hands a dead app's hold back to Apple even
+while the thermal floor holds the fans at max. MacFanPro keeps its own bounded
+file logs, its calibration and recording ownership code (audited in
+[code-audit-20261007.md](code-audit-20261007.md)), and its watchdog keeps the
+fans at max until cooldown in that case. The startup reconcile and SIGTERM
+release from #31 are adopted as upstream wrote them (0.2.3.54). See
+[upstream-sync-20261007.md](upstream-sync-20261007.md).

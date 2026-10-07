@@ -1,5 +1,14 @@
 # MacFanPro changelog
 
+## 0.2.3.54
+
+- Adopt ThermalForge's fan release on daemon start and stop. A starting background service returns fans left under manual control (by a crashed or killed service, or a direct write) to Apple's automatic control. The service releases the fans it controls when it is stopped (SIGTERM). Installation releases fans before restarting the service, also when upgrading from a version without this. MacFanPro keeps its own behavior when the app stops responding while the thermal floor holds the fans at maximum: the fans stay at maximum until the Mac cools down.
+- Add contributor and AI-agent rules (`AGENTS.md`): one branch and pull request per change, one release at a time, and how upstream merges are recorded.
+
+## 0.2.3.53
+
+- Fix issues found in the 2026-10-07 review of MacFanPro and upstream ThermalForge. A failed Launch at Login change no longer retries itself in a loop. `watch` and calibration go through the installed service's ownership and protection. M4 efficiency-core sensors count toward thermal protection. Calibration stops cleanly on Ctrl-C or SIGTERM and never saves a cancelled result. Recording durations are validated, and recordings started with sudo belong to the invoking user. Calibration file access drops root's supplementary groups.
+
 ## 0.2.3.52
 
 - Move release notices to a compact Updates row and a separate native window. Keep fan readings visible, provide installation-channel-specific actions, and show failed handoffs with retry in all 18 languages.
