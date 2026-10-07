@@ -114,7 +114,8 @@ struct ServiceSetupTests {
                 try await Task.sleep(for: .milliseconds(20))
                 view.setFrameSize(view.fittingSize); view.layoutSubtreeIfNeeded()
                 #expect(view.frame.width == 480)
-                #expect(view.frame.height > 350 && view.frame.height < 650)
+                // About 351pt locally without the former language row; CI fonts render slightly shorter.
+                #expect(view.frame.height > 300 && view.frame.height < 650)
                 let bitmap = try #require(view.bitmapImageRepForCachingDisplay(in: view.bounds))
                 view.cacheDisplay(in: view.bounds, to: bitmap)
                 let png = try #require(bitmap.representation(using: .png, properties: [:]))
