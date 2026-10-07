@@ -196,11 +196,16 @@ struct MenuBarView: View {
             }
 
             HStack {
+                // A button like Settings…, so the two footer actions read as a pair.
                 Button(action: { NSApp.terminate(nil) }) {
-                    Text(language.text("Quit"))
+                    HStack(spacing: 4) {
+                        Image(systemName: "rectangle.portrait.and.arrow.right")
+                        Text(language.text("Quit"))
+                    }
                 }
-                .buttonStyle(.plain)
-                .foregroundStyle(.secondary)
+                .keyboardShortcut("q", modifiers: .command)
+                .fixedSize()
+                .accessibilityIdentifier("io.github.macfanpro.quit")
                 Spacer()
                 if let onSettings {
                     Button {
@@ -214,7 +219,7 @@ struct MenuBarView: View {
                                     .accessibilityLabel(language.text("Update available"))
                             }
                             Image(systemName: "gearshape")
-                            Text(language.text("Settings…"))
+                            Text(language.text("Settings"))
                         }
                     }
                     .keyboardShortcut(",", modifiers: .command)
@@ -223,6 +228,7 @@ struct MenuBarView: View {
                 }
             }
             .padding(.horizontal, 12)
+            .padding(.top, 4)
             .padding(.bottom, 10)
         }
         .frame(width: 260)
