@@ -1,10 +1,11 @@
 # MacFanPro changelog
 
-## 0.2.3.51
+## 0.2.3.52
 
 - Move release notices to a compact Updates row and a separate native window. Keep fan readings visible, provide installation-channel-specific actions, and show failed handoffs with retry in all 18 languages.
 - Merge upstream installation improvements: verify matching app and CLI builds, prepare complete app bundles before atomic replacement, and wait for actual launchd state with actionable failures.
 - Restore previous service files when installation fails after stopping the service. Stop uninstall when service shutdown or fan reset fails, and distinguish launchd query failures from an absent service.
+- Fix a C buffer lifetime error in app staging exposed by optimized CI builds; verify the staging directory's parent, name, owner and permissions before it can be used or cleaned. Candidate 0.2.3.51 failed CI and was never published.
 - Keep existing fan curves, safety thresholds, disconnect protection, logging, proxy support and installation channels. DMG updates replace the app without removing its background service first.
 
 ## 0.2.3.50

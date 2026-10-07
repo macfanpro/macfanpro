@@ -18,6 +18,11 @@ struct InstallationReliabilityTests {
         let fm = FileManager.default, root = try temporaryDirectory()
         defer { try? fm.removeItem(at: root) }
         let destination = root.appendingPathComponent("App with spaces.app")
+        #expect(throws: CocoaError.self) {
+            try AppBundleReplacement.replace(at: URL(string: "https://example.invalid/App.app")!) { _ in
+                Issue.record("Non-file destinations must fail before preparation")
+            }
+        }
         try AppBundleReplacement.replace(at: destination) { staged in
             try fm.createDirectory(at: staged, withIntermediateDirectories: true)
             try Data("old".utf8).write(to: staged.appendingPathComponent("old.txt"))
@@ -31,8 +36,11 @@ struct InstallationReliabilityTests {
         }
         #expect(try String(contentsOf: destination.appendingPathComponent("old.txt")) == "old")
         try AppBundleReplacement.replace(at: destination) { staged in
+            try #require(staged.isFileURL && staged.path.hasPrefix("/"))
+            try #require(staged.deletingLastPathComponent().deletingLastPathComponent().path == root.path)
+            try #require(staged.deletingLastPathComponent().lastPathComponent.hasPrefix(".macfanpro-install-"))
             let mode = try fm.attributesOfItem(atPath: staged.deletingLastPathComponent().path)[.posixPermissions] as? Int
-            #expect(mode == 0o700)
+            try #require(mode == 0o700)
             try fm.createDirectory(at: staged, withIntermediateDirectories: true)
             try Data("new".utf8).write(to: staged.appendingPathComponent("new.txt"))
             try AppBundleReplacement.handOver(staged, uid: getuid(), gid: getgid())

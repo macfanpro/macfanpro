@@ -23,12 +23,36 @@ public enum AppBundleReplacement {
 
         public init(at destination: URL, prepare: (URL) throws -> Void) throws {
             let fm = FileManager.default
+            guard destination.isFileURL else { throw CocoaError(.fileWriteUnsupportedScheme) }
             self.destination = destination.standardizedFileURL
-            try fm.createDirectory(at: self.destination.deletingLastPathComponent(), withIntermediateDirectories: true)
-            var template = Array(self.destination.deletingLastPathComponent()
+            let parent = self.destination.deletingLastPathComponent()
+            try fm.createDirectory(at: parent, withIntermediateDirectories: true)
+            var template = Array(parent
                 .appendingPathComponent(".macfanpro-install-XXXXXX").path.utf8CString)
-            guard let pointer = mkdtemp(&template) else { throw AppBundleReplacement.posixError() }
-            container = URL(fileURLWithPath: String(cString: pointer), isDirectory: true)
+            // mkdtemp returns its input pointer. Convert it while the array's
+            // storage is explicitly borrowed: an implicit &array conversion only
+            // keeps that pointer valid for the C call, not the next statement.
+            let path = try template.withUnsafeMutableBufferPointer { buffer in
+                guard let pointer = buffer.baseAddress, mkdtemp(pointer) != nil else {
+                    throw AppBundleReplacement.posixError()
+                }
+                return String(cString: pointer)
+            }
+            let candidate = URL(fileURLWithPath: path, isDirectory: true)
+            var metadata = stat()
+            // Fail closed before assigning any path that cleanup may remove.
+            // In particular, an empty path must never become the working directory.
+            guard path.hasPrefix("/"),
+                  candidate.deletingLastPathComponent().path == parent.path,
+                  candidate.lastPathComponent.hasPrefix(".macfanpro-install-"),
+                  candidate.lastPathComponent.count == ".macfanpro-install-".count + 6,
+                  lstat(path, &metadata) == 0,
+                  metadata.st_mode & S_IFMT == S_IFDIR,
+                  metadata.st_mode & 0o777 == 0o700,
+                  metadata.st_uid == geteuid() else {
+                throw CocoaError(.fileWriteInvalidFileName)
+            }
+            container = candidate
             staged = container.appendingPathComponent(self.destination.lastPathComponent)
             do {
                 try prepare(staged)
