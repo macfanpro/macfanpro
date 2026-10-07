@@ -60,9 +60,13 @@ public final class ThermalLogger {
 
     public init(fanControl: FanControl, rateHz: Double = 1.0, duration: TimeInterval? = nil,
                 outputDir: URL? = nil, noExpire: Bool = false) throws {
-        guard rateHz.isFinite, rateHz > 0 else {
+        guard rateHz.isFinite, rateHz > 0, (1.0 / rateHz).isFinite else {
             throw NSError(domain: "ThermalLogger", code: 1,
                           userInfo: [NSLocalizedDescriptionKey: "Sample rate must be finite and positive."])
+        }
+        if let duration, !CaptureDuration.isValid(duration) {
+            throw NSError(domain: "ThermalLogger", code: 1,
+                          userInfo: [NSLocalizedDescriptionKey: "Duration must be finite and positive."])
         }
         self.fanControl = fanControl
         self.sampleInterval = 1.0 / rateHz

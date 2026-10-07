@@ -70,7 +70,7 @@ public struct ThermalStatus: Encodable {
 }
 
 extension ThermalStatus {
-    /// Peak of the CPU (`TC`/`Tp`) and GPU (`TG`/`Tg`) sensors — the temperature the
+    /// Peak of the CPU (`TC`/`Tp`/`Te`) and GPU (`TG`/`Tg`) sensors — the temperature the
     /// thermal safety floor watches. Single source of truth so the client
     /// `ThermalMonitor` and the daemon's floor read the identical value; mirroring
     /// can't drift because it's the same code.
@@ -79,7 +79,7 @@ extension ThermalStatus {
             temperatures.filter { key, _ in prefixes.contains { key.hasPrefix($0) } }
                 .values.max() ?? 0
         }
-        return max(peak(["TC", "Tp"]), peak(["TG", "Tg"]))
+        return max(peak(["TC", "Tp", "Te"]), peak(["TG", "Tg"]))
     }
 }
 
@@ -334,10 +334,10 @@ public final class FanControl {
         "TB0T",
     ]
 
-    /// The CPU (TC/Tp) and GPU (TG/Tg) subset the thermal safety floor watches —
+    /// The CPU (TC/Tp/Te) and GPU (TG/Tg) subset the thermal safety floor watches —
     /// derived from `thermalKeys` so it can't drift from what `status()` reports.
     public static let safetyTempKeys: [String] =
-        thermalKeys.filter { key in ["TC", "Tp", "TG", "Tg"].contains { key.hasPrefix($0) } }
+        thermalKeys.filter { key in ["TC", "Tp", "Te", "TG", "Tg"].contains { key.hasPrefix($0) } }
 
     /// Read one temperature key, decoding by returned size (flt 4-byte or ioft 8-byte).
     /// nil if absent, wrong size, or out of the sane 0–150°C range. Does NOT lock — the

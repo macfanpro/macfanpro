@@ -5,6 +5,89 @@ import Testing
 
 @Suite("Profile switch ordering and calibration paths — no hardware writes")
 struct AuditFixTests {
+    @Test("Login-item failures roll back once and a later user retry still works")
+    @MainActor
+    func loginItemFailure() {
+        var calls: [Bool] = []
+        var fail = true
+        let app = AppState(startServices: false, setLoginItem: { value in
+            calls.append(value)
+            if fail { throw CocoaError(.fileWriteNoPermission) }
+        })
+        let initial = app.launchAtLogin
+        app.launchAtLogin = !initial
+        #expect(app.launchAtLogin == initial)
+        #expect(calls == [!initial])
+        fail = false
+        app.launchAtLogin = !initial
+        #expect(app.launchAtLogin == !initial)
+        #expect(calls == [!initial, !initial])
+    }
+
+    @Test("Foreground control arbitrates with the app, survives the watchdog, and clears its hold on exit")
+    func foregroundOwnership() throws {
+        let f = ControlFixture()
+        #expect(f.send(.init(verb: .set, rpm: 2000)).ok)
+        let control = ForegroundFanControl(send: f.send)
+        try control.apply(.setRPM(3000))
+        #expect(f.state.isCLIHold)
+        #expect(f.send(.init(verb: .set, rpm: 1500)).error == .heldByCLI)
+        f.clock.advance(20); f.daemon.watchdogTick()
+        #expect(f.smc.float("F0Tg") == 3000)
+        try control.finish()
+        #expect(f.state.isEmpty && f.smc.bytes("F0Md") == [0])
+
+        var commands: [FanCommand] = []
+        let failed = ForegroundFanControl(execute: {
+            commands.append($0)
+            if $0.isHold { throw MacFanProError.writeFailed("F1Tg") }
+        })
+        try failed.finish() // an idle session must not reset someone else's fans
+        #expect(commands.isEmpty)
+        #expect(throws: (any Error).self) { try failed.apply(.setMax) }
+        try failed.finish()
+        #expect(commands == [.setMax, .resetAuto])
+    }
+
+    @Test("Calibration cancellation exits cooldown and releases through the daemon without starting stress")
+    func calibrationCancellation() throws {
+        let f = ControlFixture()
+        let control = ForegroundFanControl(send: f.send)
+        try control.apply(.setRPM(3000))
+        let runner = CalibrationRunner(fanControl: f.fans, applyCommand: control.apply)
+        runner.onProgress = { message in
+            if message.contains("Cooling to baseline") { runner.cancel() }
+        }
+        #expect(throws: CancellationError.self) { try runner.run() }
+        #expect(f.state.isEmpty && f.smc.bytes("F0Md") == [0])
+        #expect(runner.logPath == nil)
+        // Cancellation before startup performs no writes at all.
+        var writes = 0
+        let idle = CalibrationRunner(fanControl: f.fans, applyCommand: { _ in writes += 1 })
+        idle.cancel()
+        #expect(throws: CancellationError.self) { try idle.run() }
+        #expect(writes == 0)
+        // Missing sensors must abort before creating CPU/GPU load or saving data.
+        f.smc.onRead = { !$0.hasPrefix("T") }
+        let unreadable = CalibrationRunner(fanControl: f.fans, applyCommand: control.apply)
+        #expect(throws: MacFanProError.self) { try unreadable.run() }
+        #expect(unreadable.logPath == nil && f.state.isEmpty)
+        let failedCleanup = CalibrationRunner(fanControl: f.fans, applyCommand: { _ in
+            throw MacFanProError.writeFailed("F0Md")
+        })
+        #expect(throws: CalibrationRunner.CleanupFailure.self) { try failedCleanup.run() }
+    }
+
+    @Test("Capture durations reject malformed, nonfinite, overflow and nonpositive inputs")
+    func captureDurations() {
+        for input in ["oops", "", "nan", "inf", "1e309h", "1e20s", "0", "-3m"] {
+            #expect(CaptureDuration.parse(input) == nil)
+        }
+        for (input, seconds) in [("1h", 3600.0), ("30m", 1800.0), ("60s", 60.0), (" 0.5S ", 0.5)] {
+            #expect(CaptureDuration.parse(input) == seconds)
+        }
+    }
+
     @Test("During Default only the reset passes, until the monitor confirms the switch")
     func defaultHoldsStaleWrites() {
         var gate = ProfileSwitchGate()

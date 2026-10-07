@@ -103,7 +103,14 @@ final class AppState: ObservableObject {
         }
     }()
 
-    init(startServices: Bool = true) {
+    private var changingLoginItem = false
+    private let setLoginItem: (Bool) throws -> Void
+
+    init(startServices: Bool = true, setLoginItem: @escaping (Bool) throws -> Void = { enabled in
+        if enabled { try SMAppService.mainApp.register() }
+        else { try SMAppService.mainApp.unregister() }
+    }) {
+        self.setLoginItem = setLoginItem
         // Offscreen presentation tests must never start monitors or contact SMC.
         if startServices { activateServices() }
     }
@@ -569,12 +576,13 @@ final class AppState: ObservableObject {
     // MARK: - Launch at Login
 
     private func updateLoginItem() {
+        // A failed change rolls the published value back, which invokes didSet again.
+        // The rollback must not request the opposite operation from the same service.
+        guard !changingLoginItem else { return }
+        changingLoginItem = true
+        defer { changingLoginItem = false }
         do {
-            if launchAtLogin {
-                try SMAppService.mainApp.register()
-            } else {
-                try SMAppService.mainApp.unregister()
-            }
+            try setLoginItem(launchAtLogin)
         } catch {
             TFLogger.shared.error("Launch at login toggle failed: \(error)")
             launchAtLogin = !launchAtLogin // revert toggle

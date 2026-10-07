@@ -351,7 +351,7 @@ struct Watch: ParsableCommand {
     @Option(name: .shortAndLong, help: "Profile: silent, balanced, performance, max")
     var profile: String = "balanced"
 
-    @Option(name: .shortAndLong, help: "Poll interval in seconds (default 0.1 = 100ms)")
+    @Option(name: .shortAndLong, help: "Poll interval: 0.01–5 seconds (default 0.1 = 100ms)")
     var interval: Double = 0.1
 
     @Flag(name: .long, help: "Output JSON on each update")
@@ -366,10 +366,14 @@ struct Watch: ParsableCommand {
             )
         }
 
-        guard interval.isFinite, interval > 0 else {
-            throw ValidationError("--interval must be a positive number of seconds")
+        guard interval.isFinite, (0.01...5).contains(interval) else {
+            throw ValidationError("--interval must be between 0.01 and 5 seconds")
         }
-
+        guard geteuid() == 0 else { throw ValidationError("Run with sudo: sudo macfanpro watch") }
+        guard SystemTools.processRunning(uid: nil) == false else {
+            throw ValidationError("Quit the MacFanPro menu bar app before starting watch; two profile controllers cannot run together.")
+        }
+        let control = try ForegroundFanControl()
         let fc = try FanControl()
         let monitor = ThermalMonitor(fanControl: fc, profile: selectedProfile)
 
@@ -377,16 +381,7 @@ struct Watch: ParsableCommand {
         print("Hardware: \(fc.hardwareInfo)")
         print("Polling every \(interval)s. Ctrl-C to stop.\n")
 
-        // CLI runs as root, so fan commands go directly through FanControl
-        monitor.onFanCommand = { command in
-            switch command {
-            case .setMax: try fc.setMax()
-            case .setRPM(let rpm): try fc.setAllFans(rpm: rpm)
-            case .setFan(let index, let rpm): try fc.setSpeed(fan: index, rpm: rpm)
-            case .resetAuto: try fc.resetAuto()
-            case .releaseAppHold: throw DaemonError.notRunning
-            }
-        }
+        monitor.onFanCommand = control.apply
 
         monitor.onUpdate = { [json] status, activeProfile, state in
             if json {
@@ -417,14 +412,26 @@ struct Watch: ParsableCommand {
             }
         }
 
-        // Set up signal handler for clean shutdown
-        signal(SIGINT) { _ in
-            print("\nResetting fans to auto...")
-            if let resetFC = try? FanControl() {
-                try? resetFC.resetAuto()
+        // Dispatch handles signals outside the async-signal-unsafe C handler.
+        // stop() drains the monitor, so no late write can follow the final release.
+        signal(SIGINT, SIG_IGN)
+        signal(SIGTERM, SIG_IGN)
+        let signals = [SIGINT, SIGTERM].map { number in
+            let source = DispatchSource.makeSignalSource(signal: number, queue: .main)
+            source.setEventHandler {
+                monitor.stop()
+                do {
+                    try control.finish()
+                    Darwin.exit(0)
+                } catch {
+                    FileHandle.standardError.write(Data("Could not release fan control: \(error)\n".utf8))
+                    Darwin.exit(1)
+                }
             }
-            Darwin.exit(0)
+            source.resume()
+            return source
         }
+        defer { signals.forEach { $0.cancel() } }
 
         monitor.start(interval: interval)
 
@@ -453,8 +460,7 @@ struct Calibrate: ParsableCommand {
     func run() throws {
         // Reset doesn't need sudo — it's user data
         if reset {
-            if CalibrationData.exists {
-                try? FileManager.default.removeItem(at: CalibrationData.filePath)
+            if try CalibrationData.remove() {
                 print("Calibration data cleared. Smart will use the default curve.")
                 TFLogger.shared.calibration("Calibration data reset by user")
             } else {
@@ -489,8 +495,8 @@ struct Calibrate: ParsableCommand {
         // A running app with a controlling profile (Smart) keeps rewriting fan
         // targets through the daemon and overrides every calibration level. Quit it
         // the same way `auto --stop-app` does, and reopen it when calibration ends.
-        let stoppedApp = Self.stopApp()
-        calibrationStoppedApp = stoppedApp != nil
+        let control = try ForegroundFanControl()
+        let stoppedApp = try Self.stopApp()
         defer { if let app = stoppedApp { Self.reopen(app) } }
 
         print("MacFanPro Calibration")
@@ -508,28 +514,34 @@ struct Calibrate: ParsableCommand {
         print("Press Ctrl-C at any time to stop. Fans will reset to Apple defaults.\n")
 
         let fc = try FanControl()
-        let runner = CalibrationRunner(fanControl: fc, mode: calMode, stressType: calStress)
+        let runner = CalibrationRunner(fanControl: fc, mode: calMode, stressType: calStress,
+                                       applyCommand: control.apply)
 
-        // Kill switch: Ctrl-C resets fans and exits cleanly
-        signal(SIGINT) { _ in
-            print("\n\nCalibration interrupted. Resetting fans to Apple defaults...")
-            if let resetFC = try? FanControl() {
-                try? resetFC.resetAuto()
-            }
-            print("Fans reset. No calibration data was saved.")
-            if calibrationStoppedApp {
-                print("The menu bar app was quit for calibration. Reopen MacFanPro from Applications.")
-            }
-            Darwin.exit(0)
+        let previousINT = signal(SIGINT, SIG_IGN)
+        let previousTERM = signal(SIGTERM, SIG_IGN)
+        let signals = [SIGINT, SIGTERM].map { number in
+            let source = DispatchSource.makeSignalSource(signal: number, queue: .global(qos: .userInitiated))
+            source.setEventHandler { runner.cancel() }
+            source.resume()
+            return source
+        }
+        defer {
+            signals.forEach { $0.cancel() }
+            signal(SIGINT, previousINT); signal(SIGTERM, previousTERM)
         }
 
         runner.onProgress = { message in
             print(message)
         }
 
-        let data = try runner.run()
+        let data: CalibrationData
         do {
+            data = try runner.run()
+            try runner.checkCancellation()
             try data.save()
+        } catch is CancellationError {
+            print("\nCalibration interrupted. No calibration data was saved.")
+            return
         } catch let invalid as CalibrationData.InvalidResult {
             // Keep the previous calibration: the app would reject this one and fall
             // back to the default curve.
@@ -561,22 +573,25 @@ struct Calibrate: ParsableCommand {
 
     /// Quits the menu bar app if the invoking user runs it, and returns its bundle
     /// path for `reopen`. Nil when it was not running.
-    private static func stopApp() -> String? {
-        guard let uid = ProcessInfo.processInfo.environment["SUDO_UID"],
+    private static func stopApp() throws -> String? {
+        guard let uid = ProcessInfo.processInfo.environment["SUDO_UID"], uid_t(uid) != nil,
               let pid = output("/usr/bin/pgrep", ["-x", "-u", uid, "MacFanProApp"])?
-                .split(separator: "\n").first else { return nil }
+                .split(separator: "\n").first else {
+            guard SystemTools.processRunning(uid: nil) == false else {
+                throw ValidationError("Quit the MacFanPro menu bar app before calibrating from this account.")
+            }
+            return nil
+        }
         let executable = output("/bin/ps", ["-o", "comm=", "-p", String(pid)]) ?? ""
         let bundle = executable.range(of: ".app/").map { String(executable[..<$0.lowerBound]) + ".app" }
             ?? "/Applications/MacFanPro.app"
 
-        let kill = Process()
-        kill.executableURL = URL(fileURLWithPath: "/usr/bin/killall")
-        kill.arguments = ["MacFanProApp"]
-        try? kill.run()
-        kill.waitUntilExit()
-        // Wait for it to exit, so it cannot write one last fan target.
-        for _ in 0..<50 where output("/usr/bin/pgrep", ["-x", "MacFanProApp"]) != nil {
-            Thread.sleep(forTimeInterval: 0.1)
+        switch SystemTools.stopApp(
+            isRunning: { SystemTools.processRunning(uid: uid_t(uid)) },
+            kill: { SystemTools.run("/usr/bin/pkill", ["-x", "-u", uid, "MacFanProApp"]) }) {
+        case .failed(let message): throw ValidationError("Cannot start calibration: \(message)")
+        case .notRunning: return nil
+        case .stopped: break
         }
         print("Quit the MacFanPro menu bar app for calibration. It will be reopened afterwards.\n")
         return bundle
@@ -588,7 +603,11 @@ struct Calibrate: ParsableCommand {
         let open = Process()
         open.executableURL = URL(fileURLWithPath: "/bin/launchctl")
         open.arguments = ["asuser", uid, "/usr/bin/open", bundle]
-        try? open.run()
+        do { try open.run() }
+        catch {
+            print("Could not reopen MacFanPro: \(error). Open it from Applications.")
+            return
+        }
         open.waitUntilExit()
         print("\nReopening the MacFanPro menu bar app. If it does not appear, open it from Applications.")
     }
@@ -608,9 +627,6 @@ struct Calibrate: ParsableCommand {
         return text.isEmpty ? nil : text
     }
 }
-
-/// Read by calibration's Ctrl-C handler, which cannot capture context.
-private var calibrationStoppedApp = false
 
 // MARK: - Log
 
@@ -633,9 +649,27 @@ struct Log: ParsableCommand {
     var noExpire: Bool = false
 
     func run() throws {
+        let durationSec: TimeInterval?
+        if let duration {
+            guard let parsed = CaptureDuration.parse(duration) else {
+                throw ValidationError("--duration must be a positive duration, for example 60s, 30m or 1h")
+            }
+            durationSec = parsed
+        } else { durationSec = nil }
+        // Logging only reads SMC. Under sudo, permanently become the invoking user
+        // before opening output paths or starting background logging threads.
+        if geteuid() == 0, let text = ProcessInfo.processInfo.environment["SUDO_UID"] {
+            guard let uid = uid_t(text), uid > 0, let account = getpwuid(uid),
+                  let name = account.pointee.pw_name else {
+                throw ValidationError("Cannot resolve the login user. Run macfanpro log without sudo.")
+            }
+            let user = String(cString: name), gid = account.pointee.pw_gid
+            guard initgroups(user, Int32(bitPattern: gid)) == 0, setgid(gid) == 0, setuid(uid) == 0 else {
+                throw ValidationError("Cannot switch to the login user. Run macfanpro log without sudo.")
+            }
+        }
         let fc = try FanControl()
 
-        let durationSec: TimeInterval? = duration.flatMap { parseDuration($0) }
         let outputURL = output.map { URL(fileURLWithPath: $0) }
 
         let logger = try ThermalLogger(
@@ -684,14 +718,6 @@ struct Log: ParsableCommand {
         print("  thermal.csv   — sensor readings + fan state")
         print("  processes.csv — top processes by CPU")
         print("  metadata.json — session info + data dictionary")
-    }
-
-    private func parseDuration(_ s: String) -> TimeInterval? {
-        let trimmed = s.trimmingCharacters(in: .whitespaces).lowercased()
-        if trimmed.hasSuffix("h"), let v = Double(trimmed.dropLast()) { return v * 3600 }
-        if trimmed.hasSuffix("m"), let v = Double(trimmed.dropLast()) { return v * 60 }
-        if trimmed.hasSuffix("s"), let v = Double(trimmed.dropLast()) { return v }
-        return Double(trimmed)
     }
 
     private func formatDuration(_ t: TimeInterval) -> String {

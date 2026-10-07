@@ -118,11 +118,12 @@ extension CalibrationData {
     static func invokingUser(
         euid: uid_t = geteuid(),
         environment: [String: String] = ProcessInfo.processInfo.environment
-    ) -> (uid: uid_t, gid: gid_t, home: URL)? {
+    ) -> (uid: uid_t, gid: gid_t, home: URL, name: String)? {
         guard euid == 0,
               let uid = environment["SUDO_UID"].flatMap(uid_t.init), uid != 0,
-              let account = getpwuid(uid), let directory = account.pointee.pw_dir else { return nil }
-        return (uid, account.pointee.pw_gid, URL(fileURLWithPath: String(cString: directory)))
+              let account = getpwuid(uid), let directory = account.pointee.pw_dir,
+              let name = account.pointee.pw_name else { return nil }
+        return (uid, account.pointee.pw_gid, URL(fileURLWithPath: String(cString: directory)), String(cString: name))
     }
 
     public static var filePath: URL {
@@ -140,18 +141,34 @@ extension CalibrationData {
     /// `body` unchanged when not under sudo.
     static func asInvokingUser<T>(_ body: () throws -> T) throws -> T {
         guard let user = invokingUser() else { return try body() }
-        guard setegid(user.gid) == 0 else {
-            throw MacFanProError.writeFailed("could not switch to group \(user.gid)")
+        let originalGID = getegid()
+        let count = getgroups(0, nil)
+        guard count >= 0 else { throw MacFanProError.writeFailed("could not read supplementary groups") }
+        var groups = [gid_t](repeating: 0, count: Int(count))
+        let actual = getgroups(count, &groups)
+        guard actual >= 0 else { throw MacFanProError.writeFailed("could not read supplementary groups") }
+        groups = Array(groups.prefix(Int(actual)))
+        func restore() throws {
+            guard seteuid(0) == 0,
+                  setgroups(Int32(groups.count), groups) == 0,
+                  setegid(originalGID) == 0 else {
+                throw MacFanProError.writeFailed("could not restore process credentials")
+            }
         }
-        guard seteuid(user.uid) == 0 else {
-            setegid(0)
-            throw MacFanProError.writeFailed("could not switch to user \(user.uid)")
+        // seteuid/setegid alone retain root's supplementary groups (including wheel).
+        // Replace them too, or a writable root-group directory remains reachable.
+        do {
+            guard initgroups(user.name, Int32(bitPattern: user.gid)) == 0,
+                  setegid(user.gid) == 0, seteuid(user.uid) == 0 else {
+                throw MacFanProError.writeFailed("could not switch to user \(user.uid)")
+            }
+        } catch {
+            try restore()
+            throw error
         }
-        defer {
-            seteuid(0)
-            setegid(0)
-        }
-        return try body()
+        let result = Result { try body() }
+        try restore()
+        return try result.get()
     }
 
     /// Thrown by `save` for a result the app would reject; nothing is written.
@@ -200,6 +217,18 @@ extension CalibrationData {
 
     public static var exists: Bool {
         FileManager.default.fileExists(atPath: filePath.path)
+    }
+
+    /// Deletion has the same user boundary as saving. In particular, sudo must
+    /// never follow a user-controlled parent directory with root's permissions.
+    @discardableResult
+    public static func remove(at url: URL = Self.filePath) throws -> Bool {
+        try asInvokingUser {
+            do { try FileManager.default.removeItem(at: url); return true }
+            catch let error as CocoaError where error.code == .fileNoSuchFile || error.code == .fileReadNoSuchFile {
+                return false
+            }
+        }
     }
 }
 
@@ -293,7 +322,18 @@ public enum CalibrationStressType: String, CaseIterable {
 // MARK: - Calibration Runner
 
 public final class CalibrationRunner {
+    public struct CleanupFailure: Error, LocalizedError {
+        public let original: Error
+        public let cleanup: Error
+        public var errorDescription: String? {
+            "Calibration did not complete: \(original). Could not release fan control: \(cleanup)."
+        }
+    }
     private let fanControl: FanControl
+    private let applyCommand: (FanCommand) throws -> Void
+    private let cancellation = NSCondition()
+    private var cancelled = false
+    private let stressGroup = DispatchGroup()
     private let mode: CalibrationMode
     private let stressType: CalibrationStressType
     private var stressThreads: [Thread] = []
@@ -313,10 +353,31 @@ public final class CalibrationRunner {
     // CSV log handle — written to in real time during calibration
     private var csvHandle: FileHandle?
 
-    public init(fanControl: FanControl, mode: CalibrationMode = .standard, stressType: CalibrationStressType = .combined) {
+    public init(fanControl: FanControl, mode: CalibrationMode = .standard,
+                stressType: CalibrationStressType = .combined,
+                applyCommand: @escaping (FanCommand) throws -> Void = {
+                    _ = try FanCommandRouter.apply($0, oneshot: true)
+                }) {
+        self.applyCommand = applyCommand
         self.fanControl = fanControl
         self.mode = mode
         self.stressType = stressType
+    }
+
+    /// Signal callbacks only request cancellation. The calibration thread stops
+    /// stress and releases ownership before returning; it never saves a partial run.
+    public func cancel() {
+        cancellation.lock(); cancelled = true; cancellation.broadcast(); cancellation.unlock()
+    }
+
+    public func checkCancellation() throws { try pause(0) }
+
+    private func pause(_ seconds: TimeInterval) throws {
+        cancellation.lock()
+        defer { cancellation.unlock() }
+        let deadline = Date().addingTimeInterval(seconds)
+        while !cancelled && Date() < deadline { _ = cancellation.wait(until: deadline) }
+        if cancelled { throw CancellationError() }
     }
 
     /// Check if running this mode would downgrade existing calibration
@@ -333,31 +394,27 @@ public final class CalibrationRunner {
 
     /// Find the stress intensity that produces ~1°C/sec heating on this machine.
     /// Fans on auto (Apple default). Starts at 1% and adjusts.
-    private func findBaselineIntensity() -> Float {
+    private func findBaselineIntensity() throws -> Float {
         log("Finding baseline intensity for ~1°C/sec...")
 
         // Reset fans to auto — we want to measure raw heating without fan interference
-        try? fanControl.resetAuto()
-        Thread.sleep(forTimeInterval: 2)
+        try applyCommand(.resetAuto)
+        try pause(2)
 
         var intensity: Float = 0.01 // Start at 1%
         let maxAttempts = 10
 
         for attempt in 0..<maxAttempts {
             // Record starting temp
-            let startTemp = peakSafetyTemp()
-            guard startTemp > 0 else {
-                log("  Can't read temperature, using default intensity 0.02")
-                return 0.02
-            }
+            let startTemp = try peakSafetyTemp()
 
             // Run stress at current intensity for 10 seconds
             startStress(intensity: intensity)
-            Thread.sleep(forTimeInterval: 10)
+            try pause(10)
             stopStress()
 
             // Measure how much temp rose
-            let endTemp = peakSafetyTemp()
+            let endTemp = try peakSafetyTemp()
             let rise = endTemp - startTemp
             let rate = rise / 10.0 // °C/sec
 
@@ -383,7 +440,7 @@ public final class CalibrationRunner {
             }
 
             // Brief cool between attempts
-            Thread.sleep(forTimeInterval: 5)
+            try pause(5)
         }
 
         log("  Could not converge after \(maxAttempts) attempts, using \(String(format: "%.3f", intensity))")
@@ -393,17 +450,17 @@ public final class CalibrationRunner {
     /// Read peak CPU/GPU temperature right now — the same value the Smart profile
     /// looks up in this data and the safety floor watches, so a GPU stress run can't
     /// overheat unseen and the measurements match what Smart compares them against.
-    private func peakSafetyTemp() -> Float {
-        guard let status = try? fanControl.status() else { return 0 }
-        return status.safetyPeakTemp
+    private func peakSafetyTemp() throws -> Float {
+        let peak = try fanControl.status().safetyPeakTemp
+        guard peak > 0 else { throw MacFanProError.readFailed("CPU/GPU temperature sensors") }
+        return peak
     }
 
     /// Cleanup: always stop stress, reset fans, close CSV on any exit path
-    private func cleanup() {
+    private func cleanup() throws {
         stopStress()
-        try? fanControl.resetAuto()
-        csvHandle?.closeFile()
-        csvHandle = nil
+        defer { csvHandle?.closeFile(); csvHandle = nil }
+        try applyCommand(.resetAuto)
     }
 
     /// Fan levels to test (high to low). 5 levels cover the useful cooling range.
@@ -422,8 +479,20 @@ public final class CalibrationRunner {
 
     /// Run full calibration. Blocks until complete.
     public func run() throws -> CalibrationData {
-        defer { cleanup() }
+        try checkCancellation()
+        let result: CalibrationData
+        do { result = try measure() }
+        catch {
+            do { try cleanup() }
+            catch let cleanupError { throw CleanupFailure(original: error, cleanup: cleanupError) }
+            throw error
+        }
+        try cleanup()
+        try checkCancellation()
+        return result
+    }
 
+    private func measure() throws -> CalibrationData {
         let fanCount = try fanControl.fanCount()
         let fan0 = try fanControl.fanInfo(0)
         let maxRPM = fan0.maxRPM > 0 ? fan0.maxRPM : 7826
@@ -452,17 +521,17 @@ public final class CalibrationRunner {
 
         // Phase 0: Cooldown to baseline
         log("Phase 0: Cooling to baseline...")
-        waitForCooldown(below: 45)
+        try waitForCooldown(below: 45)
 
         // Phase 1: Find stress intensity (~1°C/sec)
         log("Phase 1: Finding baseline intensity...")
-        let baselineIntensity = findBaselineIntensity()
+        let baselineIntensity = try findBaselineIntensity()
         log("Baseline intensity: \(String(format: "%.3f", baselineIntensity))")
 
         // Phase 1.5: Cool again after intensity finding
         stopStress()
-        try fanControl.resetAuto()
-        waitForCooldown(below: 45)
+        try applyCommand(.resetAuto)
+        try waitForCooldown(below: 45)
 
         // Set up CSV log (stress is stopped, so no other thread runs during the switch)
         let logDir = CalibrationData.filePath.deletingLastPathComponent()
@@ -486,18 +555,19 @@ public final class CalibrationRunner {
 
         for fanPct in levels {
             guard !abortLowerLevels else { break }
+            try checkCancellation()
 
             let targetRPM = Swift.max(maxRPM * fanPct, minRPM)
             log("[\(Int(fanPct * 100))%] Setting fans to \(Int(targetRPM)) RPM — waiting for stabilization...")
 
-            try fanControl.setAllFans(rpm: targetRPM)
+            try applyCommand(.setRPM(targetRPM))
 
             var readings: [Float] = []
             let deadline = Date().addingTimeInterval(TimeInterval(mode.maxWaitPerLevel))
             var stabilized = false
 
             while Date() < deadline {
-                let temp = peakSafetyTemp()
+                let temp = try peakSafetyTemp()
                 readings.append(temp)
 
                 // CSV logging
@@ -509,8 +579,8 @@ public final class CalibrationRunner {
                 // Safety: abort if too hot
                 if temp >= Self.safetyTemp {
                     log("[\(Int(fanPct * 100))%] Safety at \(String(format: "%.0f", temp))°C — maxing fans, skipping lower levels")
-                    try fanControl.setMax()
-                    Thread.sleep(forTimeInterval: 30)
+                    try applyCommand(.setMax)
+                    try pause(30)
                     rawData.append((fanPct: fanPct, equilTemp: Self.ceilingTemp))
                     abortLowerLevels = true
                     break
@@ -534,14 +604,14 @@ public final class CalibrationRunner {
                     break
                 }
 
-                Thread.sleep(forTimeInterval: 2)
+                try pause(2)
             }
 
             // Timeout: use best estimate
             if !stabilized && !abortLowerLevels {
                 let windowSize = min(readings.count, mode.stabilizationWindowSize)
                 let window = readings.suffix(windowSize)
-                let equilTemp = window.isEmpty ? peakSafetyTemp() : window.reduce(0, +) / Float(window.count)
+                let equilTemp = try window.isEmpty ? peakSafetyTemp() : window.reduce(0, +) / Float(window.count)
                 log("[\(Int(fanPct * 100))%] Timeout — best estimate: \(String(format: "%.1f", equilTemp))°C (\(readings.count * 2)s)")
                 rawData.append((fanPct: fanPct, equilTemp: equilTemp))
             }
@@ -640,14 +710,14 @@ public final class CalibrationRunner {
         return data.last!.fanPct
     }
 
-    private func waitForCooldown(below threshold: Float) {
+    private func waitForCooldown(below threshold: Float) throws {
         for _ in 0..<60 {
-            let temp = peakSafetyTemp()
+            let temp = try peakSafetyTemp()
             if temp > 0 && temp < threshold {
                 log("Cooled to \(String(format: "%.1f", temp))°C")
                 return
             }
-            Thread.sleep(forTimeInterval: 2)
+            try pause(2)
         }
     }
 
@@ -669,7 +739,9 @@ public final class CalibrationRunner {
             let coreCount = ProcessInfo.processInfo.activeProcessorCount
             let activeCores = Swift.max(Int(Float(coreCount) * intensity), 1)
             for _ in 0..<activeCores {
+                stressGroup.enter()
                 let thread = Thread {
+                    defer { self.stressGroup.leave() }
                     while self.stressRunning {
                         var x: Double = 1.0
                         for i in 1...10000 {
@@ -744,7 +816,9 @@ public final class CalibrationRunner {
         self.gpuElementCount = elementCount
 
         // Run GPU dispatches on a background thread
+        stressGroup.enter()
         let thread = Thread {
+            defer { self.stressGroup.leave() }
             self.gpuStressLoop()
         }
         thread.qualityOfService = .userInteractive
@@ -783,8 +857,9 @@ public final class CalibrationRunner {
 
     private func stopStress() {
         stressRunning = false
-        // Wait for threads to notice the flag and exit
-        Thread.sleep(forTimeInterval: 2)
+        // Join the workers before releasing Metal resources or starting the next
+        // phase. A fixed sleep can let an old worker join a later stress run.
+        stressGroup.wait()
         stressThreads.removeAll()
         // Release Metal resources — stops GPU dispatches
         gpuBuffer = nil

@@ -1,3 +1,4 @@
+import Foundation
 import Testing
 @testable import MacFanProCore
 
@@ -42,6 +43,27 @@ struct DisplayedTemperatureTests {
         let s = status(["Tp01": 61.3, "Tg05": 69.0, "TCDX": 80.0])
         let cpu = s.displayedCPUTemp ?? 0
         #expect(s.displayedPeakTemp == max(cpu, 69.0))
+    }
+
+    @Test("M4 efficiency cores participate in both the monitor and daemon safety floor")
+    func efficiencyCoreSafety() {
+        for key in ["Te05", "Te0S", "Te09", "Te0H"] {
+            #expect(FanControl.safetyTempKeys.contains(key))
+            let s = status([key: 96, "Tp01": 70, "TCDX": 75, "Tg05": 65])
+            #expect(s.safetyPeakTemp == 96)
+        }
+        let f = ControlFixture(sample: { nil })
+        f.smc.set("Te05", floatToSMCBytes(96))
+        let monitor = f.monitor(.silent)
+        var commands: [FanCommand] = []
+        monitor.onFanCommand = { commands.append($0) }
+        f.tick(monitor)
+        #expect(commands == [.setMax])
+        // Use the actual key sweep, not the fixture's injected peak sampler.
+        let daemon = DaemonServer(fanControl: f.fans, ownerUID: getuid(), sampleMaxTemp: nil, socketFD: nil, now: f.clock.now)
+        #expect(daemon.processFrame(try! JSONEncoder().encode(DaemonRequest(verb: .set, rpm: 2000, oneshot: true))).ok)
+        daemon.thermalTick()
+        #expect(f.smc.float("F0Tg") == 6000)
     }
 
     @Test("No CPU or GPU sensors leaves the rows and headline empty")

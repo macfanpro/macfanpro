@@ -237,7 +237,7 @@ Run these individually as needed. With a normal install and the background servi
 
 `macfanpro auto` does not quit the app, and the app's automatic profiles may take over again. To hand control back to macOS completely, use `macfanpro auto --stop-app`.
 
-The advanced `watch` command keeps controlling the fans by profile (it is not read-only). It supports `silent`, `balanced`, `performance` and `max`; Smart is selected in the menu bar app. Calibration is optional and creates a load; see [Calibration](#optional-calibration). Both controlling `watch` and running a calibration need administrator rights. Read the command's `--help` before using either.
+The advanced `watch` command keeps controlling the fans by profile (it is not read-only). It supports `silent`, `balanced`, `performance` and `max`; Smart is selected in the menu bar app. Calibration is optional and creates a load; see [Calibration](#optional-calibration). Both controlling `watch` and running a calibration need administrator rights. Quit the menu bar app before starting `watch`; its polling interval must be 0.01–5 seconds. Calibration closes the invoking user's app and reopens it afterwards. Both commands use the installed daemon for fan writes and refuse to start over an existing manual CLI hold; finish that hold first. Ctrl-C or SIGTERM stops the foreground session and releases its control. Read the command's `--help` before using either.
 
 Actual RPM is the fan's measured speed, so it can differ slightly from the requested target. Minimum and maximum RPM also vary by fan and model. When the daemon is unavailable, direct `max`/`set` writes need administrator rights; install the service for ordinary use.
 
@@ -405,7 +405,7 @@ brew uninstall macfanpro
 
 ### Record a workload
 
-For a short capture, use `macfanpro log --duration 60s`. For a 10 Hz, one-hour session that you want to retain:
+For a short capture, use `macfanpro log --duration 60s`. Invalid or nonpositive durations are rejected. Logging does not need sudo; if launched with sudo, it drops to the invoking user before creating recordings, so the files remain accessible to that user. For a 10 Hz, one-hour session that you want to retain:
 
 ```bash
 macfanpro log --rate 10 --duration 1h --no-expire
