@@ -198,10 +198,7 @@ struct MenuBarView: View {
             HStack {
                 // A button like Settings…, so the two footer actions read as a pair.
                 Button(action: { NSApp.terminate(nil) }) {
-                    HStack(spacing: 4) {
-                        Image(systemName: "rectangle.portrait.and.arrow.right")
-                        Text(language.text("Quit"))
-                    }
+                    FooterLabel(title: language.text("Quit"), systemImage: "rectangle.portrait.and.arrow.right")
                 }
                 .keyboardShortcut("q", modifiers: .command)
                 .fixedSize()
@@ -218,8 +215,7 @@ struct MenuBarView: View {
                                 Circle().fill(Color.blue).frame(width: 6, height: 6)
                                     .accessibilityLabel(language.text("Update available"))
                             }
-                            Image(systemName: "gearshape")
-                            Text(language.text("Settings"))
+                            FooterLabel(title: language.text("Settings"), systemImage: "gearshape")
                         }
                     }
                     .keyboardShortcut(",", modifiers: .command)
@@ -264,6 +260,22 @@ struct MenuBarView: View {
         guard let temps = appState.latestStatus?.temperatures else { return nil }
         let values = temps.filter { key, _ in prefixes.contains(where: { key.hasPrefix($0) }) }.values
         return values.max()
+    }
+}
+
+/// Footer button content: a symbol scaled down to sit inside the text's height,
+/// centered on the text rather than on its own taller bounding box, 4pt apart.
+private struct FooterLabel: View {
+    let title: String
+    let systemImage: String
+
+    var body: some View {
+        HStack(alignment: .center, spacing: 4) {
+            Image(systemName: systemImage)
+                .imageScale(.small)
+                .font(.body.weight(.regular))
+            Text(title)
+        }
     }
 }
 
