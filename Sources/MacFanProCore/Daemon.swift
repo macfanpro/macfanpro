@@ -293,6 +293,8 @@ public final class DaemonServer {
 
     /// Phase 4 connection layer (concurrent bounded accept + framed I/O), created in run().
     private var connectionServer: ConnectionServer?
+    /// SIGTERM handler (ThermalForge #31), created in run(); kept so the source isn't released.
+    private var terminationSource: DispatchSourceSignal?
 
     public convenience init(fanControl: FanControl, ownerUID: uid_t,
                             sampleMaxTemp: (() -> Float?)? = nil) throws {
@@ -394,6 +396,14 @@ public final class DaemonServer {
         // Start log maintenance even when no fan command has been issued.
         TFLogger.shared.daemon("Listening on \(MacFanProDaemon.socketPath)")
 
+        // Start holding nothing with nothing pinned, before any client can connect
+        // or any loop can act (ThermalForge #31): release fans a previous daemon or a
+        // direct root write left under manual control.
+        reconcileFansAtStartup()
+
+        // Release our fans if we're told to stop (bootout, kill -TERM).
+        installTerminationHandler()
+
         // Watch for sleep/wake to re-apply fan settings
         registerWakeNotification()
 
@@ -420,6 +430,62 @@ public final class DaemonServer {
 
         // Main thread runs the RunLoop for wake notifications
         RunLoop.main.run()
+    }
+
+    // MARK: - Start and Stop (ThermalForge #31)
+
+    func reconcileFansAtStartup() {
+        smcLock.lock()
+        defer { smcLock.unlock() }
+        switch StartupFanReconcile.run(manualControlEngaged: { try fanControl.manualControlEngaged() },
+                                       resetAuto: { try fanControl.resetAuto() }) {
+        case .alreadyAuto:
+            break
+        case .reset:
+            NSLog("MacFanPro daemon: fans were under manual control with no hold at startup; reset to auto")
+        case .resetAfterUnreadable:
+            NSLog("MacFanPro daemon: couldn't read fan modes at startup; reset to auto as a precaution")
+        case .resetFailed(let error):
+            // The watchdog loop retries a pending release until it succeeds.
+            stateLock.lock(); releasePending = true; stateLock.unlock()
+            NSLog("MacFanPro daemon: startup fan reset failed: %@, will retry", error)
+        }
+    }
+
+    /// SIGTERM's default action kills the daemon with whatever hold it had still
+    /// on the SMC. A dispatch source runs our handler on a normal thread instead of
+    /// in signal context, so taking locks and writing the SMC is safe there.
+    private func installTerminationHandler() {
+        signal(SIGTERM, SIG_IGN)
+        let source = DispatchSource.makeSignalSource(signal: SIGTERM, queue: .global(qos: .userInitiated))
+        source.setEventHandler { [self] in releaseFansAndExit() }
+        source.resume()
+        terminationSource = source
+    }
+
+    private func releaseFansAndExit() -> Never {
+        exit(releaseFansForShutdown() ? 0 : 1)
+    }
+
+    /// smcLock stays held after the release, so no request, watchdog, floor or wake
+    /// re-apply can write the SMC before the process exits. Lock order matches
+    /// processFrame (smcLock, then stateLock). Returns false only if a needed
+    /// release failed.
+    @discardableResult
+    func releaseFansForShutdown() -> Bool {
+        smcLock.lock()
+        stateLock.lock()
+        let release = DaemonShutdown.releasesFans(holding: hold.command != nil,
+                                                  safetySuspended: safetySuspended,
+                                                  releasePending: releasePending)
+        hold = .none
+        safetySuspended = false
+        releasePending = false
+        stateLock.unlock()
+        guard release else { return true }
+        let ok = (try? fanControl.resetAuto()) != nil
+        NSLog("MacFanPro daemon: stopping: %@", ok ? "released fans to auto" : "fan release failed")
+        return ok
     }
 
     // MARK: - Heartbeat Watchdog

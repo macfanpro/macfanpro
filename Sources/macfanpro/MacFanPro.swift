@@ -948,6 +948,21 @@ struct Install: ParsableCommand {
         let wasRegistered = try MacFanProDaemon.registrationStatus()
         let previousVersion = wasRegistered ? (try? DaemonClient().request(DaemonRequest(verb: .version)).version) : nil
         try ServiceLifecycle.install(stop: {
+            // Release the fans to Apple before stopping the daemon (ThermalForge #31).
+            // A bootout of a daemon from before 0.2.3.54 has no SIGTERM release, and
+            // the new daemon starts holding nothing. Through the daemon when it's up,
+            // so it also clears the daemon's record; direct otherwise. Best effort:
+            // the new daemon's startup reconcile is the backstop.
+            let released: Bool
+            do {
+                _ = try FanCommandRouter.apply(.resetAuto, oneshot: false)
+                released = true
+            } catch {
+                released = (try? FanControl().resetAuto()) != nil
+            }
+            print(released
+                ? "Fans released to Apple defaults for the daemon restart."
+                : "Warning: couldn't reset fans before the daemon restart; the new daemon will reset them when it starts.")
             try MacFanProDaemon.bootoutIfRegistered()
         }, replaceFiles: {
             if resolvedBinary != resolvedInstall {

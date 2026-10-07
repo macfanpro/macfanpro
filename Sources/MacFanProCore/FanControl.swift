@@ -286,6 +286,32 @@ public final class FanControl {
         return targets.map { FanRPM(index: $0.index, rpm: Int($0.rpm)) }
     }
 
+    // MARK: - Manual-Control Check
+
+    /// Whether a manual-control session is engaged at the SMC: any fan in manual
+    /// mode, or (M1-M4) Ftst still set, which keeps thermalmonitord off the fans
+    /// even with every mode back on auto. Throws when a key can't be read, so the
+    /// caller picks its own safe default rather than this guessing "auto".
+    public func manualControlEngaged() throws -> Bool {
+        let count = try fanCount()
+        for i in 0..<count {
+            let modeKey = SMCFanKey.key(modeKeyTemplate, fan: i)
+            let result = smc.readKey(modeKey)
+            guard result.success, let mode = result.bytes.first else {
+                throw MacFanProError.readFailed(modeKey)
+            }
+            if mode == 1 { return true }   // 1 = manual (see fanInfo)
+        }
+        if hasFtst {
+            let result = smc.readKey(SMCFanKey.forceTest)
+            guard result.success, let ftst = result.bytes.first else {
+                throw MacFanProError.readFailed(SMCFanKey.forceTest)
+            }
+            if ftst != 0 { return true }
+        }
+        return false
+    }
+
     // MARK: - Reset
 
     /// Reset all fans to Apple defaults (auto mode, thermalmonitord resumes)
