@@ -22,7 +22,7 @@ struct LocalizedPanelTests {
             .init(index: 1, actualRPM: 5756, targetRPM: 5777, minRPM: 1350, maxRPM: 5777, mode: "manual"),
         ], temperatures: ["TCMb": 100, "Tg05": 73.7, "TRDX": 43.4, "TH0x": 26.3, "TAOL": 24.4])
         let identity = ObjectIdentifier(state)
-        let panel = NSHostingView(rootView: MenuBarView(onServiceSetup: {}).environmentObject(state).environmentObject(language)
+        let panel = NSHostingView(rootView: MenuBarView(onSettings: {}).environmentObject(state).environmentObject(language)
             .background(Color(nsColor: .windowBackgroundColor)).environment(\.colorScheme, .light))
         var normalHeights: [AppLanguage: CGFloat] = [:]
         for scenario in ["normal", "held-update", "update-brew", "mismatch-safety", "daemon-down", "up-to-date", "normal"] {

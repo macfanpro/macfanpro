@@ -194,7 +194,7 @@ This builds the repository's `main` branch, which may include unreleased changes
 
 ### After installing
 
-The app is installed at `/Applications/MacFanPro.app`. It lives in the menu bar and has no Dock icon. To start it automatically, turn on Launch at Login in the app.
+The app is installed at `/Applications/MacFanPro.app`. It lives in the menu bar and has no Dock icon. To start it automatically, turn on Launch at Login in Settings.
 
 Terminal shows nothing while you type your administrator password; press Return when done. The app works with the installed background service, so everyday use doesn't ask for your password again.
 
@@ -215,7 +215,7 @@ Click the fan icon in the menu bar to open the panel, check the sensor readings 
 
 Overheating protection can override the current profile.
 
-The menu also switches the temperature unit, Launch at Login and the language, shows the current version, and checks for updates on demand.
+Preferences are in a separate window: choose **Settings…** at the bottom of the panel (⌘,). It holds the language, the temperature unit and Launch at Login; the version and update checks; and the background service's status, with setup and removal. The panel itself keeps the readings and profiles, plus a row for a new release when one is available.
 
 ### Common commands
 
@@ -318,7 +318,7 @@ To intentionally discard calibration and use the default curve again, run `macfa
 
 The online installer above also upgrades existing installations. The app’s “Update in Terminal” uses the same bundled installer.
 
-The app checks this repository's releases once a day. At the bottom of the menu, **Check for Updates** checks immediately; a found release changes the action to **View Update…** and displays its version. Click it to open a separate update window. Homebrew users get **Update in Terminal**; other installations get **Open download page…** to download and replace the app. Selectable installer/source commands and network help are collapsed under **Other update methods** and **Download help**. Closing the window keeps the update visible in the menu. A Terminal handoff does not mean installation has finished; follow Terminal's output. The app never replaces itself without your action. Checks use the macOS system proxy; if a manual check fails, check your connection and click **Retry**.
+The app checks this repository's releases once a day. In **Settings… → Updates**, **Check for Updates** checks immediately. When a release is found, the panel shows a "{version} available" row and a dot on **Settings…**; click the row (or **View Update…** in Settings) to open a separate update window. Homebrew users get **Update in Terminal**; other installations get **Open download page…** to download and replace the app. Selectable installer/source commands and network help are collapsed under **Other update methods** and **Download help**. Closing the window keeps the update visible in the panel. A Terminal handoff does not mean installation has finished; follow Terminal's output. The app never replaces itself without your action. Checks use the macOS system proxy; if a manual check fails, check your connection and click **Retry**.
 
 ### DMG updates
 
@@ -379,7 +379,7 @@ If you checked out a release tag, run `git fetch origin --tags`, check out the n
 
 These steps are only for **stopping use of MacFanPro**, not for updating it.
 
-**DMG installation**: choose **Background service… → Remove background service…**, confirm and authorize, then quit the app and move MacFanPro.app to the Trash. Settings, calibration and logs are kept.
+**DMG installation**: choose **Settings… → Background service → Remove background service…**, confirm and authorize, then quit the app and move MacFanPro.app to the Trash. Settings, calibration and logs are kept.
 
 Alternatively, remove the app, command-line tool and background service with this command, keeping your data:
 

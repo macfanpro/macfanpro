@@ -95,7 +95,7 @@ struct ServiceSetupTests {
         #expect(ServiceSetup.command(.install, owner: 501) == "'/Applications/MacFanPro.app/Contents/Helpers/macfanpro' install --embedded-owner-uid 501")
     }
 
-    @Test("Setup window renders every language in light and dark without starting app services")
+    @Test("Settings window renders every language in light and dark without starting app services")
     func localizedWindow() async throws {
         let suite = "MacFanPro.SetupTests.\(UUID().uuidString)"
         let defaults = try #require(UserDefaults(suiteName: suite))
@@ -105,7 +105,8 @@ struct ServiceSetupTests {
         let setup = ServiceSetup(environment: fixture.environment())
         await setup.check()
         for theme in [ColorScheme.light, .dark] {
-            let view = NSHostingView(rootView: ServiceSetupView(setup: setup)
+            let view = NSHostingView(rootView: SettingsView(setup: setup)
+                .environmentObject(AppState(startServices: false))
                 .environmentObject(language).environment(\.colorScheme, theme)
                 .background(theme == .dark ? Color.black : Color.white))
             view.appearance = NSAppearance(named: theme == .dark ? .darkAqua : .aqua)
@@ -113,9 +114,8 @@ struct ServiceSetupTests {
                 language.select(choice)
                 try await Task.sleep(for: .milliseconds(20))
                 view.setFrameSize(view.fittingSize); view.layoutSubtreeIfNeeded()
-                #expect(view.frame.width == 480)
-                // About 351pt locally without the former language row; CI fonts render slightly shorter.
-                #expect(view.frame.height > 300 && view.frame.height < 650)
+                #expect(view.frame.width == 460)
+                #expect(view.frame.height > 300 && view.frame.height < 900)
                 let bitmap = try #require(view.bitmapImageRepForCachingDisplay(in: view.bounds))
                 view.cacheDisplay(in: view.bounds, to: bitmap)
                 let png = try #require(bitmap.representation(using: .png, properties: [:]))

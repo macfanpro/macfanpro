@@ -1,4 +1,5 @@
 import AppKit
+import Combine
 import SwiftUI
 import MacFanProCore
 import MacFanProLocalization
@@ -60,15 +61,27 @@ final class ServiceSetup: ObservableObject {
         if phase != .ready { present(language: language) }
     }
 
+    /// The settings window's content. The app supplies it, since the window also
+    /// shows AppState's preferences; tests render SettingsView directly.
+    var windowContent: () -> AnyView = { AnyView(EmptyView()) }
+    private var titleSubscription: AnyCancellable?
+
     func present(language: AppLanguageStore) {
         if window == nil {
-            let controller = NSHostingController(rootView: ServiceSetupView(setup: self).environmentObject(language))
+            let controller = NSHostingController(rootView: windowContent())
+            // Phases change the service section's height; follow the content.
+            controller.sizingOptions = [.preferredContentSize]
             let window = NSWindow(contentViewController: controller)
-            window.title = "MacFanPro"
+            window.title = language.text("MacFanPro setup")
+            window.identifier = NSUserInterfaceItemIdentifier("io.github.macfanpro.settings-window")
             window.styleMask = [.titled, .closable]
             window.isReleasedWhenClosed = false
             window.center()
             self.window = window
+            titleSubscription = language.$language.receive(on: DispatchQueue.main).sink { [weak self, weak language] _ in
+                guard let language else { return }
+                self?.window?.title = language.text("MacFanPro setup")
+            }
         }
         NSApp.activate(ignoringOtherApps: true)
         window?.makeKeyAndOrderFront(nil)
@@ -178,78 +191,166 @@ final class ServiceSetup: ObservableObject {
     }
 }
 
-struct ServiceSetupView: View {
+/// The settings window: everyday preferences moved out of the menu bar panel, plus
+/// the background service, which also drives first-run and synchronization.
+struct SettingsView: View {
+    @ObservedObject var setup: ServiceSetup
+    @EnvironmentObject var appState: AppState
+    @EnvironmentObject var language: AppLanguageStore
+    var onViewUpdate: () -> Void = {}
+
+    var body: some View {
+        Form {
+            Section(language.text("General")) {
+                Picker(language.text("Language"), selection: Binding(get: { language.selection }, set: { language.select($0) })) {
+                    ForEach(AppLanguage.allCases) { choice in Text(language.title(for: choice)).tag(choice) }
+                }
+                .accessibilityIdentifier("io.github.macfanpro.language")
+                Picker(language.text("Temperature unit"), selection: $appState.useFahrenheit) {
+                    Text("°C").tag(false)
+                    Text("°F").tag(true)
+                }
+                Toggle(language.text("Launch at Login"), isOn: $appState.launchAtLogin)
+            }
+            Section(language.text("Updates")) {
+                LabeledContent(language.text("Version")) {
+                    Text(MacFanProVersion.current).font(.system(.body, design: .monospaced)).textSelection(.enabled)
+                }
+                .accessibilityIdentifier("io.github.macfanpro.version")
+                HStack {
+                    Text(updateStatus)
+                        .foregroundStyle(appState.availableUpdate == nil ? Color.secondary : Color.blue)
+                        .fixedSize(horizontal: false, vertical: true)
+                        .accessibilityIdentifier("io.github.macfanpro.update-status")
+                    Spacer(minLength: 8)
+                    Button(language.text(appState.availableUpdate != nil ? "View Update…" :
+                        appState.manualUpdateCheck == .failed ? "Retry" : "Check for Updates")) {
+                        if appState.availableUpdate != nil { onViewUpdate() } else { appState.checkForUpdatesNow() }
+                    }
+                    .fixedSize()
+                    .disabled(appState.manualUpdateCheck == .checking)
+                    .accessibilityIdentifier(appState.availableUpdate == nil ?
+                        "io.github.macfanpro.check-updates" : "io.github.macfanpro.view-update")
+                }
+            }
+            Section(language.text("Background service")) {
+                ServiceSection(setup: setup)
+            }
+        }
+        .formStyle(.grouped)
+        .frame(width: 460)
+        .fixedSize(horizontal: false, vertical: true)
+        .environment(\.layoutDirection, language.language.isRightToLeft ? .rightToLeft : .leftToRight)
+        // A manual check's result is transient: closing settings returns the row
+        // to "checked automatically" instead of showing a stale "Up to date".
+        .onReceive(NotificationCenter.default.publisher(for: NSWindow.willCloseNotification)) { notification in
+            guard (notification.object as? NSWindow)?.identifier?.rawValue == "io.github.macfanpro.settings-window" else { return }
+            appState.clearManualUpdateResult()
+        }
+    }
+
+    private var updateStatus: String {
+        if appState.manualUpdateCheck == .checking { return language.text("Checking…") }
+        if let update = appState.availableUpdate { return language.text("{version} available", ["version": update.version]) }
+        switch appState.manualUpdateCheck {
+        case .upToDate: return language.text("Up to date")
+        case .failed: return language.text("Couldn't reach GitHub")
+        case .available(let version): return language.text("{version} available", ["version": version])
+        case .idle, .checking: return language.text("Checked automatically every day")
+        }
+    }
+}
+
+/// The background service: its state, and the setup actions that state allows.
+private struct ServiceSection: View {
     @ObservedObject var setup: ServiceSetup
     @EnvironmentObject var language: AppLanguageStore
     @State private var confirmRemoval = false
 
-    private var description: String {
+    private var description: String? {
         switch setup.phase {
         case .move: return "Drag MacFanPro into Applications, then open it from there."
         case .homebrew: return "Homebrew manages this installation. Update or repair it using the existing Homebrew instructions."
         case .update: return "The app and background service need to be synchronized. macOS will ask for administrator authorization."
-        case .ready: return "The background service is ready. You can use MacFanPro from the menu bar."
         case .working: return "Complete the macOS authorization dialog. Installing or removing the service may take a moment."
         case .removed: return "The service was removed. Fans now use macOS automatic control. You can move MacFanPro to the Trash. Your settings and logs were kept."
-        case .checking: return "Checking the background service…"
         case .blocked: return "Setup needs your attention."
         case .install: return "MacFanPro needs a background service to control fans. macOS will ask for administrator authorization."
+        case .ready, .checking: return nil
         }
     }
 
     var body: some View {
-        VStack(spacing: 18) {
-            Image(systemName: "fanblades.fill").font(.system(size: 44)).foregroundStyle(.blue).accessibilityHidden(true)
-            Text(language.text("MacFanPro setup")).font(.title2.bold())
-            ScrollView {
-                VStack(alignment: .leading, spacing: 14) {
-                    Text(language.text(description)).fixedSize(horizontal: false, vertical: true)
-                    if setup.phase == .update {
-                        Text(language.text("The service will restart briefly. Your saved profile will resume afterwards."))
-                            .font(.callout).foregroundStyle(.secondary)
-                    }
-                    if let message = setup.message {
-                        Text(language.text(message)).foregroundStyle(.orange).fixedSize(horizontal: false, vertical: true)
-                    }
-                    if !setup.diagnostics.isEmpty {
-                        DisclosureGroup(language.text("Details")) {
-                            Text(setup.diagnostics).font(.caption.monospaced()).textSelection(.enabled)
-                                .environment(\.layoutDirection, .leftToRight)
-                        }
-                    }
-                    if setup.phase == .ready {
-                        Button(language.text("Remove background service…"), role: .destructive) { confirmRemoval = true }
-                    }
-                    if setup.phase == .homebrew {
-                        Link(language.text("Installation guide"), destination: URL(string: "https://macfanpro.github.io/macfanpro/" + (language.language == .simplifiedChinese ? "?lang=zh-Hans" : language.language.rawValue + "/") + "#install")!)
-                    }
-                }.frame(maxWidth: .infinity, alignment: .leading)
-            }.frame(height: 150)
-            // The language is chosen in the menu bar panel; this window follows it.
-            HStack {
-                Button(language.text(setup.phase == .ready ? "Close" : "Later")) { setup.close() }
-                    .disabled(setup.phase == .working)
-                Spacer()
-                if setup.phase == .working || setup.phase == .checking { ProgressView().controlSize(.small) }
-                if [.install, .update].contains(setup.phase) {
-                    Button(language.text("Check again")) { Task { await setup.check() } }
-                    Button(language.text("Install and enable")) { Task { await setup.perform(.install) } }
-                        .buttonStyle(.borderedProminent)
-                } else if setup.phase == .removed {
-                    Button(language.text("Quit")) { NSApp.terminate(nil) }
-                } else if setup.phase != .working && setup.phase != .checking && setup.phase != .ready {
-                    Button(language.text("Check again")) { Task { await setup.check() } }
+        LabeledContent(language.text("Status")) {
+            HStack(spacing: 6) {
+                switch setup.phase {
+                case .ready:
+                    Label(language.text("Running {version}", ["version": MacFanProVersion.current]), systemImage: "checkmark.circle")
+                        .foregroundStyle(.green)
+                case .checking, .working:
+                    ProgressView().controlSize(.small)
+                    Text(language.text(setup.phase == .checking ? "Checking the background service…" : "Working…"))
+                        .foregroundStyle(.secondary)
+                case .removed:
+                    Text(language.text("Removed")).foregroundStyle(.secondary)
+                default:
+                    Label(language.text("Needs attention"), systemImage: "exclamationmark.circle").foregroundStyle(.orange)
                 }
             }
         }
-        .padding(24).frame(width: 480)
-        .background(.background)
-        .environment(\.layoutDirection, language.language.isRightToLeft ? .rightToLeft : .leftToRight)
-        .alert(language.text("Remove background service?"), isPresented: $confirmRemoval) {
-            Button(language.text("Cancel"), role: .cancel) {}
-            Button(language.text("Remove"), role: .destructive) { Task { await setup.perform(.uninstall) } }
-        } message: {
-            Text(language.text("This stops fan control and returns fans to macOS automatic control. Your settings and logs will be kept."))
+        .accessibilityIdentifier("io.github.macfanpro.service-status")
+        if let description {
+            Text(language.text(description)).fixedSize(horizontal: false, vertical: true)
+        }
+        if setup.phase == .update {
+            Text(language.text("The service will restart briefly. Your saved profile will resume afterwards."))
+                .font(.callout).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
+        }
+        if let message = setup.message {
+            Text(language.text(message)).foregroundStyle(.orange).fixedSize(horizontal: false, vertical: true)
+        }
+        if !setup.diagnostics.isEmpty {
+            DisclosureGroup(language.text("Details")) {
+                Text(setup.diagnostics).font(.caption.monospaced()).textSelection(.enabled)
+                    .environment(\.layoutDirection, .leftToRight)
+            }
+        }
+        if setup.phase == .homebrew {
+            Link(language.text("Installation guide"), destination: URL(string: "https://macfanpro.github.io/macfanpro/" + (language.language == .simplifiedChinese ? "?lang=zh-Hans" : language.language.rawValue + "/") + "#install")!)
+        }
+        actions
+            .alert(language.text("Remove background service?"), isPresented: $confirmRemoval) {
+                Button(language.text("Cancel"), role: .cancel) {}
+                Button(language.text("Remove"), role: .destructive) { Task { await setup.perform(.uninstall) } }
+            } message: {
+                Text(language.text("This stops fan control and returns fans to macOS automatic control. Your settings and logs will be kept."))
+            }
+    }
+
+    @ViewBuilder
+    private var actions: some View {
+        switch setup.phase {
+        case .ready:
+            HStack {
+                Text(language.text("Removing it returns the fans to macOS automatic control."))
+                    .font(.callout).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
+                Spacer(minLength: 8)
+                Button(language.text("Remove background service…"), role: .destructive) { confirmRemoval = true }
+                    .fixedSize()
+            }
+        case .install, .update:
+            HStack {
+                Spacer()
+                Button(language.text("Check again")) { Task { await setup.check() } }
+                Button(language.text("Install and enable")) { Task { await setup.perform(.install) } }
+                    .buttonStyle(.borderedProminent)
+            }
+        case .removed:
+            HStack { Spacer(); Button(language.text("Quit")) { NSApp.terminate(nil) } }
+        case .move, .homebrew, .blocked:
+            HStack { Spacer(); Button(language.text("Check again")) { Task { await setup.check() } } }
+        case .checking, .working:
+            EmptyView()
         }
     }
 }

@@ -10,7 +10,7 @@ import MacFanProCore
 import MacFanProLocalization
 
 struct MenuBarView: View {
-    var onServiceSetup: (() -> Void)? = nil
+    var onSettings: (() -> Void)? = nil
     var onViewUpdate: () -> Void = {}
     @EnvironmentObject var appState: AppState
     @EnvironmentObject var language: AppLanguageStore
@@ -165,102 +165,63 @@ struct MenuBarView: View {
 
             Divider().padding(.vertical, 4)
 
-            // Footer
-            Toggle(language.text("°F / °C"), isOn: $appState.useFahrenheit)
-                .padding(.horizontal, 12)
-                .padding(.top, 4)
-                .padding(.bottom, 6)
-            Toggle(language.text("Launch at Login"), isOn: $appState.launchAtLogin)
-                .padding(.horizontal, 12)
-
-            Divider().padding(.vertical, 6)
-
-            // MacFanPro-only section (not in upstream): language and the running version.
-            // Language changes update presentation only; AppState stays alive.
-            HStack {
-                Text(language.text("Language"))
-                    .accessibilityHidden(true) // The picker carries the same label.
-                Spacer(minLength: 8)
-                // A pop-up's natural width is its longest choice, so it stays steady when
-                // the selection changes; fixedSize keeps it from spanning the row.
-                Picker(language.text("Language"), selection: Binding(
-                    get: { language.selection }, set: { language.select($0) }
-                )) {
-                    ForEach(AppLanguage.allCases) { choice in
-                        Text(language.title(for: choice)).tag(choice)
-                    }
-                }
-                .pickerStyle(.menu)
-                .labelsHidden()
-                .fixedSize()
-                .accessibilityIdentifier("io.github.macfanpro.language")
-            }
-            .padding(.horizontal, 12)
-            .padding(.bottom, 6)
-            HStack {
-                Text(language.text("Version"))
-                Spacer()
-                Text(MacFanProVersion.current)
-                    .font(.system(.body, design: .monospaced))
-                    .foregroundStyle(.secondary)
-                    .textSelection(.enabled)
-            }
-            .accessibilityElement(children: .combine)
-            .accessibilityIdentifier("io.github.macfanpro.version")
-            .padding(.horizontal, 12)
-            HStack {
-                VStack(alignment: .leading, spacing: 2) {
-                    Text(language.text("Updates"))
-                    if let status = updateCheckStatus {
-                        Text(status)
-                            .font(.caption)
-                            .foregroundStyle(appState.availableUpdate == nil ? Color.secondary : Color.blue)
+            // Preferences (language, units, login item, version, updates and the
+            // background service) live in the settings window. The panel keeps only
+            // what is checked or changed often, plus an update offer while one exists.
+            if let update = appState.availableUpdate {
+                // One clickable row (no separate button), so long translations of
+                // "View Update…" never squeeze the version into a narrow column.
+                Button {
+                    menuWindow.window?.orderOut(nil)
+                    onViewUpdate()
+                } label: {
+                    HStack(spacing: 6) {
+                        Image(systemName: "arrow.down.circle")
+                        Text(language.text("{version} available", ["version": update.version]))
                             .fixedSize(horizontal: false, vertical: true)
                             .accessibilityIdentifier("io.github.macfanpro.update-status")
+                        Spacer(minLength: 8)
+                        Image(systemName: language.language.isRightToLeft ? "chevron.left" : "chevron.right")
+                            .font(.caption)
                     }
+                    .contentShape(Rectangle())
                 }
-                Spacer(minLength: 8)
-                Button(language.text(appState.availableUpdate != nil ? "View Update…" :
-                    appState.manualUpdateCheck == .failed ? "Retry" : "Check for Updates")) {
-                    if appState.availableUpdate != nil {
-                        menuWindow.window?.orderOut(nil)
-                        onViewUpdate()
-                    } else {
-                        appState.checkForUpdatesNow()
-                    }
-                }
-                .fixedSize()
-                .disabled(appState.manualUpdateCheck == .checking)
-                .accessibilityIdentifier(appState.availableUpdate == nil ?
-                    "io.github.macfanpro.check-updates" : "io.github.macfanpro.view-update")
-            }
-            .padding(.horizontal, 12)
-            .padding(.top, 6)
-
-            // Same label-and-button row as Updates, so service setup reads as part of
-            // the panel rather than a stray footer link.
-            if let onServiceSetup {
-                HStack {
-                    Text(language.text("Background service"))
-                    Spacer(minLength: 8)
-                    Button(language.text("Manage…"), action: onServiceSetup)
-                        .fixedSize()
-                        .accessibilityIdentifier("io.github.macfanpro.service-setup")
-                }
+                .buttonStyle(.plain)
+                .foregroundStyle(.blue)
+                .help(language.text("View Update…"))
+                .accessibilityIdentifier("io.github.macfanpro.view-update")
                 .padding(.horizontal, 12)
-                .padding(.top, 6)
+                .padding(.bottom, 4)
+                Divider().padding(.vertical, 4)
             }
-
-            Divider().padding(.vertical, 6)
 
             HStack {
                 Button(action: { NSApp.terminate(nil) }) {
                     Text(language.text("Quit"))
                 }
+                .buttonStyle(.plain)
+                .foregroundStyle(.secondary)
                 Spacer()
+                if let onSettings {
+                    Button {
+                        menuWindow.window?.orderOut(nil)
+                        onSettings()
+                    } label: {
+                        HStack(spacing: 4) {
+                            // A pending update also marks the way to its details.
+                            if appState.availableUpdate != nil {
+                                Circle().fill(Color.blue).frame(width: 6, height: 6)
+                                    .accessibilityLabel(language.text("Update available"))
+                            }
+                            Image(systemName: "gearshape")
+                            Text(language.text("Settings…"))
+                        }
+                    }
+                    .keyboardShortcut(",", modifiers: .command)
+                    .fixedSize()
+                    .accessibilityIdentifier("io.github.macfanpro.settings")
+                }
             }
-            .buttonStyle(.plain)
-            .foregroundStyle(.secondary)
             .padding(.horizontal, 12)
             .padding(.bottom, 10)
         }
@@ -271,12 +232,6 @@ struct MenuBarView: View {
         // mirror the panel for right-to-left languages here.
         .environment(\.layoutDirection, language.language.isRightToLeft ? .rightToLeft : .leftToRight)
         .background(MenuWindowReader { menuWindow.window = $0 })
-        // Only the menu owns this transient result; a detail/setup window losing
-        // focus must not reset an in-progress interaction in another window.
-        .onReceive(NotificationCenter.default.publisher(for: NSWindow.didResignKeyNotification)) { notification in
-            guard let window = notification.object as? NSWindow, window === menuWindow.window else { return }
-            appState.clearManualUpdateResult()
-        }
     }
 
     // MARK: - Helpers
@@ -296,22 +251,6 @@ struct MenuBarView: View {
             Label(language.text("Idle"), systemImage: "fan")
                 .font(.caption)
                 .foregroundStyle(.secondary)
-        }
-    }
-
-    private var updateCheckStatus: String? {
-        if appState.manualUpdateCheck == .checking { return language.text("Checking…") }
-        if let update = appState.availableUpdate {
-            return language.text("{version} available", ["version": update.version])
-        }
-        switch appState.manualUpdateCheck {
-        case .idle: return nil
-        case .checking: return language.text("Checking…")
-        case .upToDate: return language.text("Up to date")
-        // Most often a network that needs a proxy for GitHub (Chinese text names it);
-        // the system proxy is used.
-        case .failed: return language.text("Couldn't reach GitHub")
-        case .available(let version): return language.text("{version} available", ["version": version])
         }
     }
 
