@@ -88,5 +88,20 @@
   "The service will restart briefly. Your saved profile will resume afterwards.": "Hizmet kısa süreliğine yeniden başlatılacak. Ardından kayıtlı profil devam edecek.",
   "This stops fan control and returns fans to macOS automatic control. Your settings and logs will be kept.": "Fan kontrolü durdurulacak ve macOS otomatik kontrole dönecek. Ayarlarınız ve günlükleriniz korunacak.",
   "Quit MacFanPro, replace it with the new app, then reopen it.": "MacFanPro’yu kapatın, yeni uygulamayla değiştirin ve yeniden açın.",
-  "Download DMG": "DMG indir"
+  "Download DMG": "DMG indir",
+  "View Update…": "Güncellemeyi gör…",
+  "Retry": "Yeniden dene",
+  "MacFanPro update": "MacFanPro güncellemesi",
+  "Current version: {version}": "Geçerli sürüm: {version}",
+  "Update with Homebrew": "Homebrew ile güncelle",
+  "Download the new app": "Yeni uygulamayı indir",
+  "Opens Terminal to update. Administrator authorization may be required.": "Güncellemek için Terminal açılır. Yönetici yetkilendirmesi gerekebilir.",
+  "Other update methods": "Diğer güncelleme yöntemleri",
+  "Build from source": "Kaynak koddan derle",
+  "Download help": "İndirme yardımı",
+  "Could not open the release page. Try again.": "Sürüm sayfası açılamadı. Yeniden deneyin.",
+  "Could not open Terminal. Try again or use the command below Other update methods.": "Terminal açılamadı. Yeniden deneyin veya Diğer güncelleme yöntemleri altındaki komutu kullanın.",
+  "Continue the update in Terminal. Close and reopen this window to try again.": "Güncellemeye Terminal’de devam edin. Yeniden denemek için bu pencereyi kapatıp tekrar açın.",
+  "Open download page…": "İndirme sayfası…",
+  "Opening Terminal…": "Terminal açılıyor…"
 }

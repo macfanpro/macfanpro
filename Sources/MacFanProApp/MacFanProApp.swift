@@ -49,12 +49,15 @@ struct MacFanProApp: App {
     @StateObject private var appState = AppState(startServices: false)
     @StateObject private var setup = ServiceSetup()
     @StateObject private var language = AppLanguageStore()
+    @StateObject private var updateWindow = UpdateDetailsWindow()
 
     var body: some Scene {
         MenuBarExtra {
             MenuBarView(onServiceSetup: {
                 setup.present(language: language)
                 Task { if setup.phase != .removed { await setup.check() } }
+            }, onViewUpdate: {
+                updateWindow.present(appState: appState, language: language)
             })
                 .environmentObject(appState)
                 .environmentObject(language)

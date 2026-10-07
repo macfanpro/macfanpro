@@ -88,5 +88,20 @@
   "The service will restart briefly. Your saved profile will resume afterwards.": "Usługa na krótko uruchomi się ponownie, a potem wznowi zapisany profil.",
   "This stops fan control and returns fans to macOS automatic control. Your settings and logs will be kept.": "Sterowanie wentylatorami zostanie zatrzymane i macOS przywróci tryb automatyczny. Ustawienia i dzienniki zostaną zachowane.",
   "Quit MacFanPro, replace it with the new app, then reopen it.": "Zamknij MacFanPro, zastąp go nową aplikacją i otwórz ponownie.",
-  "Download DMG": "Pobierz DMG"
+  "Download DMG": "Pobierz DMG",
+  "View Update…": "Zobacz aktualizację…",
+  "Retry": "Ponów",
+  "MacFanPro update": "Aktualizacja MacFanPro",
+  "Current version: {version}": "Obecna wersja: {version}",
+  "Update with Homebrew": "Aktualizuj przez Homebrew",
+  "Download the new app": "Pobierz nową aplikację",
+  "Opens Terminal to update. Administrator authorization may be required.": "Otwiera Terminal do aktualizacji. Może być wymagana zgoda administratora.",
+  "Other update methods": "Inne sposoby aktualizacji",
+  "Build from source": "Zbuduj ze źródeł",
+  "Download help": "Pomoc z pobieraniem",
+  "Could not open the release page. Try again.": "Nie można otworzyć strony wydania. Spróbuj ponownie.",
+  "Could not open Terminal. Try again or use the command below Other update methods.": "Nie można otworzyć Terminala. Spróbuj ponownie lub użyj polecenia w sekcji „Inne sposoby aktualizacji”.",
+  "Continue the update in Terminal. Close and reopen this window to try again.": "Kontynuuj aktualizację w Terminalu. Zamknij i otwórz to okno ponownie, aby spróbować jeszcze raz.",
+  "Open download page…": "Strona pobierania…",
+  "Opening Terminal…": "Otwieranie Terminala…"
 }

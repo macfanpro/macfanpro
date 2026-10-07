@@ -88,5 +88,20 @@
   "The service will restart briefly. Your saved profile will resume afterwards.": "Dịch vụ sẽ khởi động lại trong giây lát, sau đó tiếp tục chế độ đã lưu.",
   "This stops fan control and returns fans to macOS automatic control. Your settings and logs will be kept.": "Thao tác này dừng điều khiển quạt và trả về điều khiển tự động của macOS. Cài đặt và nhật ký được giữ lại.",
   "Quit MacFanPro, replace it with the new app, then reopen it.": "Thoát MacFanPro, thay bằng ứng dụng mới rồi mở lại.",
-  "Download DMG": "Tải DMG"
+  "Download DMG": "Tải DMG",
+  "View Update…": "Xem bản cập nhật…",
+  "Retry": "Thử lại",
+  "MacFanPro update": "Cập nhật MacFanPro",
+  "Current version: {version}": "Phiên bản hiện tại: {version}",
+  "Update with Homebrew": "Cập nhật qua Homebrew",
+  "Download the new app": "Tải ứng dụng mới",
+  "Opens Terminal to update. Administrator authorization may be required.": "Mở Terminal để cập nhật. Có thể cần quyền quản trị viên.",
+  "Other update methods": "Cách cập nhật khác",
+  "Build from source": "Biên dịch từ mã nguồn",
+  "Download help": "Trợ giúp tải xuống",
+  "Could not open the release page. Try again.": "Không thể mở trang phát hành. Hãy thử lại.",
+  "Could not open Terminal. Try again or use the command below Other update methods.": "Không thể mở Terminal. Hãy thử lại hoặc dùng lệnh trong mục Cách cập nhật khác.",
+  "Continue the update in Terminal. Close and reopen this window to try again.": "Tiếp tục cập nhật trong Terminal. Đóng rồi mở lại cửa sổ này để thử lại.",
+  "Open download page…": "Trang tải xuống…",
+  "Opening Terminal…": "Đang mở Terminal…"
 }

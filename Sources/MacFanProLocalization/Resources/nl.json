@@ -88,5 +88,20 @@
   "The service will restart briefly. Your saved profile will resume afterwards.": "De service start kort opnieuw op. Daarna wordt het opgeslagen profiel hervat.",
   "This stops fan control and returns fans to macOS automatic control. Your settings and logs will be kept.": "De ventilatorregeling stopt en macOS neemt de automatische regeling over. Instellingen en logboeken blijven behouden.",
   "Quit MacFanPro, replace it with the new app, then reopen it.": "Sluit MacFanPro, vervang het door de nieuwe app en open het opnieuw.",
-  "Download DMG": "DMG downloaden"
+  "Download DMG": "DMG downloaden",
+  "View Update…": "Update bekijken…",
+  "Retry": "Opnieuw",
+  "MacFanPro update": "MacFanPro-update",
+  "Current version: {version}": "Huidige versie: {version}",
+  "Update with Homebrew": "Bijwerken met Homebrew",
+  "Download the new app": "Nieuwe app downloaden",
+  "Opens Terminal to update. Administrator authorization may be required.": "Opent Terminal om bij te werken. Mogelijk is toestemming van een beheerder nodig.",
+  "Other update methods": "Andere updatemethoden",
+  "Build from source": "Bouwen vanuit broncode",
+  "Download help": "Hulp bij downloaden",
+  "Could not open the release page. Try again.": "De releasepagina kon niet worden geopend. Probeer het opnieuw.",
+  "Could not open Terminal. Try again or use the command below Other update methods.": "Terminal kon niet worden geopend. Probeer het opnieuw of gebruik het commando onder ‘Andere updatemethoden’.",
+  "Continue the update in Terminal. Close and reopen this window to try again.": "Ga verder met de update in Terminal. Sluit dit venster en open het opnieuw om nogmaals te proberen.",
+  "Open download page…": "Naar downloadpagina…",
+  "Opening Terminal…": "Terminal openen…"
 }

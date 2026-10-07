@@ -1,9 +1,53 @@
 import Foundation
 import Testing
 @testable import MacFanProApp
+import MacFanProCore
 
 @Suite("Update in Terminal launcher")
 struct UpdateScriptTests {
+    @Test("A failed Terminal handoff can retry; concurrent and completed handoffs cannot launch twice")
+    @MainActor
+    func terminalHandoffRecovery() async {
+        var attempts: [(String, Bool)] = []
+        var completion: CheckedContinuation<Void, Error>?
+        let model = UpdateDetailsModel(update: .init(version: "1.2.3.4", url: UpdateChecker.releasesPageURL),
+                                       homebrew: true, launch: { version, homebrew in
+            attempts.append((version, homebrew))
+            if attempts.count == 1 {
+                try await withCheckedThrowingContinuation { completion = $0 }
+            }
+        })
+        let first = Task { await model.openTerminal() }
+        while completion == nil { await Task.yield() }
+        #expect(model.launchState == .opening)
+        await model.openTerminal()
+        #expect(attempts.count == 1)
+        completion?.resume(throwing: UpdateScript.ScriptError.missingInstaller)
+        await first.value
+        #expect(model.launchState == .failed)
+        await model.openTerminal()
+        #expect(model.launchState == .opened)
+        await model.openTerminal()
+        #expect(attempts.count == 2)
+        #expect(attempts.allSatisfy { $0.0 == "1.2.3.4" && $0.1 })
+    }
+
+    @Test("Download navigation reports failure and retries without invoking an installer")
+    @MainActor
+    func downloadNavigationRecovery() {
+        let release = "https://github.com/macfanpro/macfanpro/releases/tag/v1.2.3.4"
+        var opened: [URL] = []
+        let model = UpdateDetailsModel(update: .init(version: "1.2.3.4", url: release), homebrew: false,
+            launch: { _, _ in Issue.record("Downloading must not launch an installer") },
+            openURL: { url in opened.append(url); return opened.count > 1 })
+        model.openReleasePage()
+        #expect(model.releasePageFailed)
+        model.openReleasePage()
+        #expect(!model.releasePageFailed)
+        #expect(opened.map(\.absoluteString) == [release, release])
+        #expect(model.launchState == .idle)
+    }
+
     @Test("The shared installer receives literal arguments and the private directory is cleaned")
     func literalArguments() throws {
         for homebrew in [false, true] {

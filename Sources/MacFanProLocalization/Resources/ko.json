@@ -88,5 +88,20 @@
   "The service will restart briefly. Your saved profile will resume afterwards.": "서비스가 잠시 재시작됩니다. 이후 저장된 모드가 재개됩니다.",
   "This stops fan control and returns fans to macOS automatic control. Your settings and logs will be kept.": "팬 제어를 중지하고 macOS 자동 제어로 돌아갑니다. 설정과 로그는 보존됩니다.",
   "Quit MacFanPro, replace it with the new app, then reopen it.": "MacFanPro를 종료하고 새 앱으로 교체한 다음 다시 여세요.",
-  "Download DMG": "DMG 다운로드"
+  "Download DMG": "DMG 다운로드",
+  "View Update…": "업데이트 보기…",
+  "Retry": "재시도",
+  "MacFanPro update": "MacFanPro 업데이트",
+  "Current version: {version}": "현재 버전: {version}",
+  "Update with Homebrew": "Homebrew로 업데이트",
+  "Download the new app": "새 앱 다운로드",
+  "Opens Terminal to update. Administrator authorization may be required.": "터미널을 열어 업데이트합니다. 관리자 인증이 필요할 수 있습니다.",
+  "Other update methods": "다른 업데이트 방법",
+  "Build from source": "소스에서 빌드",
+  "Download help": "다운로드 도움말",
+  "Could not open the release page. Try again.": "릴리스 페이지를 열 수 없습니다. 다시 시도하세요.",
+  "Could not open Terminal. Try again or use the command below Other update methods.": "터미널을 열 수 없습니다. 다시 시도하거나 다른 업데이트 방법의 명령을 사용하세요.",
+  "Continue the update in Terminal. Close and reopen this window to try again.": "터미널에서 업데이트를 계속하세요. 다시 시도하려면 이 창을 닫았다가 다시 여세요.",
+  "Open download page…": "다운로드 페이지…",
+  "Opening Terminal…": "터미널 여는 중…"
 }

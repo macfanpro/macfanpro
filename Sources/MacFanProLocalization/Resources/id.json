@@ -88,5 +88,20 @@
   "The service will restart briefly. Your saved profile will resume afterwards.": "Layanan akan dimulai ulang sebentar. Setelah itu profil tersimpan akan dilanjutkan.",
   "This stops fan control and returns fans to macOS automatic control. Your settings and logs will be kept.": "Ini menghentikan kontrol kipas dan mengembalikannya ke kontrol otomatis macOS. Pengaturan dan log akan tetap disimpan.",
   "Quit MacFanPro, replace it with the new app, then reopen it.": "Tutup MacFanPro, ganti dengan aplikasi baru, lalu buka kembali.",
-  "Download DMG": "Unduh DMG"
+  "Download DMG": "Unduh DMG",
+  "View Update…": "Lihat pembaruan…",
+  "Retry": "Coba lagi",
+  "MacFanPro update": "Pembaruan MacFanPro",
+  "Current version: {version}": "Versi saat ini: {version}",
+  "Update with Homebrew": "Perbarui melalui Homebrew",
+  "Download the new app": "Unduh aplikasi baru",
+  "Opens Terminal to update. Administrator authorization may be required.": "Membuka Terminal untuk memperbarui. Otorisasi administrator mungkin diperlukan.",
+  "Other update methods": "Cara pembaruan lainnya",
+  "Build from source": "Bangun dari kode sumber",
+  "Download help": "Bantuan unduhan",
+  "Could not open the release page. Try again.": "Tidak dapat membuka halaman rilis. Coba lagi.",
+  "Could not open Terminal. Try again or use the command below Other update methods.": "Tidak dapat membuka Terminal. Coba lagi atau gunakan perintah pada Cara pembaruan lainnya.",
+  "Continue the update in Terminal. Close and reopen this window to try again.": "Lanjutkan pembaruan di Terminal. Tutup lalu buka kembali jendela ini untuk mencoba lagi.",
+  "Open download page…": "Halaman unduhan…",
+  "Opening Terminal…": "Membuka Terminal…"
 }

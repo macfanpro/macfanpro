@@ -7,8 +7,8 @@ enum UpdateScript {
 
     /// Copyable counterpart to the Terminal button. The installed app bundles
     /// the same installer for Homebrew and release-package installations.
-    static func installCommand(version: String) -> String {
-        "bash /Applications/MacFanPro.app/Contents/Resources/install.sh --version \(version)"
+    static func installCommand(version: String, homebrew: Bool = false) -> String {
+        "bash /Applications/MacFanPro.app/Contents/Resources/install.sh --version \(version)\(homebrew ? " --homebrew" : "")"
     }
 
     private static func quote(_ value: String) -> String {
@@ -41,7 +41,7 @@ enum UpdateScript {
             """
     }
 
-    static func open(version: String, homebrew: Bool) {
+    static func open(version: String, homebrew: Bool) async throws {
         let fm = FileManager.default
         let directory = fm.temporaryDirectory.appendingPathComponent("macfanpro-update-\(UUID().uuidString)")
         do {
@@ -56,15 +56,19 @@ enum UpdateScript {
                 .write(to: command, atomically: true, encoding: .utf8)
             try fm.setAttributes([.posixPermissions: 0o700], ofItemAtPath: command.path)
             let terminal = URL(fileURLWithPath: "/System/Applications/Utilities/Terminal.app")
-            NSWorkspace.shared.open([command], withApplicationAt: terminal, configuration: NSWorkspace.OpenConfiguration()) { _, error in
-                if let error {
-                    try? fm.removeItem(at: directory)
-                    TFLogger.shared.error("Could not open the update script: \(error)")
+            try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, Error>) in
+                NSWorkspace.shared.open([command], withApplicationAt: terminal, configuration: NSWorkspace.OpenConfiguration()) { _, error in
+                    if let error {
+                        continuation.resume(throwing: error)
+                    } else {
+                        continuation.resume()
+                    }
                 }
             }
         } catch {
             try? fm.removeItem(at: directory)
-            TFLogger.shared.error("Could not write the update script: \(error)")
+            TFLogger.shared.error("Could not open the update script: \(error)")
+            throw error
         }
     }
 }

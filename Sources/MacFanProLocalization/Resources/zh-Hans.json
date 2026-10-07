@@ -88,5 +88,20 @@
   "The service will restart briefly. Your saved profile will resume afterwards.": "后台服务将短暂重启，随后恢复已保存的模式。",
   "This stops fan control and returns fans to macOS automatic control. Your settings and logs will be kept.": "这将停止风扇控制，并恢复 macOS 自动控制。配置和日志会保留。",
   "Quit MacFanPro, replace it with the new app, then reopen it.": "退出 MacFanPro，拖入新版替换应用，然后重新打开。",
-  "Download DMG": "下载 DMG"
+  "Download DMG": "下载 DMG",
+  "View Update…": "查看更新…",
+  "Retry": "重试",
+  "MacFanPro update": "MacFanPro 更新",
+  "Current version: {version}": "当前版本：{version}",
+  "Update with Homebrew": "通过 Homebrew 更新",
+  "Download the new app": "下载新版应用",
+  "Opens Terminal to update. Administrator authorization may be required.": "将打开终端完成更新，过程中可能需要管理员授权。",
+  "Other update methods": "其他更新方式",
+  "Build from source": "从源码构建",
+  "Download help": "下载遇到问题？",
+  "Could not open the release page. Try again.": "无法打开发布页面，请重试。",
+  "Could not open Terminal. Try again or use the command below Other update methods.": "无法打开终端，请重试，或使用“其他更新方式”中的命令。",
+  "Continue the update in Terminal. Close and reopen this window to try again.": "请在终端中继续更新。如需重新尝试，请关闭并重新打开此窗口。",
+  "Open download page…": "前往下载…",
+  "Opening Terminal…": "正在打开终端…"
 }

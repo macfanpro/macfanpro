@@ -42,12 +42,12 @@ final class AppState: ObservableObject {
     /// visible, not just logged. Cleared the moment a heartbeat succeeds.
     @Published var daemonUnreachable: Bool = false
     /// A GitHub release newer than this installed build, else nil. Non-nil drives
-    /// the "Update available" banner. Set from a once-daily check and from persisted
+    /// the compact update row. Set from a once-daily check and from persisted
     /// state on launch (so it shows without waiting for a network round-trip); a
-    /// dismissed version is suppressed until a newer one ships.
+    /// version dismissed in an older app is suppressed until a newer one ships.
     @Published var availableUpdate: AvailableUpdate?
     /// Whether this install is managed by Homebrew (its keg exists), so the update
-    /// banner can show the matching steps: a brew command, or a package download.
+    /// window can show the matching steps: a brew command, or a package download.
     @Published var installedWithHomebrew: Bool = AppState.homebrewKegExists()
 
     nonisolated static func homebrewKegExists(fileManager: FileManager = .default) -> Bool {
@@ -400,14 +400,6 @@ final class AppState: ObservableObject {
         // A completed check counts as today's; the daily one need not repeat it.
         UserDefaults.standard.set(Date().addingTimeInterval(Self.updateCheckInterval),
                                   forKey: Self.updateNextCheckKey)
-    }
-
-    /// "Later" — hide the banner for this version; it returns when a newer one ships.
-    func dismissUpdate() {
-        if let version = availableUpdate?.version {
-            UserDefaults.standard.set(version, forKey: Self.updateDismissedKey)
-        }
-        availableUpdate = nil
     }
 
     // MARK: - Monitoring

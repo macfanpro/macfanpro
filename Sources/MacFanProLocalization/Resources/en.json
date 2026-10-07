@@ -88,5 +88,20 @@
   "The service will restart briefly. Your saved profile will resume afterwards.": "The service will restart briefly. Your saved profile will resume afterwards.",
   "This stops fan control and returns fans to macOS automatic control. Your settings and logs will be kept.": "This stops fan control and returns fans to macOS automatic control. Your settings and logs will be kept.",
   "Quit MacFanPro, replace it with the new app, then reopen it.": "Quit MacFanPro, replace it with the new app, then reopen it.",
-  "Download DMG": "Download DMG"
+  "Download DMG": "Download DMG",
+  "View Update…": "View Update…",
+  "Retry": "Retry",
+  "MacFanPro update": "MacFanPro update",
+  "Current version: {version}": "Current version: {version}",
+  "Update with Homebrew": "Update with Homebrew",
+  "Download the new app": "Download the new app",
+  "Opens Terminal to update. Administrator authorization may be required.": "Opens Terminal to update. Administrator authorization may be required.",
+  "Other update methods": "Other update methods",
+  "Build from source": "Build from source",
+  "Download help": "Download help",
+  "Could not open the release page. Try again.": "Could not open the release page. Try again.",
+  "Could not open Terminal. Try again or use the command below Other update methods.": "Could not open Terminal. Try again or use the command below Other update methods.",
+  "Continue the update in Terminal. Close and reopen this window to try again.": "Continue the update in Terminal. Close and reopen this window to try again.",
+  "Open download page…": "Open download page…",
+  "Opening Terminal…": "Opening Terminal…"
 }

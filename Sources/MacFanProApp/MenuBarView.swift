@@ -11,8 +11,10 @@ import MacFanProLocalization
 
 struct MenuBarView: View {
     var onServiceSetup: (() -> Void)? = nil
+    var onViewUpdate: () -> Void = {}
     @EnvironmentObject var appState: AppState
     @EnvironmentObject var language: AppLanguageStore
+    @State private var menuWindow = MenuWindowReader.Reference()
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
@@ -48,15 +50,6 @@ struct MenuBarView: View {
                 // Default button (or picking a profile) releases it.
                 if let hold = appState.externalHold {
                     ExternalHoldBanner(hold: hold)
-                    Divider()
-                }
-
-                // Update-available banner — informational, lowest priority. Suppressed
-                // while "Update needed" (daemon out of sync) shows, so two update-ish
-                // banners never stack; can coexist with a CLI hold.
-                if appState.daemonVersionMismatch == nil, let update = appState.availableUpdate {
-                    UpdateAvailableBanner(update: update, homebrew: appState.installedWithHomebrew,
-                                          onDismiss: { appState.dismissUpdate() })
                     Divider()
                 }
             }
@@ -215,17 +208,31 @@ struct MenuBarView: View {
             .accessibilityElement(children: .combine)
             .accessibilityIdentifier("io.github.macfanpro.version")
             .padding(.horizontal, 12)
-            // Laid out like the Language row: a label (the check's result once there is
-            // one) and a control, in the same fonts. A result too long for one line
-            // wraps and the row grows, so no text is cut short.
             HStack {
-                Text(updateCheckStatus)
-                    .fixedSize(horizontal: false, vertical: true)
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(language.text("Updates"))
+                    if let status = updateCheckStatus {
+                        Text(status)
+                            .font(.caption)
+                            .foregroundStyle(appState.availableUpdate == nil ? Color.secondary : Color.blue)
+                            .fixedSize(horizontal: false, vertical: true)
+                            .accessibilityIdentifier("io.github.macfanpro.update-status")
+                    }
+                }
                 Spacer(minLength: 8)
-                Button(language.text("Check for Updates")) { appState.checkForUpdatesNow() }
-                    .fixedSize() // the result text wraps; the button keeps its width
-                    .disabled(appState.manualUpdateCheck == .checking)
-                    .accessibilityIdentifier("io.github.macfanpro.check-updates")
+                Button(language.text(appState.availableUpdate != nil ? "View Update…" :
+                    appState.manualUpdateCheck == .failed ? "Retry" : "Check for Updates")) {
+                    if appState.availableUpdate != nil {
+                        menuWindow.window?.orderOut(nil)
+                        onViewUpdate()
+                    } else {
+                        appState.checkForUpdatesNow()
+                    }
+                }
+                .fixedSize()
+                .disabled(appState.manualUpdateCheck == .checking)
+                .accessibilityIdentifier(appState.availableUpdate == nil ?
+                    "io.github.macfanpro.check-updates" : "io.github.macfanpro.view-update")
             }
             .padding(.horizontal, 12)
             .padding(.top, 6)
@@ -253,10 +260,11 @@ struct MenuBarView: View {
         // The language is chosen in the app, not taken from the system locale, so
         // mirror the panel for right-to-left languages here.
         .environment(\.layoutDirection, language.language.isRightToLeft ? .rightToLeft : .leftToRight)
-        // An update-check result belongs to this opening of the menu only. The panel
-        // stays alive between openings (onDisappear doesn't fire), but it resigns key
-        // when it closes; the app has no other window.
-        .onReceive(NotificationCenter.default.publisher(for: NSWindow.didResignKeyNotification)) { _ in
+        .background(MenuWindowReader { menuWindow.window = $0 })
+        // Only the menu owns this transient result; a detail/setup window losing
+        // focus must not reset an in-progress interaction in another window.
+        .onReceive(NotificationCenter.default.publisher(for: NSWindow.didResignKeyNotification)) { notification in
+            guard let window = notification.object as? NSWindow, window === menuWindow.window else { return }
             appState.clearManualUpdateResult()
         }
     }
@@ -281,9 +289,13 @@ struct MenuBarView: View {
         }
     }
 
-    private var updateCheckStatus: String {
+    private var updateCheckStatus: String? {
+        if appState.manualUpdateCheck == .checking { return language.text("Checking…") }
+        if let update = appState.availableUpdate {
+            return language.text("{version} available", ["version": update.version])
+        }
         switch appState.manualUpdateCheck {
-        case .idle: return language.text("Updates")
+        case .idle: return nil
         case .checking: return language.text("Checking…")
         case .upToDate: return language.text("Up to date")
         // Most often a network that needs a proxy for GitHub (Chinese text names it);
@@ -297,6 +309,31 @@ struct MenuBarView: View {
         guard let temps = appState.latestStatus?.temperatures else { return nil }
         let values = temps.filter { key, _ in prefixes.contains(where: { key.hasPrefix($0) }) }.values
         return values.max()
+    }
+}
+
+private struct MenuWindowReader: NSViewRepresentable {
+    let onWindow: (NSWindow?) -> Void
+
+    final class Reference {
+        weak var window: NSWindow?
+    }
+
+    func makeNSView(context: Context) -> Reader {
+        let view = Reader()
+        view.onWindow = onWindow
+        return view
+    }
+
+    func updateNSView(_ view: Reader, context: Context) { view.onWindow = onWindow }
+
+    final class Reader: NSView {
+        var onWindow: (NSWindow?) -> Void = { _ in }
+        override func viewDidMoveToWindow() {
+            super.viewDidMoveToWindow()
+            let window = window
+            DispatchQueue.main.async { [weak self] in self?.onWindow(window) }
+        }
     }
 }
 
@@ -383,104 +420,6 @@ private struct DaemonUpdateBanner: View {
         .padding(.vertical, 8)
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(Color.orange.opacity(0.12))
-    }
-}
-
-/// Shown when a newer MacFanPro release exists than the installed build. Purely
-/// informational (blue, not the orange "Update needed"): it tells the user an update
-/// shipped and how to get it — the app can't run `brew upgrade` for them. Dismissible
-/// per-version via "Later".
-private struct UpdateAvailableBanner: View {
-    @EnvironmentObject var language: AppLanguageStore
-    let update: AvailableUpdate
-    /// Homebrew installs get a brew command; release-package installs get the
-    /// package steps, which a brew command would only fail on.
-    let homebrew: Bool
-    let onDismiss: () -> Void
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: 4) {
-            Label(language.text("Update available"), systemImage: "arrow.down.circle.fill")
-                .font(.caption.bold())
-                .foregroundStyle(.blue)
-
-            Text(language.text("MacFanPro {version} is available. You have {appVersion}.", ["version": update.version, "appVersion": MacFanProVersion.current]))
-                .font(.caption)
-                .foregroundStyle(.secondary)
-                .fixedSize(horizontal: false, vertical: true)
-
-            if !homebrew, let url = URL(string: update.url) {
-                Link(language.text("Download DMG"), destination: url)
-                    .font(.caption.bold()).padding(.top, 4)
-                    .help(language.text("Quit MacFanPro, replace it with the new app, then reopen it."))
-            }
-
-            // Option 1 is the one-click path for how MacFanPro was installed;
-            // building from source is for developers.
-            optionTitle(homebrew ? "Option 1 (recommended): Homebrew" : "Option 1 (recommended): Release package")
-                .padding(.top, 2)
-
-            // The copyable command and Terminal button use the same bundled
-            // installer, which respects explicit or macOS system proxies.
-            commandBlock(UpdateScript.installCommand(version: update.version))
-
-            // Runs the steps above in Terminal: download (or brew), then the
-            // password prompt for the background service.
-            Button(language.text("Update in Terminal")) {
-                UpdateScript.open(version: update.version, homebrew: homebrew)
-            }
-            .buttonStyle(.borderedProminent)
-            .controlSize(.small)
-            .padding(.top, 2)
-            .accessibilityIdentifier("io.github.macfanpro.update-in-terminal")
-
-            Text(language.text("If downloads fail, enable your system proxy and retry."))
-                .font(.caption2)
-                .foregroundStyle(.tertiary)
-                .fixedSize(horizontal: false, vertical: true)
-
-            optionTitle("Option 2: Build from source")
-                .padding(.top, 4)
-
-            commandBlock(UpdateScript.sourceCommand(
-                directory: Bundle.main.object(forInfoDictionaryKey: "MacFanProSourceDirectory") as? String))
-
-            HStack {
-                if let url = URL(string: update.url) {
-                    Link(language.text("What's new"), destination: url)
-                        .font(.caption2)
-                }
-                Spacer()
-                Button(language.text("Later"), action: onDismiss)
-                    .buttonStyle(.plain)
-                    .font(.caption2)
-                    .foregroundStyle(.secondary)
-            }
-            .padding(.top, 2)
-        }
-        .padding(.horizontal, 12)
-        .padding(.vertical, 8)
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .background(Color.blue.opacity(0.12))
-    }
-
-    private func optionTitle(_ key: String) -> some View {
-        Text(language.text(key))
-            .font(.caption2.weight(.semibold))
-            .foregroundStyle(.secondary)
-            .fixedSize(horizontal: false, vertical: true)
-    }
-
-    private func commandBlock(_ command: String) -> some View {
-        Text(command)
-            // Shell commands read left to right even in a right-to-left panel.
-            .environment(\.layoutDirection, .leftToRight)
-            .font(.system(.caption, design: .monospaced))
-            .textSelection(.enabled)
-            .fixedSize(horizontal: false, vertical: true)
-            .padding(.horizontal, 6)
-            .padding(.vertical, 3)
-            .background(RoundedRectangle(cornerRadius: 4).fill(Color.secondary.opacity(0.15)))
     }
 }
 
