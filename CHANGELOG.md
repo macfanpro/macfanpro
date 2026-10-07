@@ -1,5 +1,9 @@
 # MacFanPro changelog
 
+## 0.2.3.60
+
+- Align the icons in the **Quit** and **Settings** buttons: each symbol is one size smaller, matches the text height, sits centered on the text, and keeps 4 points of spacing. The tall exit symbol no longer looks larger than its label.
+
 ## 0.2.3.59
 
 - Polish the panel's footer. **Quit** is now a button like **Settings**, with an exit icon and ⌘Q. The Settings button drops its trailing ellipsis, since its gear icon already marks it. The row has more space above it.
