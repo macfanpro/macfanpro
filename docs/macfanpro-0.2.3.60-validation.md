@@ -17,4 +17,11 @@
 
 ## 远端 CI 与发行附件
 
-待填写。
+- 源码 `b2aee92`，注释标签 `v0.2.3.60`。[主分支 CI](https://github.com/macfanpro/macfanpro/actions/runs/37650063558)、[发行 CI](https://github.com/macfanpro/macfanpro/actions/runs/37650063862) 通过，CI 中的窗口居中测试也通过。
+- 下载全部 6 个草稿附件，三个校验文件通过：
+  - tar `f70c81c457b09270e32984837cec748e0b596a1ac54fe00bd86347a91c065071`
+  - DMG `681394db5d9d394d0d670787dbb4afab6065ba9a7d34941a5069fe8a2ede6c34`
+  - `install.sh` `837972e5df7e14808f934f3ba40d30c32aa0a5a79d3ea4bdad949aa5be8e1a56`
+- CLI 为 0.2.3.60，严格签名通过，最低 macOS 14；内嵌安装脚本与附件一致；DMG 与 tar 内应用逐文件一致。
+- 公开发布后 tap 自动更新（[运行记录](https://github.com/macfanpro/homebrew-tap/actions/runs/37650674161)），提交 `3c9c9e9`。
+- 按维护者要求，不更新本机应用。
