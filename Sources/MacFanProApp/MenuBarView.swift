@@ -237,6 +237,20 @@ struct MenuBarView: View {
             .padding(.horizontal, 12)
             .padding(.top, 6)
 
+            // Same label-and-button row as Updates, so service setup reads as part of
+            // the panel rather than a stray footer link.
+            if let onServiceSetup {
+                HStack {
+                    Text(language.text("Background service"))
+                    Spacer(minLength: 8)
+                    Button(language.text("Manage…"), action: onServiceSetup)
+                        .fixedSize()
+                        .accessibilityIdentifier("io.github.macfanpro.service-setup")
+                }
+                .padding(.horizontal, 12)
+                .padding(.top, 6)
+            }
+
             Divider().padding(.vertical, 6)
 
             HStack {
@@ -244,10 +258,6 @@ struct MenuBarView: View {
                     Text(language.text("Quit"))
                 }
                 Spacer()
-                if let onServiceSetup {
-                    Button(language.text("Background service…"), action: onServiceSetup)
-                        .font(.caption)
-                }
             }
             .buttonStyle(.plain)
             .foregroundStyle(.secondary)

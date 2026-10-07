@@ -225,17 +225,12 @@ struct ServiceSetupView: View {
                     }
                 }.frame(maxWidth: .infinity, alignment: .leading)
             }.frame(height: 150)
-            HStack {
-                Picker(language.text("Language"), selection: Binding(get: { language.selection }, set: { language.select($0) })) {
-                    ForEach(AppLanguage.allCases) { choice in Text(language.title(for: choice)).tag(choice) }
-                }.labelsHidden().frame(maxWidth: 180)
-                Spacer()
-                if setup.phase == .working || setup.phase == .checking { ProgressView().controlSize(.small) }
-            }
+            // The language is chosen in the menu bar panel; this window follows it.
             HStack {
                 Button(language.text(setup.phase == .ready ? "Close" : "Later")) { setup.close() }
                     .disabled(setup.phase == .working)
                 Spacer()
+                if setup.phase == .working || setup.phase == .checking { ProgressView().controlSize(.small) }
                 if [.install, .update].contains(setup.phase) {
                     Button(language.text("Check again")) { Task { await setup.check() } }
                     Button(language.text("Install and enable")) { Task { await setup.perform(.install) } }
