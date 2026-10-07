@@ -17,4 +17,11 @@
 
 ## 远端 CI、发行附件与本机安装
 
-待填写。
+- 源码 `f334431`，注释标签 `v0.2.3.58`。[主分支 CI](https://github.com/macfanpro/macfanpro/actions/runs/37637543007)、[发行 CI](https://github.com/macfanpro/macfanpro/actions/runs/37637542865) 通过。
+- 下载全部 6 个草稿附件，三个校验文件通过：
+  - tar `a32a07ae9d1e31f0aa9ae5622b736392c71dc5936679b9c48d510de07a3feb2b`
+  - DMG `3e45babf7e582f7948309c34387489fff24e985855be7374e5997c95d0cbd33c`
+  - `install.sh` `50c1c2899e5d3fe8c6052ce7477305f23191392a563476040432cc239291fecc`
+- CLI 为 0.2.3.58，严格签名通过，最低 macOS 14；内嵌安装脚本与附件一致；DMG 与 tar 内应用逐文件一致；包内简体中文资源含“设置…”“通用”“温度单位”。
+- 公开发布后 tap 自动更新（[运行记录](https://github.com/macfanpro/homebrew-tap/actions/runs/37638363603)），提交 `4ebc6be`。
+- 本机用 `install.sh --version 0.2.3.58` 从 0.2.3.57 升级（Homebrew）：安装前释放风扇，最后确认服务运行；CLI 与 keg 一致，严格签名通过，Smart 模式保留。界面以自动渲染截图核对；真实菜单与设置窗口由维护者在本机查看。
