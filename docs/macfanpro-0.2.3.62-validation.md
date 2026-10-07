@@ -14,4 +14,11 @@
 
 ## 远端 CI 与发行附件
 
-待填写。
+- 源码 `4ad0dc4`，注释标签 `v0.2.3.62`。[主分支 CI](https://github.com/macfanpro/macfanpro/actions/runs/37654271549)、[发行 CI](https://github.com/macfanpro/macfanpro/actions/runs/37654271454) 通过。
+- 下载全部 6 个草稿附件，三个校验文件通过：
+  - tar `81e70d858ea5d104a9a240dbd1711181ca2e0f66960934b44673be18c9a32717`
+  - DMG `25bb36dc1b73062e5d9c8b88db15346444f8d6e6cac2306b70295162da73bc13`
+  - `install.sh` `4a9caa7209be749bb1e03b0ef9fa82d904e64262d720b50b99199b37227cf561`
+- CLI 为 0.2.3.62，严格签名通过，最低 macOS 14；内嵌安装脚本与附件一致；DMG 与 tar 内应用逐文件一致。
+- 公开发布后 tap 自动更新（[运行记录](https://github.com/macfanpro/homebrew-tap/actions/runs/37655010993)），提交 `3cefb17`。
+- 按维护者要求，不更新本机应用。
