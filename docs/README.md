@@ -20,12 +20,14 @@ Start with [English README](../README.md) or [中文 README](../README.zh-CN.md)
 | Topic / 主题 | Guide / 文档 |
 | --- | --- |
 | Contribution workflow / 贡献流程 | [CONTRIBUTING.md](../CONTRIBUTING.md) |
+| Rules for AI agents and parallel work / 多代理协作规则 | [AGENTS.md](../AGENTS.md) |
 | Test consolidation / 测试精简与覆盖对应 | [2026-10-03 consolidation](test-consolidation-20261003.md) |
 | Fan ownership, failure recovery, calibration / 控制归属、失败恢复与校准 | [Fan-state fixes](fan-state-fixes-20260927.md) |
 | M4 firmware handoff and transport / M4 固件接管与通信 | [M4 handoff repair](m4-handoff-repair.md) |
 | Fork differences / 上游差异 | [Upstream divergence](upstream-divergence.md) |
-| Latest upstream merge / 最近上游合并 | [2026-10-04 connection and install hardening](upstream-sync-20261004.md) |
-| Previous upstream merge / 前次上游合并 | [2026-10-03 review](upstream-sync-20261003.md) |
+| Latest upstream merge / 最近上游合并 | [2026-10-07 installation hardening (#31)](upstream-sync-20261007.md) |
+| Full code audit / 全面代码复查 | [2026-10-07 audit](code-audit-20261007.md) |
+| Previous upstream merges / 前次上游合并 | [2026-10-04](upstream-sync-20261004.md) · [2026-10-03](upstream-sync-20261003.md) |
 | Earlier upstream decisions / 早期上游取舍 | [2026-09-21 audit](upstream-followups-20260921.md) |
 | Translation and packaging / 翻译与打包 | [GUI localization](gui-localization.md) |
 | Native menu layout / 原生菜单排版 | [Label validation](menu-bar-label-validation.md) |
@@ -46,6 +48,7 @@ Start with [English README](../README.md) or [中文 README](../README.zh-CN.md)
 | 0.2.3.31–35 | [Install-aware updates](macfanpro-0.2.3.31-validation.md) · [Terminal update](macfanpro-0.2.3.32-validation.md) · [Online installer](macfanpro-0.2.3.33-validation.md) · [Homebrew update](macfanpro-0.2.3.34-validation.md) · [Source commands](macfanpro-0.2.3.35-validation.md) |
 | 0.2.3.50 | [DMG, upstream integration and website / DMG、上游合并与官网](macfanpro-0.2.3.50-validation.md) |
 | 0.2.3.36–37 | [Icon](macfanpro-0.2.3.36-validation.md) · [Proxy and icon cleanup](macfanpro-0.2.3.37-validation.md) |
+| 0.2.3.51–54 | [Update window and install recovery](macfanpro-0.2.3.52-validation.md) · [Foreground control and user data](macfanpro-0.2.3.53-validation.md) · [Fan release on daemon start and stop](macfanpro-0.2.3.54-validation.md) |
 
 Automated tests, package checks, installed-app checks and real hardware acceptance answer different questions. A passing build does not establish thermal or sleep/wake behavior on every Mac.
 
