@@ -1,5 +1,9 @@
 # MacFanPro changelog
 
+## 0.2.3.59
+
+- Polish the panel's footer. **Quit** is now a button like **Settings**, with an exit icon and ⌘Q. The Settings button drops its trailing ellipsis, since its gear icon already marks it. The row has more space above it.
+
 ## 0.2.3.58
 
 - Add a settings window and slim the menu bar panel. **Settings…** at the bottom of the panel (⌘,) opens a native window with three groups: General (language, temperature unit and Launch at Login), Updates (version and update checks), and Background service (status, setup and removal). The panel keeps the readings and profiles. When a release is available, it shows one "{version} available" row that opens the update details, and a dot on **Settings…**. First-run and service synchronization use the same window.

@@ -48,7 +48,7 @@ Start with [English README](../README.md) or [中文 README](../README.zh-CN.md)
 | 0.2.3.31–35 | [Install-aware updates](macfanpro-0.2.3.31-validation.md) · [Terminal update](macfanpro-0.2.3.32-validation.md) · [Online installer](macfanpro-0.2.3.33-validation.md) · [Homebrew update](macfanpro-0.2.3.34-validation.md) · [Source commands](macfanpro-0.2.3.35-validation.md) |
 | 0.2.3.50 | [DMG, upstream integration and website / DMG、上游合并与官网](macfanpro-0.2.3.50-validation.md) |
 | 0.2.3.36–37 | [Icon](macfanpro-0.2.3.36-validation.md) · [Proxy and icon cleanup](macfanpro-0.2.3.37-validation.md) |
-| 0.2.3.51–54 | [Update window and install recovery](macfanpro-0.2.3.52-validation.md) · [Foreground control and user data](macfanpro-0.2.3.53-validation.md) · [Fan release on daemon start and stop](macfanpro-0.2.3.55-validation.md) · [Readable service diagnostics and hardware checks](macfanpro-0.2.3.56-validation.md) · [Service row and setup window](macfanpro-0.2.3.57-validation.md) · [Settings window](macfanpro-0.2.3.58-validation.md) |
+| 0.2.3.51–54 | [Update window and install recovery](macfanpro-0.2.3.52-validation.md) · [Foreground control and user data](macfanpro-0.2.3.53-validation.md) · [Fan release on daemon start and stop](macfanpro-0.2.3.55-validation.md) · [Readable service diagnostics and hardware checks](macfanpro-0.2.3.56-validation.md) · [Service row and setup window](macfanpro-0.2.3.57-validation.md) · [Settings window](macfanpro-0.2.3.58-validation.md) · [Panel footer](macfanpro-0.2.3.59-validation.md) |
 
 Automated tests, package checks, installed-app checks and real hardware acceptance answer different questions. A passing build does not establish thermal or sleep/wake behavior on every Mac.
 
