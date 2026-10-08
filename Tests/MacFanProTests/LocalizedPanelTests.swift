@@ -77,65 +77,93 @@ struct LocalizedPanelTests {
         }
     }
 
-    @Test("Update details render both install channels in every language and appearance")
-    func updateDetailsLayouts() async throws {
+    @Test("Settings offers an available update for both install channels in every language and appearance")
+    func updateInSettingsLayouts() async throws {
         let name = "MacFanPro.UpdatePanelTests.\(UUID().uuidString)"
         let defaults = try #require(UserDefaults(suiteName: name))
         defer { defaults.removePersistentDomain(forName: name) }
         let language = AppLanguageStore(defaults: defaults, preferredLanguages: { ["en"] })
+        let setup = ServiceSetup(environment: .init(bundle: URL(fileURLWithPath: EmbeddedServiceInstallation.appPath),
+            helperExists: { true }, probe: { .init(version: MacFanProVersion.current) },
+            authorize: { _ in Issue.record("Rendering must not authorize"); return .cancelled }))
+        await setup.check()
+        let state = AppState(startServices: false)
+        state.availableUpdate = AvailableUpdate(version: "99.99.99", url: UpdateChecker.releasesPageURL)
         for homebrew in [false, true] {
-            let model = UpdateDetailsModel(update: .init(version: "99.99.99", url: UpdateChecker.releasesPageURL),
-                homebrew: homebrew, launch: { _, _ in Issue.record("Rendering must not install") },
-                openURL: { _ in Issue.record("Rendering must not open a browser"); return false })
+            state.installedWithHomebrew = homebrew
             for dark in [false, true] {
-                let panel = NSHostingView(rootView: UpdateDetailsView(model: model, onClose: {})
-                    .environmentObject(language).environment(\.colorScheme, dark ? .dark : .light))
+                let view = NSHostingView(rootView: SettingsView(setup: setup)
+                    .environmentObject(state).environmentObject(language)
+                    .environment(\.colorScheme, dark ? .dark : .light)
+                    .background(dark ? Color.black : Color.white))
+                view.appearance = NSAppearance(named: dark ? .darkAqua : .aqua)
                 for choice in LocalizationCatalog.supportedLanguages {
                     language.select(choice)
                     try await Task.sleep(for: .milliseconds(30))
-                    panel.setFrameSize(NSSize(width: 440, height: 430))
-                    panel.layoutSubtreeIfNeeded()
-                    #expect(panel.fittingSize.width <= 440)
-                    let bitmap = try #require(panel.bitmapImageRepForCachingDisplay(in: panel.bounds))
-                    panel.cacheDisplay(in: panel.bounds, to: bitmap)
+                    view.setFrameSize(view.fittingSize)
+                    view.layoutSubtreeIfNeeded()
+                    #expect(view.frame.width == 460)
+                    // Collapsed methods keep the whole window within a laptop screen.
+                    #expect(view.frame.height > 400 && view.frame.height < 760, "\(choice) \(homebrew)")
+                    let bitmap = try #require(view.bitmapImageRepForCachingDisplay(in: view.bounds))
+                    view.cacheDisplay(in: view.bounds, to: bitmap)
                     let png = try #require(bitmap.representation(using: .png, properties: [:]))
+                    #expect(png.count > 1000)
                     if let directory = ProcessInfo.processInfo.environment["MACFANPRO_PREVIEW_DIR"] {
                         let url = URL(fileURLWithPath: directory)
                         try FileManager.default.createDirectory(at: url, withIntermediateDirectories: true)
-                        try png.write(to: url.appendingPathComponent("update-detail-\(homebrew ? "brew" : "dmg")-\(dark ? "dark" : "light")-\(choice.rawValue).png"))
+                        try png.write(to: url.appendingPathComponent("settings-update-\(homebrew ? "brew" : "dmg")-\(dark ? "dark" : "light")-\(choice.rawValue).png"))
                     }
                 }
             }
         }
     }
 
-    @Test("Closing or refocusing update details preserves the offer and reuses only an open window")
-    func updateWindowLifecycle() async throws {
+    @Test("Settings taller than the screen scrolls inside the window instead of growing past it")
+    func settingsHeightIsCapped() async throws {
+        let name = "MacFanPro.SettingsCapTests.\(UUID().uuidString)"
+        let defaults = try #require(UserDefaults(suiteName: name))
+        defer { defaults.removePersistentDomain(forName: name) }
+        let language = AppLanguageStore(defaults: defaults, preferredLanguages: { ["en"] })
+        let setup = ServiceSetup(environment: .init(bundle: URL(fileURLWithPath: EmbeddedServiceInstallation.appPath),
+            helperExists: { true }, probe: { .init(version: MacFanProVersion.current) }, authorize: { _ in .cancelled }))
+        await setup.check()
+        let state = AppState(startServices: false)
+        state.availableUpdate = AvailableUpdate(version: "99.99.99", url: UpdateChecker.releasesPageURL)
+        let view = NSHostingView(rootView: SettingsView(setup: setup, maxHeight: 360)
+            .environmentObject(state).environmentObject(language))
+        view.setFrameSize(view.fittingSize)
+        view.layoutSubtreeIfNeeded()
+        #expect(view.frame.width == 460)
+        #expect(view.frame.height == 360)
+        #expect(SettingsView.screenMaxHeight >= 420)
+    }
+
+    @Test("Closing and reopening settings keeps the update offer and reuses the one window")
+    func updateOfferSurvivesSettingsClose() async throws {
         let name = "MacFanPro.UpdateWindowTests.\(UUID().uuidString)"
         let defaults = try #require(UserDefaults(suiteName: name))
         defer { defaults.removePersistentDomain(forName: name) }
         let language = AppLanguageStore(defaults: defaults, preferredLanguages: { ["en"] })
+        let setup = ServiceSetup(environment: .init(bundle: URL(fileURLWithPath: EmbeddedServiceInstallation.appPath),
+            helperExists: { true }, probe: { .init(version: MacFanProVersion.current) }, authorize: { _ in .cancelled }))
+        await setup.check()
         let state = AppState(startServices: false)
         let update = AvailableUpdate(version: "99.99.99", url: UpdateChecker.releasesPageURL)
         state.availableUpdate = update
         state.manualUpdateCheck = .available(update.version)
-        let controller = UpdateDetailsWindow()
-        defer { controller.close() }
-        controller.present(appState: state, language: language)
-        let first = try #require(controller.window)
-        controller.present(appState: state, language: language)
-        #expect(controller.window === first)
-        language.select(.simplifiedChinese)
+        setup.windowContent = { AnyView(SettingsView(setup: setup).environmentObject(state).environmentObject(language)) }
+        setup.present(language: language)
+        let first = try #require(setup.window)
+        defer { first.close() }
+        first.close()
         try await Task.sleep(for: .milliseconds(50))
-        #expect(first.title == language.text("MacFanPro update"))
-        controller.close()
-        #expect(controller.window == nil)
         #expect(!first.isVisible)
         #expect(state.availableUpdate == update)
-        #expect(state.manualUpdateCheck == .available(update.version))
-        controller.present(appState: state, language: language)
-        #expect(controller.window !== first)
-        #expect(controller.window?.isVisible == true)
+        #expect(state.manualUpdateCheck == .idle)
+        setup.present(language: language)
+        #expect(setup.window === first)
+        #expect(first.isVisible)
         #expect(state.availableUpdate == update)
     }
 }

@@ -318,7 +318,7 @@ To intentionally discard calibration and use the default curve again, run `macfa
 
 The online installer above also upgrades existing installations. The app’s “Update in Terminal” uses the same bundled installer.
 
-The app checks this repository's releases once a day. In **Settings → Updates**, **Check for Updates** checks immediately. When a release is found, the panel shows a "{version} available" row and a dot on **Settings**; click the row (or **View Update** in Settings) to open a separate update window. Homebrew users get **Update in Terminal**; other installations get **Open download page** to download and replace the app. Selectable installer/source commands and network help are collapsed under **Other update methods** and **Download help**. Closing the window keeps the update visible in the panel. A Terminal handoff does not mean installation has finished; follow Terminal's output. The app never replaces itself without your action. Checks use the macOS system proxy; if a manual check fails, check your connection and click **Retry**.
+The app checks this repository's releases once a day. In **Settings → Updates**, **Check for Updates** checks immediately. When a release is found, the panel shows a "{version} available" row and a dot on **Settings**; click the row to open Settings, where the **Updates** section at the bottom shows the new version, a **What's new** link and the update action. Homebrew users get **Update in Terminal**; other installations get **Open download page** to download and replace the app. Selectable installer/source commands and network help are collapsed under **Other update methods** and **Download help**. Closing Settings keeps the update visible in the panel. A Terminal handoff does not mean installation has finished; follow Terminal's output. The app never replaces itself without your action. Checks use the macOS system proxy; if a manual check fails, check your connection and click **Retry**.
 
 ### DMG updates
 
@@ -371,7 +371,7 @@ git pull --ff-only
 ./setup.sh
 ```
 
-For an app built with `setup.sh`, **Other update methods** in the update window shows this as one command that starts with `cd` into your source folder, ready to copy.
+For an app built with `setup.sh`, **Other update methods** in **Settings → Updates** shows this as one command that starts with `cd` into your source folder, ready to copy.
 
 If you checked out a release tag, run `git fetch origin --tags`, check out the new tag, and run `./setup.sh`.
 

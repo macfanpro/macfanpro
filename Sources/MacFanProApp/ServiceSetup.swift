@@ -202,7 +202,14 @@ struct SettingsView: View {
     @ObservedObject var setup: ServiceSetup
     @EnvironmentObject var appState: AppState
     @EnvironmentObject var language: AppLanguageStore
-    var onViewUpdate: () -> Void = {}
+    /// Taller content (an available update with its methods expanded) scrolls
+    /// inside the window instead of pushing it past the screen.
+    var maxHeight: CGFloat = SettingsView.screenMaxHeight
+    @State private var session = 0
+
+    static var screenMaxHeight: CGFloat {
+        max(420, (NSScreen.main?.visibleFrame.height ?? 800) - 120)
+    }
 
     var body: some View {
         Form {
@@ -217,51 +224,25 @@ struct SettingsView: View {
                 }
                 Toggle(language.text("Launch at Login"), isOn: $appState.launchAtLogin)
             }
-            Section(language.text("Updates")) {
-                LabeledContent(language.text("Version")) {
-                    Text(MacFanProVersion.current).font(.system(.body, design: .monospaced)).textSelection(.enabled)
-                }
-                .accessibilityIdentifier("io.github.macfanpro.version")
-                HStack {
-                    Text(updateStatus)
-                        .foregroundStyle(appState.availableUpdate == nil ? Color.secondary : Color.blue)
-                        .fixedSize(horizontal: false, vertical: true)
-                        .accessibilityIdentifier("io.github.macfanpro.update-status")
-                    Spacer(minLength: 8)
-                    Button(language.text(appState.availableUpdate != nil ? "View Update" :
-                        appState.manualUpdateCheck == .failed ? "Retry" : "Check for Updates")) {
-                        if appState.availableUpdate != nil { onViewUpdate() } else { appState.checkForUpdatesNow() }
-                    }
-                    .fixedSize()
-                    .disabled(appState.manualUpdateCheck == .checking)
-                    .accessibilityIdentifier(appState.availableUpdate == nil ?
-                        "io.github.macfanpro.check-updates" : "io.github.macfanpro.view-update")
-                }
-            }
             Section(language.text("Background service")) {
                 ServiceSection(setup: setup)
+            }
+            // Last: checked rarely, and the tallest section while an update is offered.
+            Section(language.text("Updates")) {
+                UpdateSection(session: session)
             }
         }
         .formStyle(.grouped)
         .frame(width: 460)
+        .frame(maxHeight: maxHeight)
         .fixedSize(horizontal: false, vertical: true)
         .environment(\.layoutDirection, language.language.isRightToLeft ? .rightToLeft : .leftToRight)
-        // A manual check's result is transient: closing settings returns the row
-        // to "checked automatically" instead of showing a stale "Up to date".
+        // A manual check's result and a Terminal hand-off are transient: closing
+        // settings returns them to their resting state for the next visit.
         .onReceive(NotificationCenter.default.publisher(for: NSWindow.willCloseNotification)) { notification in
             guard (notification.object as? NSWindow)?.identifier?.rawValue == "io.github.macfanpro.settings-window" else { return }
             appState.clearManualUpdateResult()
-        }
-    }
-
-    private var updateStatus: String {
-        if appState.manualUpdateCheck == .checking { return language.text("Checking…") }
-        if let update = appState.availableUpdate { return language.text("{version} available", ["version": update.version]) }
-        switch appState.manualUpdateCheck {
-        case .upToDate: return language.text("Up to date")
-        case .failed: return language.text("Couldn't reach GitHub")
-        case .available(let version): return language.text("{version} available", ["version": version])
-        case .idle, .checking: return language.text("Checked automatically every day")
+            session += 1
         }
     }
 }

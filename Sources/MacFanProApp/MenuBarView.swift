@@ -11,7 +11,6 @@ import MacFanProLocalization
 
 struct MenuBarView: View {
     var onSettings: (() -> Void)? = nil
-    var onViewUpdate: () -> Void = {}
     @EnvironmentObject var appState: AppState
     @EnvironmentObject var language: AppLanguageStore
     @State private var menuWindow = MenuWindowReader.Reference()
@@ -170,10 +169,11 @@ struct MenuBarView: View {
             // what is checked or changed often, plus an update offer while one exists.
             if let update = appState.availableUpdate {
                 // One clickable row (no separate button), so long translations of
-                // "View Update" never squeeze the version into a narrow column.
+                // "View Update" never squeeze the version into a narrow column. It
+                // opens settings, whose last section offers the update.
                 Button {
                     menuWindow.window?.orderOut(nil)
-                    onViewUpdate()
+                    onSettings?()
                 } label: {
                     HStack(spacing: 6) {
                         Image(systemName: "arrow.down.circle")

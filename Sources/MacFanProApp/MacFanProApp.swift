@@ -49,15 +49,12 @@ struct MacFanProApp: App {
     @StateObject private var appState = AppState(startServices: false)
     @StateObject private var setup = ServiceSetup()
     @StateObject private var language = AppLanguageStore()
-    @StateObject private var updateWindow = UpdateDetailsWindow()
 
     var body: some Scene {
         MenuBarExtra {
             MenuBarView(onSettings: {
                 setup.present(language: language)
                 Task { if setup.phase != .removed { await setup.check() } }
-            }, onViewUpdate: {
-                updateWindow.present(appState: appState, language: language)
             })
                 .environmentObject(appState)
                 .environmentObject(language)
@@ -74,9 +71,7 @@ struct MacFanProApp: App {
                 setup.beforeRemoval = { delegate.supervisesFans = false; await appState.pauseForServiceRemoval() }
                 setup.afterCancelledRemoval = { appState.activateServices() }
                 setup.windowContent = {
-                    AnyView(SettingsView(setup: setup, onViewUpdate: {
-                        updateWindow.present(appState: appState, language: language)
-                    })
+                    AnyView(SettingsView(setup: setup)
                     .environmentObject(appState)
                     .environmentObject(language))
                 }
