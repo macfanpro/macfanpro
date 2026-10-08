@@ -1,5 +1,11 @@
 # MacFanPro changelog
 
+## 0.2.3.63
+
+- Merge the update window into Settings. The **Updates** section moves to the bottom (General, Background service, Updates) and, when a release is available, shows the new version, **What's new** and the update action, with **Other update methods** and **Download help** collapsed. The panel's update row opens Settings; the separate update window is removed.
+- Settings taller than the screen scroll inside the window.
+- The Homebrew update text says administrator authorization is required, not that it may be.
+
 ## 0.2.3.62
 
 - The service status in Settings (running or needs attention) uses the same compact, centered icon as the panel's buttons.
