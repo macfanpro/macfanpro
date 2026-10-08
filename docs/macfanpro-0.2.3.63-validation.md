@@ -19,4 +19,10 @@
 
 ## 远端 CI 与发行附件
 
-待填写。
+- [主分支 CI 37765624781](https://github.com/macfanpro/macfanpro/actions/runs/37765624781)、[发行 CI 37765627021](https://github.com/macfanpro/macfanpro/actions/runs/37765627021) 均成功。
+- 草稿 6 个附件全部下载核对：`SHA256SUMS`、DMG 与 `install.sh` 的校验文件通过；`codesign --verify --deep --strict` 通过；`minos 14.0`；`install.sh` 与应用内副本一致；DMG 挂载后与 tar 包内应用 `diff -rq` 无差异；CLI `--version` 输出 `0.2.3.63`。
+  - tar.gz `de79955bb6d346ee5eeb12b5a43692d8d08e0e75ff686b2f1b28c78544772b55`
+  - DMG `3f07da1734c545a0fcfb1cca786f279bb7463dea21bd6fe441c124f2b10ed87b`
+  - install.sh `a04fc815e8c5f2b1b28654c238266d7068eee125a347064756b64584ffe046df`
+- 已发布 [v0.2.3.63](https://github.com/macfanpro/macfanpro/releases/tag/v0.2.3.63)；Homebrew tap 工作流 37766371917 成功，提交 `56d0cb9` 带预编译 bottle。
+- 本机应用按维护者要求未更新，未做真机验证。
