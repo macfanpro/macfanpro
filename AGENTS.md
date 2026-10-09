@@ -2,12 +2,12 @@
 
 MacFanPro is a fork of [ThermalForge](https://github.com/ProducerGuy/ThermalForge). Several agents (Codex, Claude Code) work on it, sometimes at the same time. These rules keep their work from colliding.
 
-## One change, one branch
+## Develop on main by default
 
-- Work in your own branch and worktree (`git worktree add`, or the agent's own worktree), never directly in the shared checkout on `main`. Another agent may be building, testing or releasing there.
-- Name branches by tool and topic, for example `codex/<topic>` or `claude/<topic>`.
-- Open a pull request into `main`. The maintainer merges; do not push to `main` unless the maintainer asked you to.
-- Before starting, `git fetch` and branch from the current `origin/main`. Before merging, rebase or merge `origin/main` and rerun the tests.
+- As requested by the maintainer on 2026-10-10, make changes directly on `main` in the existing checkout. Create a separate branch, worktree or pull request only when the maintainer asks for one.
+- Before starting, `git fetch` and inspect the branch, working tree and difference from `origin/main`. Fast-forward when safe; preserve existing uncommitted work and coordinate overlapping edits with other agents.
+- Scope commits to the current task. Do not overwrite, discard or commit another agent's unrelated changes. Push when the maintainer requests it.
+- If the maintainer requests a branch, use a tool/topic name such as `codex/<topic>` or `claude/<topic>`. Before merging it, rebase or merge the current `origin/main` and rerun the tests.
 
 ## Releases
 
@@ -21,7 +21,7 @@ MacFanPro is a fork of [ThermalForge](https://github.com/ProducerGuy/ThermalForg
 - Prefer upstream's code when it is as good as ours, so later merges stay small. Keep MacFanPro's own approach where it is better, and put stability first.
 - Keep changes to upstream lines small, and prefer new files to rewriting upstream ones. Record lasting differences in [docs/upstream-divergence.md](docs/upstream-divergence.md).
 
-## Checks before a pull request
+## Checks before submitting changes
 
 ```bash
 bash Scripts/test.sh --all-configurations
