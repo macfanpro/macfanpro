@@ -8,6 +8,11 @@ on:
   release:
     types: [published, edited, deleted, unpublished]
   workflow_dispatch:
+    inputs:
+      tag:
+        description: "Release tag to retry (leave empty for all releases)"
+        required: false
+        type: string
 
 permissions:
   contents: read
@@ -33,4 +38,5 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           GITEE_TOKEN: ${{ secrets.GITEE_TOKEN }}
-        run: python3 Scripts/mirror-gitee.py --event "$GITHUB_EVENT_PATH" --event-name "$GITHUB_EVENT_NAME"
+          MIRROR_TAG: ${{ inputs.tag }}
+        run: python3 Scripts/mirror-gitee.py --event "$GITHUB_EVENT_PATH" --event-name "$GITHUB_EVENT_NAME" --tag "$MIRROR_TAG"

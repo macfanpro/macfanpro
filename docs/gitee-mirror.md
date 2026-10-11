@@ -13,6 +13,7 @@ GitHub Actions 的 **Mirror to Gitee** 工作流执行同步：
 - 推送或删除分支、标签：同步 Git 引用。
 - 发布、编辑、删除或取消公开 Release：同步对应版本及附件。
 - 手动执行工作流：补同步全部代码和已公开版本，并清理 GitHub 已撤回的镜像版本。
+- 手动填写 `tag`：只补同步指定公开版本及代码，不清理其他版本。
 
 GitHub 是唯一维护源；请在 GitHub 修改代码和版本说明。Gitee 中的分支、标签和发行版本以 GitHub 为准，同步会覆盖或删除对应的镜像内容。Git 推送使用原子操作和预期旧值检查，避免在上传过程中覆盖并发修改；附件同名但校验和不同则报错，保留现场供维护者检查。
 
@@ -25,6 +26,14 @@ GitHub 是唯一维护源；请在 GitHub 修改代码和版本说明。Gitee �
 ```bash
 gh workflow run mirror-gitee.yml -R macfanpro/macfanpro
 ```
+
+单独重试某个版本时，在网页运行表单填写 `tag`，或执行：
+
+```bash
+gh workflow run mirror-gitee.yml -R macfanpro/macfanpro -f tag=v0.2.3.63
+```
+
+全量补同步需要重新下载全部历史附件核验，跨境网络较慢时耗时较长。日常发布只同步对应版本；修复某个版本的失败时，优先指定其标签重跑。
 
 也可在本机设置 `GITEE_TOKEN`，登录 GitHub CLI 后执行：
 

@@ -217,7 +217,10 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--event", type=Path, help="GitHub Actions event JSON")
     parser.add_argument("--event-name", choices=["push", "delete", "release", "workflow_dispatch"], default="workflow_dispatch")
+    parser.add_argument("--tag", default="", help="Manually retry one published release; omit to sync all")
     args = parser.parse_args()
+    if args.tag and args.event_name != "workflow_dispatch":
+        raise MirrorError("--tag is only supported for manual synchronization")
     token = os.environ.get("GITEE_TOKEN")
     if not token:
         raise MirrorError("Set the GITEE_TOKEN repository secret (Gitee projects permission)")
@@ -228,6 +231,10 @@ def main():
         if args.event_name in {"push", "delete"}:
             return
         releases = github_releases()
+        if args.tag:
+            releases = [r for r in releases if r["tag_name"] == args.tag]
+            if not releases:
+                raise MirrorError("No published GitHub release found for tag: " + args.tag)
         if args.event_name == "release":
             if not args.event:
                 raise MirrorError("Release events require --event")
@@ -236,7 +243,7 @@ def main():
             if not selected:
                 remove_release(api, tag)
             releases = selected
-        else:
+        elif not args.tag:
             wanted = {r["tag_name"] for r in releases}
             for stale in api.pages(GITEE_API + "/releases"):
                 if stale["tag_name"] not in wanted:

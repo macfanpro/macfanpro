@@ -4,6 +4,7 @@ import copy
 import hashlib
 import importlib.util
 import io
+import os
 from pathlib import Path
 import tempfile
 import unittest
@@ -114,6 +115,26 @@ class MirrorTests(unittest.TestCase):
                 mirror.Gitee(token).call("GET", "/user")
         self.assertNotIn(token, str(result.exception))
         self.assertIn("[redacted]", str(result.exception))
+
+    def test_single_release_retry_never_prunes_other_releases(self):
+        api = Fixture()
+        releases = [{"tag_name": tag, "published_at": "2026-10-11"} for tag in ["v1", "v2"]]
+        with patch.dict(os.environ, {"GITEE_TOKEN": "offline-test"}), \
+                patch.object(mirror, "Gitee", return_value=api), \
+                patch.object(mirror, "mirror_refs", return_value=Path("unused")), \
+                patch.object(mirror, "github_releases", return_value=releases), \
+                patch.object(mirror, "mirror_release") as sync, \
+                patch.object(api, "pages", side_effect=AssertionError("single retry must not prune")):
+            with patch("sys.argv", ["mirror", "--tag", "v1"]):
+                mirror.main()
+            self.assertEqual(sync.call_count, 1)
+            self.assertEqual(sync.call_args.args[1]["tag_name"], "v1")
+            sync.reset_mock()
+            with patch("sys.argv", ["mirror", "--tag", "missing"]):
+                with self.assertRaisesRegex(mirror.MirrorError, "No published"):
+                    mirror.main()
+            sync.assert_not_called()
+            self.assertEqual(api.calls, [])
 
 
 if __name__ == "__main__":
