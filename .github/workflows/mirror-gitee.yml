@@ -1,0 +1,36 @@
+name: Mirror to Gitee
+
+on:
+  push:
+    branches: ["**"]
+    tags: ["**"]
+  delete:
+  release:
+    types: [published, edited, deleted, unpublished]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: gitee-mirror
+  # Keep release events queued when several pushes arrive during an upload.
+  queue: max
+  cancel-in-progress: false
+
+jobs:
+  mirror:
+    if: github.repository == 'macfanpro/macfanpro'
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # Run trusted maintenance code even when a topic branch/tag triggers it.
+          ref: main
+          persist-credentials: false
+      - name: Mirror refs and published releases
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GITEE_TOKEN: ${{ secrets.GITEE_TOKEN }}
+        run: python3 Scripts/mirror-gitee.py --event "$GITHUB_EVENT_PATH" --event-name "$GITHUB_EVENT_NAME"

@@ -25,3 +25,4 @@ fi
 bash Scripts/test-disconnected-clients.sh
 
 python3 Scripts/test-installer.py
+python3 -B Scripts/test-gitee-mirror.py

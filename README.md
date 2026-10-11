@@ -26,6 +26,8 @@
   &nbsp;·&nbsp;
   <a href="https://github.com/macfanpro/macfanpro/releases/latest"><b>Download</b></a>
   &nbsp;·&nbsp;
+  <a href="https://gitee.com/macfanpro/macfanpro/releases"><b>Gitee mirror</b></a>
+  &nbsp;·&nbsp;
   <a href="#quick-install"><b>Quick install</b></a>
   &nbsp;·&nbsp;
   <a href="#option-1-homebrew"><b>Homebrew</b></a>
@@ -35,6 +37,8 @@
 > Requires **macOS 14 or later** and an **Apple Silicon Mac with physical fans**; see [compatibility](#compatibility). Installation needs an administrator password to set up the [background service](#safety-and-permissions). Release packages are not yet notarized by Apple; if macOS blocks the first launch, follow the [first-launch instructions](#macos-says-it-cant-verify-the-developer).
 
 ## Quick install
+
+For a manual download when GitHub is hard to reach, get the DMG from the [Gitee release mirror](https://gitee.com/macfanpro/macfanpro/releases). Mirrored packages are unchanged; the online installer below still downloads from GitHub. See [mirror details](docs/gitee-mirror.md).
 
 Run this block in Terminal as your normal login user. It downloads and verifies the prebuilt release, then installs the app and background service. No Homebrew or Xcode needed. If GitHub is hard to reach, use the [proxy command](#online-installer) or [configure your proxy on the website](https://macfanpro.github.io/macfanpro/en/#install) before installing.
 

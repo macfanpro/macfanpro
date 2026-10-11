@@ -26,6 +26,8 @@
   &nbsp;·&nbsp;
   <a href="https://github.com/macfanpro/macfanpro/releases/latest"><b>下载发行版</b></a>
   &nbsp;·&nbsp;
+  <a href="https://gitee.com/macfanpro/macfanpro/releases"><b>国内镜像下载</b></a>
+  &nbsp;·&nbsp;
   <a href="#快速安装"><b>快速安装</b></a>
   &nbsp;·&nbsp;
   <a href="#方式一通过-homebrew-安装"><b>Homebrew</b></a>
@@ -36,7 +38,9 @@
 
 ## 快速安装
 
-**中国大陆用户建议先使用代理安装。** 打开代理软件，确认本地 HTTP 代理端口，将示例中的 `7890` 改为实际端口，然后在终端中复制执行整个代码块。也可以在[官网安装区](https://macfanpro.github.io/macfanpro/?lang=zh-Hans#install)选择代理类型、填写端口并复制生成的命令。
+**图形化安装可直接前往 [Gitee 国内镜像](https://gitee.com/macfanpro/macfanpro/releases)下载 DMG**，打开后将应用拖入“应用程序”。镜像附件保持原样；在线安装脚本和应用更新检查仍访问 GitHub，详见[镜像说明](docs/gitee-mirror.md)。
+
+使用下面的命令安装时，若无法正常访问 GitHub，请先打开代理软件，确认本地 HTTP 代理端口，将示例中的 `7890` 改为实际端口，然后在终端中复制执行整个代码块。也可以在[官网安装区](https://macfanpro.github.io/macfanpro/?lang=zh-Hans#install)选择代理类型、填写端口并复制生成的命令。
 
 ```bash
 (
