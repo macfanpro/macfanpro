@@ -228,8 +228,6 @@ def main():
     if not token:
         raise MirrorError("Set the GITEE_TOKEN repository secret (Gitee projects permission)")
     api = Gitee(token)
-    api.call("PATCH", GITEE_API, {"description": "MacFanControl 官方镜像；GitHub 为唯一维护源：https://github.com/" + REPOSITORY,
-                                 "homepage": "https://macfancontrol.github.io/macfancontrol/"})
     with tempfile.TemporaryDirectory(prefix="macfancontrol-gitee-") as folder:
         directory = Path(folder)
         bare = mirror_refs(api, directory)

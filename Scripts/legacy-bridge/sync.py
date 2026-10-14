@@ -28,11 +28,37 @@ def download(url, path):
     return 'sha256:' + hashlib.sha256(path.read_bytes()).hexdigest()
 
 
+def sync_tags(source, target):
+    # Preserve actual source commits for GitHub's automatically generated archives.
+    def refs(repo):
+        text = subprocess.check_output(['git', 'ls-remote', '--refs', 'https://github.com/' + repo + '.git', 'refs/tags/*'], text=True)
+        return {ref: sha for sha, ref in (line.split() for line in text.splitlines())}
+    wanted, existing = refs(source), refs(target)
+    changed = {ref: sha for ref, sha in wanted.items() if existing.get(ref) != sha}
+    if not changed:
+        return
+    with tempfile.TemporaryDirectory() as temp:
+        bare = Path(temp) / 'source.git'
+        subprocess.run(['git', 'clone', '--bare', 'https://github.com/' + source + '.git', str(bare)], check=True)
+        askpass = Path(temp) / 'askpass.py'
+        askpass.write_text("#!/usr/bin/env python3\nimport os,sys\nprint('x-access-token' if 'Username' in sys.argv[1] else os.environ['GH_TOKEN'])\n")
+        askpass.chmod(0o700)
+        env = {**os.environ, 'GIT_ASKPASS': str(askpass), 'GIT_TERMINAL_PROMPT': '0'}
+        leases = [f'--force-with-lease={ref}:{existing.get(ref, "")}' for ref in sorted(changed)]
+        subprocess.run(['git', '--git-dir=' + str(bare), '-c', 'credential.helper=', 'push', *leases,
+                        'https://github.com/' + target + '.git', *[f'{ref}:{ref}' for ref in sorted(changed)]], check=True, env=env)
+        actual = refs(target)
+        if any(actual.get(ref) != sha for ref, sha in wanted.items()):
+            raise ValueError('Legacy source tags differ from the main repository')
+    print(f'Verified {len(wanted)} source tags', flush=True)
+
+
 def sync(source, target):
     if source not in {'macfanpro/macfanpro', 'macfancontrol/macfancontrol'}:
         raise ValueError('Unexpected source')
     if target not in {'macfanpro/update-compat', 'macfanpro/macfanpro'} or source == target:
         raise ValueError('Unexpected target')
+    sync_tags(source, target)
     releases = json.loads(gh('api', '--paginate', '--slurp', f'repos/{source}/releases?per_page=100'))
     releases = [r for page in releases for r in page if not r['draft'] and not r['prerelease']]
     latest = api(f'repos/{source}/releases/latest')['tag_name']

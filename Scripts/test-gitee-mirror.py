@@ -39,8 +39,6 @@ class Fixture:
             self.assets.append(asset)
             self.content[asset["browser_download_url"]] = upload.read_bytes()
             return copy.deepcopy(asset)
-        if method == "PATCH" and endpoint == mirror.GITEE_API:
-            return copy.deepcopy(values)
         if method == "PATCH":
             self.release.update(values)
             return copy.deepcopy(self.release)
@@ -142,7 +140,7 @@ class MirrorTests(unittest.TestCase):
                 with self.assertRaisesRegex(mirror.MirrorError, "No published"):
                     mirror.main()
             sync.assert_not_called()
-            self.assertEqual(api.calls, [("PATCH", mirror.GITEE_API)] * 2)
+            self.assertEqual(api.calls, [])
 
 
 if __name__ == "__main__":

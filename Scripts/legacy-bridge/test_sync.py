@@ -23,7 +23,7 @@ class BridgeTests(unittest.TestCase):
             if '--slurp' in args:
                 return json.dumps([[release if 'macfancontrol/macfancontrol' in args[-1] else dest]])
             raise AssertionError('Unexpected mutation: ' + str(args))
-        with patch.object(bridge, 'gh', side_effect=command), patch.object(bridge, 'api', return_value={'tag_name':'v0.2.3.64'}), patch.object(bridge, 'download', return_value='sha256:wrong'):
+        with patch.object(bridge, 'sync_tags'), patch.object(bridge, 'gh', side_effect=command), patch.object(bridge, 'api', return_value={'tag_name':'v0.2.3.64'}), patch.object(bridge, 'download', return_value='sha256:wrong'):
             with self.assertRaisesRegex(ValueError, 'Source checksum mismatch'):
                 bridge.sync('macfancontrol/macfancontrol', 'macfanpro/update-compat')
 
