@@ -39,6 +39,8 @@ class Fixture:
             self.assets.append(asset)
             self.content[asset["browser_download_url"]] = upload.read_bytes()
             return copy.deepcopy(asset)
+        if method == "PATCH" and endpoint == mirror.GITEE_API:
+            return copy.deepcopy(values)
         if method == "PATCH":
             self.release.update(values)
             return copy.deepcopy(self.release)
@@ -54,6 +56,12 @@ class Fixture:
 
 
 class MirrorTests(unittest.TestCase):
+    def test_old_github_download_links_are_rewritten_after_transfer(self):
+        old = "https://github.com/macfanpro/macfanpro/releases/download/v1/app.dmg"
+        source = [{"name": "app.dmg", "browser_download_url": old.replace("macfanpro/macfanpro", "macfancontrol/macfancontrol")}]
+        target = [{"name": "app.dmg", "browser_download_url": "https://gitee.com/download/app.dmg"}]
+        self.assertEqual(mirror.rewrite_downloads(old, source, target), target[0]["browser_download_url"])
+
     def test_download_links_keep_checksum_suffixes_and_evidence(self):
         prefix = "https://github.com/macfancontrol/macfancontrol/releases/download/v1/"
         original = [{"name": name, "browser_download_url": prefix + name}
@@ -134,7 +142,7 @@ class MirrorTests(unittest.TestCase):
                 with self.assertRaisesRegex(mirror.MirrorError, "No published"):
                     mirror.main()
             sync.assert_not_called()
-            self.assertEqual(api.calls, [])
+            self.assertEqual(api.calls, [("PATCH", mirror.GITEE_API)] * 2)
 
 
 if __name__ == "__main__":
