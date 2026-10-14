@@ -11,6 +11,12 @@ MacFanControl 原名 MacFanPro。0.2.3.64 起，新版应用文件为 **MacFanCo
 
 语言、选定模式、校准、日志与登录启动使用原有身份和数据，不会因展示名称或文件名改变而重置。更新需要的管理员授权与原先一样。
 
+## Homebrew 配套名称
+
+正式 Tap 为 [`macfancontrol/homebrew-tap`](https://github.com/macfancontrol/homebrew-tap)，安装使用 `brew tap macfancontrol/tap`、`brew trust macfancontrol/tap` 和 `brew install macfancontrol`。
+
+原 `macfanpro/homebrew-tap` 仓库地址由 GitHub 重定向至新仓库，已有 `macfanpro/tap` 用户无需先卸载或重新安装。旧配方名 `macfanpro` 和旧命令保留兼容别名。更新器兼容新旧 Tap；两者同时存在时都会刷新。历史 bottle 下载地址继续通过重定向工作。
+
 ## 兼容范围
 
 新版所有正常使用入口均为 MacFanControl。以下旧名只用于已安装版本的兼容，不是第二套产品：

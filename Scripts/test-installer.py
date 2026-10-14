@@ -77,6 +77,7 @@ esac
 BREW = '''#!/bin/bash
 echo "brew $* no_ask=${HOMEBREW_NO_ASK:-} no_auto_update=${HOMEBREW_NO_AUTO_UPDATE:-} proxy=${https_proxy:-${all_proxy:-}}" >> "$EVENTS"
 case "$1" in
+ tap) printf '%s\n' "${BREW_TAP:-macfanpro/tap}" ;;
  trust) exit "${BAD_TRUST:-0}" ;;
  update) [ "${BAD_UPDATE:-0}" = 0 ] ;;
  upgrade) [ "${BAD_BREW:-0}" = 0 ] ;;
@@ -223,6 +224,15 @@ class InstallerTests(unittest.TestCase):
         self.assertIn('git -C %s/tap pull --ff-only' % self.root, events)
         self.assertNotIn('brew update', events)
         self.assertIn('brew upgrade macfancontrol no_ask=1 no_auto_update=1', events)
+
+    def test_renamed_homebrew_tap(self):
+        for tap in ('macfancontrol/tap', 'macfanpro/tap', 'macfancontrol/tap\nmacfanpro/tap'):
+            with self.subTest(tap=tap):
+                _, events = self.run_installer('--homebrew', BREW_FIXTURE='1', BREW_TAP=tap)
+                for installed_tap in tap.splitlines():
+                    self.assertIn('brew trust ' + installed_tap, events)
+                    self.assertIn('brew --repository ' + installed_tap, events)
+                self.assertIn('brew upgrade macfancontrol', events)
 
     def test_proxy_reaches_homebrew_and_git(self):
         _, events = self.run_installer('--homebrew', BREW_FIXTURE='1',

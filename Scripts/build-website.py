@@ -23,7 +23,7 @@ LANGUAGES = {
 }
 PROXY = '(\n  export https_proxy=http://127.0.0.1:7890\n  set -o pipefail\n  curl -fsSL https://github.com/macfanpro/macfanpro/releases/latest/download/install.sh | bash\n)'
 DIRECT = '(\n  set -o pipefail\n  curl -fsSL https://github.com/macfanpro/macfanpro/releases/latest/download/install.sh | bash\n)'
-BREW = 'brew tap macfanpro/tap &&\nbrew trust macfanpro/tap &&\nbrew install macfancontrol &&\nsudo "$(brew --prefix macfancontrol)/bin/macfancontrol" install &&\nopen /Applications/MacFanControl.app'
+BREW = 'brew tap macfancontrol/tap &&\nbrew trust macfancontrol/tap &&\nbrew install macfancontrol &&\nsudo "$(brew --prefix macfancontrol)/bin/macfancontrol" install &&\nopen /Applications/MacFanControl.app'
 
 
 def route(lang):

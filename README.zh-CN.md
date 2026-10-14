@@ -160,14 +160,14 @@ bash install.sh
 在终端中依次执行：
 
 ```bash
-brew tap macfanpro/tap
-brew trust macfanpro/tap
+brew tap macfancontrol/tap
+brew trust macfancontrol/tap
 brew install macfancontrol
 sudo "$(brew --prefix macfancontrol)/bin/macfancontrol" install
 open /Applications/MacFanControl.app
 ```
 
-Homebrew 7 起默认不加载第三方 tap 的配方，需要先用 `brew trust` 明确信任本 tap（只需一次）。Homebrew 负责下载、编译和管理版本；`sudo` 那条命令将对应版本的应用和后台服务安装到系统中。配方维护在 [macfanpro/homebrew-tap](https://github.com/macfanpro/homebrew-tap)。
+Homebrew 7 起默认不加载第三方 tap 的配方，需要先用 `brew trust` 明确信任本 tap（只需一次）。Homebrew 负责下载、编译和管理版本；`sudo` 那条命令将对应版本的应用和后台服务安装到系统中。配方维护在 [macfancontrol/homebrew-tap](https://github.com/macfancontrol/homebrew-tap)。
 
 ### 方式二：下载发行包安装
 
@@ -367,7 +367,7 @@ open /Applications/MacFanControl.app
 
 `auto --stop-app` 会在替换期间明确关闭应用并释放风扇控制。重新打开后，请核对原模式是否恢复；原来明确设置的 CLI 转速需要重新施加。
 
-`brew upgrade` 更新 Homebrew 中的文件，随后仍需同步后台服务和 `/Applications` 中的应用。如果 Homebrew 提示 `untrusted tap`，先执行一次 `brew trust macfanpro/tap`。使用 `brew --prefix` 指向刚升级的版本，避免误用旧的系统副本。
+`brew upgrade` 更新 Homebrew 中的文件，随后仍需同步后台服务和 `/Applications` 中的应用。如果 Homebrew 提示 `untrusted tap`，先执行一次 `brew trust macfancontrol/tap`。使用 `brew --prefix` 指向刚升级的版本，避免误用旧的系统副本。
 
 ### 发行包更新
 

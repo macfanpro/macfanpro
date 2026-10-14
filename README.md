@@ -157,14 +157,14 @@ You need [Homebrew](https://brew.sh/). Homebrew installs a prebuilt version, so 
 Run in Terminal:
 
 ```bash
-brew tap macfanpro/tap
-brew trust macfanpro/tap
+brew tap macfancontrol/tap
+brew trust macfancontrol/tap
 brew install macfancontrol
 sudo "$(brew --prefix macfancontrol)/bin/macfancontrol" install
 open /Applications/MacFanControl.app
 ```
 
-Since Homebrew 7, formulae from third-party taps are not loaded until you trust the tap with `brew trust` (once). Homebrew downloads, builds and manages the version; the `sudo` command installs that version's app and background service. The formula lives in [macfanpro/homebrew-tap](https://github.com/macfanpro/homebrew-tap).
+Since Homebrew 7, formulae from third-party taps are not loaded until you trust the tap with `brew trust` (once). Homebrew downloads, builds and manages the version; the `sudo` command installs that version's app and background service. The formula lives in [macfancontrol/homebrew-tap](https://github.com/macfancontrol/homebrew-tap).
 
 ### Option 2: Release download
 
@@ -364,7 +364,7 @@ open /Applications/MacFanControl.app
 
 `auto --stop-app` intentionally stops the app and releases fan control during replacement. After reopening, check that your previous profile is selected; a deliberate CLI hold needs to be set again.
 
-`brew upgrade` updates Homebrew's copy; the background service and the app in `/Applications` still need syncing afterwards. If Homebrew reports an `untrusted tap`, run `brew trust macfanpro/tap` once. `brew --prefix` points at the version you just upgraded to, instead of an older system copy.
+`brew upgrade` updates Homebrew's copy; the background service and the app in `/Applications` still need syncing afterwards. If Homebrew reports an `untrusted tap`, run `brew trust macfancontrol/tap` once. `brew --prefix` points at the version you just upgraded to, instead of an older system copy.
 
 ### Release download
 

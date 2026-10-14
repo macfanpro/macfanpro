@@ -156,13 +156,18 @@ main() {
         printf 'Updating the Homebrew-managed installation…\n'
         # Homebrew 7 refuses an untrusted tap; trusting is a no-op when already
         # trusted and unknown to older Homebrew.
-        "$brew" trust macfanpro/tap >/dev/null 2>&1 || true
-        # Refresh only this tap: brew update fetches every tap (slow, noisy when an
-        # unrelated tap or mirror is broken) and HOMEBREW_NO_AUTO_UPDATE users skip
-        # it. Fall back to it; the version check below still refuses a stale formula.
-        if ! git -C "$("$brew" --repository macfanpro/tap)" pull --ff-only --quiet; then
-            "$brew" update || printf 'brew update failed; continuing with the current tap.\n' >&2
-        fi
+        # Keep the installed tap identity: old checkouts follow GitHub's redirect,
+        # while fresh installations use the renamed organization.
+        local brew_taps brew_tap
+        brew_taps=$("$brew" tap | /usr/bin/grep -E '^(macfancontrol|macfanpro)/tap$') || true
+        [ -n "$brew_taps" ] || fail 'The MacFanControl Homebrew tap is missing.'
+        for brew_tap in $brew_taps; do
+            "$brew" trust "$brew_tap" >/dev/null 2>&1 || true
+            # Refresh only our taps; a broken unrelated tap must not block updates.
+            if ! git -C "$("$brew" --repository "$brew_tap")" pull --ff-only --quiet; then
+                "$brew" update || printf 'brew update failed; continuing with the current tap.\n' >&2
+            fi
+        done
         # Running this script is the confirmation; Homebrew 7 would otherwise wait
         # at a y/n prompt in Terminal. The tap is fresh, so skip auto-update too.
         # brew upgrade is a successful no-op for an already-current formula.
