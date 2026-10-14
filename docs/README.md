@@ -54,6 +54,6 @@ Automated tests, package checks, installed-app checks and real hardware acceptan
 
 自动化测试、发行包检查、本机安装检查和实机验收分别对应不同证据；构建通过不能代表所有 Mac 的温控和睡眠唤醒都已验证。
 
-`upstream/PLAN.md` and `upstream/ROADMAP.md` are historical upstream plans, not a list of implemented MacFanPro features.
+`upstream/PLAN.md` and `upstream/ROADMAP.md` are historical upstream plans, not a list of implemented MacFanControl features.
 
-`upstream/PLAN.md` 与 `upstream/ROADMAP.md` 保存上游早期规划，不是 MacFanPro 已实现功能清单。
+`upstream/PLAN.md` 与 `upstream/ROADMAP.md` 保存上游早期规划，不是 MacFanControl 已实现功能清单。

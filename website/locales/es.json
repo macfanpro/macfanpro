@@ -1,5 +1,5 @@
 {
-  "title": "MacFanPro — Control gratuito y abierto de ventiladores Mac",
+  "title": "MacFanControl — Control gratuito y abierto de ventiladores Mac",
   "description": "Control nativo de ventiladores para Mac con Apple Silicon. Temperaturas, curvas inteligentes e instalación con proxy o Homebrew. Aplicación en 18 idiomas. macOS 14 o posterior.",
   "skip": "Ir al contenido",
   "nav": [
@@ -17,7 +17,7 @@
   "source": "Ver código en GitHub",
   "requirements": "macOS 14+ · Apple Silicon · Requiere ventiladores físicos",
   "stage_note": "En tu barra de menús",
-  "caption": "Interfaz real en inglés · v0.2.3.36 · M4 Max MacBook Pro",
+  "caption": "Vista previa · v0.2.3.64 · Lecturas de ejemplo",
   "facts": [
     [
       "Swift",
@@ -91,11 +91,11 @@
     ],
     [
       "Empieza en la barra de menús",
-      "Abre MacFanPro, pulsa el icono del ventilador y elige un modo."
+      "Abre MacFanControl, pulsa el icono del ventilador y elige un modo."
     ]
   ],
   "update": "¿Cómo actualizo después?",
-  "update_body": "DMG: arrastra la nueva MacFanPro.app a Aplicaciones, elige Reemplazar y vuelve a abrirla. Cierra la app anterior si sigue en ejecución y autoriza la sincronización del servicio si se solicita. No hace falta desinstalar; se conservan ajustes, calibración y registros. Los usuarios de Homebrew deben actualizar con Homebrew; los del instalador en línea pueden repetir el comando. Usa un proxy si no puedes acceder a GitHub.",
+  "update_body": "DMG: arrastra la nueva MacFanControl.app a Aplicaciones, elige Reemplazar y vuelve a abrirla. Cierra la app anterior si sigue en ejecución y autoriza la sincronización del servicio si se solicita. No hace falta desinstalar; se conservan ajustes, calibración y registros. Los usuarios de Homebrew deben actualizar con Homebrew; los del instalador en línea pueden repetir el comando. Usa un proxy si no puedes acceder a GitHub.",
   "download": "Descargar una versión",
   "full_guide": "Guía completa de instalación y proxy",
   "source_build": "Compilar desde el código",
@@ -112,7 +112,7 @@
     ],
     [
       "¿Basta con arrastrar la aplicación a Aplicaciones?",
-      "0.2.3.50+ · DMG — Arrastra MacFanPro a Aplicaciones y ábrelo desde allí. MacFanPro necesita un servicio en segundo plano para controlar los ventiladores. macOS solicitará autorización de administrador. Las versiones actuales tienen firma ad-hoc y no están notarizadas por Apple; puede aparecer un aviso al abrirlas por primera vez."
+      "0.2.3.50+ · DMG — Arrastra MacFanControl a Aplicaciones y ábrelo desde allí. MacFanControl necesita un servicio en segundo plano para controlar los ventiladores. macOS solicitará autorización de administrador. Las versiones actuales tienen firma ad-hoc y no están notarizadas por Apple; puede aparecer un aviso al abrirlas por primera vez."
     ],
     [
       "Se ha detenido en Password. ¿Qué hago?",
@@ -134,11 +134,12 @@
   "issues": "Informar de un problema",
   "license": "Licencia MIT",
   "credit": "Basado en ThermalForge. Gracias al proyecto original y a sus colaboradores.",
-  "image_alt": "Panel de MacFanPro con temperaturas, velocidades, modos e idiomas",
+  "image_alt": "Panel de MacFanControl con temperaturas, velocidades, modos e idiomas",
   "main_nav": "Navegación principal",
   "languages": "Elegir idioma",
-  "copyright": "Colaboradores de MacFanPro",
+  "copyright": "Colaboradores de MacFanControl",
   "dmg_title": "Instalar desde un DMG",
   "dmg_download": "Descargar DMG",
-  "dmg_body": "Arrastra MacFanPro a Aplicaciones y ábrelo desde allí. MacFanPro necesita un servicio en segundo plano para controlar los ventiladores. macOS solicitará autorización de administrador."
+  "dmg_body": "Arrastra MacFanControl a Aplicaciones y ábrelo desde allí. MacFanControl necesita un servicio en segundo plano para controlar los ventiladores. macOS solicitará autorización de administrador.",
+  "transition_note": "MacFanControl se llamaba MacFanPro."
 }

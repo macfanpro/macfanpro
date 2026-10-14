@@ -1,7 +1,7 @@
 // Run from the repository root: swift Scripts/update-traditional.swift
 // Traditional Chinese uses the Simplified Chinese wording, converted by script only.
 import Foundation
-let base = URL(fileURLWithPath: "Sources/MacFanProLocalization/Resources")
+let base = URL(fileURLWithPath: "Sources/MacFanControlLocalization/Resources")
 let simplified = try JSONDecoder().decode([String: String].self, from: Data(contentsOf: base.appendingPathComponent("zh-Hans.json")))
 let traditional = try simplified.mapValues { value in
     guard let result = value.applyingTransform(StringTransform("Simplified-Traditional"), reverse: false) else { throw CocoaError(.coderInvalidValue) }

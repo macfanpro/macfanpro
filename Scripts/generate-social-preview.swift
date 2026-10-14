@@ -35,7 +35,7 @@ func text(_ s: String, _ font: NSFont, _ color: NSColor, _ x: CGFloat, _ y: CGFl
 // Keep the project icon sharp at social-preview size.
 NSGraphicsContext.current?.imageInterpolation = .high
 icon.draw(in: NSRect(x: 72, y: 430, width: 120, height: 120))
-text("MacFanPro", .systemFont(ofSize: 74, weight: .bold), .white, 214, 440)
+text("MacFanControl", .systemFont(ofSize: 62, weight: .bold), .white, 214, 440)
 
 // Gradient accent line under the title.
 NSGradient(colors: [cyan, blue, violet.withAlphaComponent(0)])!.draw(in: NSRect(x: 72, y: 402, width: 460, height: 3), angle: 0)

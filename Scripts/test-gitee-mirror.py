@@ -69,7 +69,7 @@ class MirrorTests(unittest.TestCase):
         for name in ["", ".", "..", "../key", "/tmp/key", "a\\b", 'a"b', "a\r\nb"]:
             with self.subTest(name=name), self.assertRaises(mirror.MirrorError):
                 mirror.safe_name(name)
-        mirror.safe_name("MacFanPro-0.2.3.63-macos-arm64.dmg")
+        mirror.safe_name("MacFanControl-0.2.3.63-macos-arm64.dmg")
 
     def test_restart_is_idempotent_and_corrupt_destination_is_preserved(self):
         api = Fixture()

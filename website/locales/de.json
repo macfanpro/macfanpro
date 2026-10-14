@@ -1,5 +1,5 @@
 {
-  "title": "MacFanPro — Kostenlose Lüftersteuerung für Mac",
+  "title": "MacFanControl — Kostenlose Lüftersteuerung für Mac",
   "description": "Native Open-Source-Lüftersteuerung für Apple Silicon Macs. Temperaturen überwachen, intelligente Kurven nutzen und mit Proxy oder Homebrew installieren. 18 App-Sprachen. Ab macOS 14.",
   "skip": "Zum Inhalt",
   "nav": [
@@ -17,7 +17,7 @@
   "source": "Quellcode auf GitHub",
   "requirements": "macOS 14+ · Apple Silicon · Physische Lüfter erforderlich",
   "stage_note": "Zuhause in der Menüleiste",
-  "caption": "Echte englische Oberfläche · v0.2.3.36 · M4 Max MacBook Pro",
+  "caption": "Oberflächenvorschau · v0.2.3.64 · Beispielwerte",
   "facts": [
     [
       "Swift",
@@ -91,11 +91,11 @@
     ],
     [
       "In der Menüleiste starten",
-      "MacFanPro öffnen, auf das Lüftersymbol klicken und einen Modus wählen."
+      "MacFanControl öffnen, auf das Lüftersymbol klicken und einen Modus wählen."
     ]
   ],
   "update": "Und spätere Updates?",
-  "update_body": "DMG: Ziehe die neue MacFanPro.app in Programme, wähle Ersetzen und starte sie neu. Beende die alte App, falls sie noch läuft; bestätige bei Bedarf die Autorisierung zur Dienstsynchronisierung. Eine Deinstallation ist nicht nötig. Einstellungen, Kalibrierung und Protokolle bleiben erhalten. Homebrew-Nutzer aktualisieren mit Homebrew; beim Online-Installer genügt derselbe Befehl erneut. Nutze einen Proxy, wenn GitHub nicht erreichbar ist.",
+  "update_body": "DMG: Ziehe die neue MacFanControl.app in Programme, wähle Ersetzen und starte sie neu. Beende die alte App, falls sie noch läuft; bestätige bei Bedarf die Autorisierung zur Dienstsynchronisierung. Eine Deinstallation ist nicht nötig. Einstellungen, Kalibrierung und Protokolle bleiben erhalten. Homebrew-Nutzer aktualisieren mit Homebrew; beim Online-Installer genügt derselbe Befehl erneut. Nutze einen Proxy, wenn GitHub nicht erreichbar ist.",
   "download": "Release herunterladen",
   "full_guide": "Installations- und Proxy-Anleitung",
   "source_build": "Aus Quellcode bauen",
@@ -112,7 +112,7 @@
     ],
     [
       "Reicht es, die App in Programme zu ziehen?",
-      "0.2.3.50+ · DMG — Ziehe MacFanPro in „Programme“ und öffne es von dort. MacFanPro benötigt einen Hintergrunddienst zur Lüftersteuerung. macOS fragt nach der Administratorfreigabe. Releases sind ad-hoc signiert, nicht von Apple notarisiert. Beim ersten Start kann ein Sicherheitshinweis erscheinen."
+      "0.2.3.50+ · DMG — Ziehe MacFanControl in „Programme“ und öffne es von dort. MacFanControl benötigt einen Hintergrunddienst zur Lüftersteuerung. macOS fragt nach der Administratorfreigabe. Releases sind ad-hoc signiert, nicht von Apple notarisiert. Beim ersten Start kann ein Sicherheitshinweis erscheinen."
     ],
     [
       "Das Terminal wartet bei Password. Was tun?",
@@ -134,11 +134,12 @@
   "issues": "Problem melden",
   "license": "MIT-Lizenz",
   "credit": "Basiert auf ThermalForge. Danke an das Ursprungsprojekt und alle Mitwirkenden.",
-  "image_alt": "MacFanPro mit Temperaturen, Drehzahlen, Modi und Spracheinstellungen",
+  "image_alt": "MacFanControl mit Temperaturen, Drehzahlen, Modi und Spracheinstellungen",
   "main_nav": "Hauptnavigation",
   "languages": "Sprache wählen",
-  "copyright": "MacFanPro-Mitwirkende",
+  "copyright": "MacFanControl-Mitwirkende",
   "dmg_title": "Mit DMG installieren",
   "dmg_download": "DMG herunterladen",
-  "dmg_body": "Ziehe MacFanPro in „Programme“ und öffne es von dort. MacFanPro benötigt einen Hintergrunddienst zur Lüftersteuerung. macOS fragt nach der Administratorfreigabe."
+  "dmg_body": "Ziehe MacFanControl in „Programme“ und öffne es von dort. MacFanControl benötigt einen Hintergrunddienst zur Lüftersteuerung. macOS fragt nach der Administratorfreigabe.",
+  "transition_note": "MacFanControl hieß bisher MacFanPro."
 }

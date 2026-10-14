@@ -23,7 +23,7 @@ LANGUAGES = {
 }
 PROXY = '(\n  export https_proxy=http://127.0.0.1:7890\n  set -o pipefail\n  curl -fsSL https://github.com/macfanpro/macfanpro/releases/latest/download/install.sh | bash\n)'
 DIRECT = '(\n  set -o pipefail\n  curl -fsSL https://github.com/macfanpro/macfanpro/releases/latest/download/install.sh | bash\n)'
-BREW = 'brew tap macfanpro/tap &&\nbrew trust macfanpro/tap &&\nbrew install macfanpro &&\nsudo "$(brew --prefix macfanpro)/bin/macfanpro" install &&\nopen /Applications/MacFanPro.app'
+BREW = 'brew tap macfanpro/tap &&\nbrew trust macfanpro/tap &&\nbrew install macfancontrol &&\nsudo "$(brew --prefix macfancontrol)/bin/macfancontrol" install &&\nopen /Applications/MacFanControl.app'
 
 
 def route(lang):
@@ -88,7 +88,7 @@ def validate_links():
 
 
 def build():
-    app_languages = {p.stem for p in (ROOT / 'Sources/MacFanProLocalization/Resources').glob('*.json')}
+    app_languages = {p.stem for p in (ROOT / 'Sources/MacFanControlLocalization/Resources').glob('*.json')}
     if set(LANGUAGES) != app_languages:
         raise ValueError('Website language list must match the app')
     translations = {lang: json.loads((SOURCE / 'locales' / f'{lang}.json').read_text()) for lang in LANGUAGES}
@@ -123,7 +123,7 @@ def build():
             command = escape({'proxy': PROXY, 'direct': DIRECT, 'brew': BREW}[method])
             panels.append(f'<section class="install-panel" id="panel-{method}" aria-labelledby="heading-{method}"><h3 id="heading-{method}">{d[method]}</h3><p class="method-note">{d[method + "_note"]}</p>{fields}<div class="terminal"><div class="terminal-bar"><span><i></i><i></i><i></i> Terminal</span><button type="button" class="copy-button" data-copy="command-{method}" hidden>{d["copy"]}</button></div><pre tabindex="0" aria-label="{d[method]}"><code id="command-{method}">{command}</code></pre></div></section>')
         language_items = ''.join(f'<li><a href="{prefix}{route(code) or "?lang=zh-Hans"}" lang="{code}" hreflang="{code}" dir="auto" data-language="{code}"' + (' aria-current="page"' if code == lang else '') + f'>{name}</a></li>' for code,name in LANGUAGES.items())
-        schema = {'@context': 'https://schema.org', '@type': 'SoftwareApplication', 'name': 'MacFanPro', 'applicationCategory': 'UtilitiesApplication', 'operatingSystem': 'macOS 14+ (Apple Silicon with physical fans)', 'inLanguage': lang, 'url': BASE + route(lang), 'downloadUrl': REPO + '/releases/latest', 'license': REPO + '/blob/main/LICENSE', 'offers': {'@type': 'Offer', 'price': '0', 'priceCurrency': 'USD'}}
+        schema = {'@context': 'https://schema.org', '@type': 'SoftwareApplication', 'name': 'MacFanControl', 'applicationCategory': 'UtilitiesApplication', 'operatingSystem': 'macOS 14+ (Apple Silicon with physical fans)', 'inLanguage': lang, 'url': BASE + route(lang), 'downloadUrl': REPO + '/releases/latest', 'license': REPO + '/blob/main/LICENSE', 'offers': {'@type': 'Offer', 'price': '0', 'priceCurrency': 'USD'}}
         d.update(
             lang=lang, direction='rtl' if lang == 'ar' else 'ltr', prefix=prefix,
             root_page=str(lang == 'zh-Hans').lower(), url=BASE + route(lang), base=BASE, repo=REPO,

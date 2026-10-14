@@ -3,41 +3,41 @@
 import PackageDescription
 
 let package = Package(
-    name: "MacFanPro",
+    name: "MacFanControl",
     platforms: [.macOS(.v14)],
     dependencies: [
         .package(url: "https://github.com/apple/swift-argument-parser", from: "1.3.0"),
     ],
     targets: [
         .target(
-            name: "MacFanProLocalization",
+            name: "MacFanControlLocalization",
             resources: [.process("Resources")]
         ),
         .target(
-            name: "MacFanProCore",
-            path: "Sources/MacFanProCore",
+            name: "MacFanControlCore",
+            path: "Sources/MacFanControlCore",
             linkerSettings: [
                 .linkedFramework("Metal"),
             ]
         ),
         .executableTarget(
-            name: "macfanpro",
+            name: "macfancontrol",
             dependencies: [
-                "MacFanProCore",
-                "MacFanProLocalization",
+                "MacFanControlCore",
+                "MacFanControlLocalization",
                 .product(name: "ArgumentParser", package: "swift-argument-parser"),
             ],
-            path: "Sources/macfanpro"
+            path: "Sources/macfancontrol"
         ),
         .executableTarget(
-            name: "MacFanProApp",
-            dependencies: ["MacFanProCore", "MacFanProLocalization"],
-            path: "Sources/MacFanProApp"
+            name: "MacFanControlApp",
+            dependencies: ["MacFanControlCore", "MacFanControlLocalization"],
+            path: "Sources/MacFanControlApp"
         ),
         .testTarget(
-            name: "MacFanProTests",
-            dependencies: ["MacFanProCore", "MacFanProApp", "MacFanProLocalization"],
-            path: "Tests/MacFanProTests"
+            name: "MacFanControlTests",
+            dependencies: ["MacFanControlCore", "MacFanControlApp", "MacFanControlLocalization"],
+            path: "Tests/MacFanControlTests"
         ),
     ]
 )

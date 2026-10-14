@@ -6,7 +6,7 @@ README 面向安装和使用，CHANGELOG 汇总版本历史，GitHub Release 描
 
 - 每个版本使用独立文件，例如 `0.2.3.15.md` 对应标签 `v0.2.3.15`。
 - 从 [TEMPLATE.md](TEMPLATE.md) 复制新文件，填写实际变化并删除没有内容的可选分类；不要发布占位符或未经验证的结论。
-- 发布标题统一为 `MacFanPro 版本号`，正文无需重复一级标题。
+- 自 0.2.3.64 起发布标题统一为 `MacFanControl 版本号`（旧版本标题不变），正文无需重复一级标题。
 - Homebrew 配方与预编译包（bottle）已自动化：在网页上公开发布后，tap 仓库的 [Update formula](https://github.com/macfanpro/homebrew-tap/blob/main/.github/workflows/update-formula.yml) 工作流由主仓库的 [Update Homebrew tap](https://github.com/macfanpro/macfanpro/blob/main/.github/workflows/notify-tap.yml) 在发布后立即启动（使用 `TAP_DISPATCH_TOKEN` 这个只授权 tap 仓库 Actions 读写的 fine-grained 令牌；令牌缺失或过期时该运行失败提醒续期，tap 仍会在一小时内自行更新，也可执行 `gh workflow run update-formula.yml -R macfanpro/homebrew-tap`），把配方指向新标签、构建并上传 `arm64_sonoma` 预编译包、确认 Homebrew 直接安装预编译包且 `brew test` 通过，然后才提交配方。草稿不会触发。工作流失败时查看其运行日志，必要时按工作流中的步骤手动处理。
 - 自 0.2.3.29 起，发布说明中英双语：英文在前，`## 中文说明` 之后为中文，两部分内容一致；安装链接分别指向 `README.md`（英文）与 `README.zh-CN.md`（中文）的对应章节。已发布的旧版本不回改。
 - 发布工作流先检查对应说明文件，再执行既有测试和打包，最后以该文件创建草稿；不再把整个 CHANGELOG 放入单个发行页。
@@ -37,3 +37,5 @@ Release 正文中的文件链接应使用完整 GitHub URL。对会随时间变�
 
 
 DMG 发行：同时上传 `MacFanPro-<版本>-macos-arm64.dmg` 及其 `.dmg.sha256`，不要把 DMG 加入旧 `SHA256SUMS`。核验挂载后的应用签名、内置服务程序、语言资源和“应用程序”链接，并在干净的 macOS 上完成首次授权安装、更新与卸载验收（见 [DMG 验证说明](../dmg-installation.md)）。首次发布时更新 README 和 DMG 文档中的“尚未发布”说明。官网在最新正式发行确实包含 DMG 时自动显示下载入口；不往旧标签补传新代码构建的 DMG。
+
+0.2.3.64 起，新版使用 `MacFanControl.app`、`macfancontrol` 和 `MacFanControl-<版本>-macos-arm64`。额外发布旧名称压缩包及旧 `SHA256SUMS`，仅供旧安装器兼容升级。新版压缩包使用独立 `MacFanControl-SHA256SUMS`。详见 [改名升级说明](../macfancontrol-transition.md)。

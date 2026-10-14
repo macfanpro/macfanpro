@@ -3,7 +3,7 @@
   const html = document.documentElement;
   const languageLinks = [...document.querySelectorAll('[data-language]')];
   const supported = languageLinks.map(link => link.dataset.language);
-  const storageKey = 'macfanpro.website.language';
+  const storageKey = 'macfancontrol.website.language';
   function remember(language) { try { localStorage.setItem(storageKey, language); } catch {} }
   function matchLanguage(language) {
     const lower = language.toLowerCase();
@@ -48,7 +48,7 @@
       .then(response => { if (!response.ok) throw new Error('Release unavailable'); return response.json(); })
       .then(release => {
         if (release.draft || release.prerelease || !/^v[0-9]+(?:\.[0-9]+){2,3}$/.test(release.tag_name)) return;
-        const name = `MacFanPro-${release.tag_name.slice(1)}-macos-arm64.dmg`;
+        const name = `MacFanControl-${release.tag_name.slice(1)}-macos-arm64.dmg`;
         const url = `https://github.com/macfanpro/macfanpro/releases/download/${release.tag_name}/${name}`;
         if (!Array.isArray(release.assets) || !release.assets.some(asset => asset.name === name && asset.browser_download_url === url)) return;
         dmg.querySelector('[data-dmg-download]').href = url;

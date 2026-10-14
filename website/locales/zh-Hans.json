@@ -1,5 +1,5 @@
 {
-  "title": "MacFanPro — 免费开源的 Mac 风扇控制工具",
+  "title": "MacFanControl — 免费开源的 Mac 风扇控制工具",
   "description": "原生 Apple Silicon Mac 风扇控制工具。查看温度与转速，使用智能曲线，支持代理安装、Homebrew 和 18 种应用语言。免费开源，macOS 14 起。",
   "skip": "跳到主要内容",
   "nav": [
@@ -17,7 +17,7 @@
   "source": "在 GitHub 查看源码",
   "requirements": "macOS 14+ · Apple Silicon · 需要实体风扇",
   "stage_note": "原生菜单栏应用",
-  "caption": "真实应用界面 · v0.2.3.36 · M4 Max MacBook Pro",
+  "caption": "界面预览 · v0.2.3.64 · 示例读数",
   "facts": [
     [
       "Swift",
@@ -91,11 +91,11 @@
     ],
     [
       "从菜单栏开始",
-      "安装完成后打开 MacFanPro，点击风扇图标，选择适合自己的模式。"
+      "安装完成后打开 MacFanControl，点击风扇图标，选择适合自己的模式。"
     ]
   ],
   "update": "以后怎么更新？",
-  "update_body": "DMG：将新版 MacFanPro.app 拖入“应用程序”，选择“替换”，再重新启动应用。若旧应用仍在运行，先退出；需要同步服务时按提示授权。更新无需卸载，配置、校准和日志会保留。Homebrew 用户继续使用 Homebrew；在线安装用户可再次运行原命令。无法连接 GitHub 时再使用代理。",
+  "update_body": "DMG：将新版 MacFanControl.app 拖入“应用程序”，选择“替换”，再重新启动应用。若旧应用仍在运行，先退出；需要同步服务时按提示授权。更新无需卸载，配置、校准和日志会保留。Homebrew 用户继续使用 Homebrew；在线安装用户可再次运行原命令。无法连接 GitHub 时再使用代理。",
   "download": "下载发行包",
   "full_guide": "完整安装与代理教程",
   "source_build": "从源码构建",
@@ -112,7 +112,7 @@
     ],
     [
       "下载应用后，直接拖入“应用程序”就可以吗？",
-      "0.2.3.50+ · DMG — 将 MacFanPro 拖入“应用程序”，然后从那里打开。 MacFanPro 需要后台服务来控制风扇。macOS 将请求管理员授权。 当前发行包采用 ad-hoc 签名，尚未经过 Apple 公证，首次启动可能出现系统安全提示。"
+      "0.2.3.50+ · DMG — 将 MacFanControl 拖入“应用程序”，然后从那里打开。 MacFanControl 需要后台服务来控制风扇。macOS 将请求管理员授权。 当前发行包采用 ad-hoc 签名，尚未经过 Apple 公证，首次启动可能出现系统安全提示。"
     ],
     [
       "安装时卡在 Password，怎么办？",
@@ -134,11 +134,12 @@
   "issues": "反馈问题",
   "license": "MIT 协议",
   "credit": "基于 ThermalForge 开发，感谢上游与所有贡献者。",
-  "image_alt": "MacFanPro 面板：温度、转速、控制模式与语言设置",
+  "image_alt": "MacFanControl 面板：温度、转速、控制模式与语言设置",
   "main_nav": "主导航",
   "languages": "选择语言",
-  "copyright": "MacFanPro 贡献者",
+  "copyright": "MacFanControl 贡献者",
   "dmg_title": "拖入应用程序安装",
   "dmg_download": "下载 DMG",
-  "dmg_body": "将 MacFanPro 拖入“应用程序”，然后从那里打开。 MacFanPro 需要后台服务来控制风扇。macOS 将请求管理员授权。"
+  "dmg_body": "将 MacFanControl 拖入“应用程序”，然后从那里打开。 MacFanControl 需要后台服务来控制风扇。macOS 将请求管理员授权。",
+  "transition_note": "MacFanControl 原名 MacFanPro，老用户可继续通过原有安装方式升级。"
 }

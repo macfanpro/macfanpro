@@ -6,4 +6,7 @@ DerivedData/
 .swiftpm/xcode/package.xcworkspace/contents.xcworkspacedata
 .netrc
 /dist/
+MacFanControl.iconset/
+
+# Pre-rename local generated icons
 MacFanPro.iconset/

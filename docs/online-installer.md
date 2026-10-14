@@ -14,7 +14,7 @@ curl -fsSL https://github.com/macfanpro/macfanpro/releases/latest/download/insta
 
 附件：
 
-- `MacFanPro-<版本>-macos-arm64.tar.gz`
+- `MacFanControl-<版本>-macos-arm64.tar.gz`
 - `SHA256SUMS`：仅包含上述压缩包，兼容旧更新器。
 - `install.sh`
 - `install.sh.sha256`：仅包含脚本的 SHA256。

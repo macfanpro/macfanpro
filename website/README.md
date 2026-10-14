@@ -1,4 +1,4 @@
-# MacFanPro website
+# MacFanControl website
 
 Public address: <https://macfanpro.github.io/macfanpro/>.
 
@@ -19,9 +19,9 @@ Open <http://127.0.0.1:8765/>. The generated site lives in `.build/website/`; re
 
 `locales/` matches the app's 18 locale codes: `en`, `zh-Hans`, `zh-Hant`, `ja`, `ko`, `de`, `fr`, `es`, `it`, `pt-BR`, `ru`, `uk`, `pl`, `nl`, `tr`, `vi`, `id`, `ar`.
 
-- Simplified Chinese is at `/macfanpro/`. Other languages use `/macfanpro/<locale>/`.
+- Simplified Chinese is at `/macfancontrol/`. Other languages use `/macfancontrol/<locale>/`.
 - The entry page detects the first supported browser language, defaulting to English for unsupported browser languages. A manual selection is stored locally and takes precedence. An explicit localized URL always keeps its own language.
-- `/macfanpro/?lang=zh-Hans` explicitly selects Simplified Chinese, including when browser storage is unavailable.
+- `/macfancontrol/?lang=zh-Hans` explicitly selects Simplified Chinese, including when browser storage is unavailable.
 - Arabic uses RTL layout, while shell commands remain LTR.
 - All languages show direct installation first. Proxy installation is a fallback when GitHub cannot be reached; HTTP, SOCKS5 and Homebrew remain available.
 - Each page has its own title, description, canonical URL, `hreflang` links and sitemap entry.

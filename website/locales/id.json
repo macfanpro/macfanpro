@@ -1,5 +1,5 @@
 {
-  "title": "MacFanPro — Kontrol kipas Mac gratis dan sumber terbuka",
+  "title": "MacFanControl — Kontrol kipas Mac gratis dan sumber terbuka",
   "description": "Kontrol kipas native untuk Mac Apple Silicon. Pantau suhu, gunakan kurva pintar, instal lewat proxy atau Homebrew. Aplikasi tersedia dalam 18 bahasa. macOS 14 ke atas.",
   "skip": "Ke konten utama",
   "nav": [
@@ -17,7 +17,7 @@
   "source": "Lihat kode di GitHub",
   "requirements": "macOS 14+ · Apple Silicon · Memerlukan kipas fisik",
   "stage_note": "Nyaman di bar menu",
-  "caption": "Antarmuka nyata berbahasa Inggris · v0.2.3.36 · M4 Max MacBook Pro",
+  "caption": "Pratinjau antarmuka · v0.2.3.64 · Data contoh",
   "facts": [
     [
       "Swift",
@@ -91,11 +91,11 @@
     ],
     [
       "Mulai dari bar menu",
-      "Buka MacFanPro, klik ikon kipas, lalu pilih mode."
+      "Buka MacFanControl, klik ikon kipas, lalu pilih mode."
     ]
   ],
   "update": "Bagaimana cara memperbarui?",
-  "update_body": "DMG: seret MacFanPro.app yang baru ke Applications, pilih Replace, lalu buka kembali. Tutup aplikasi lama jika masih berjalan dan izinkan sinkronisasi layanan saat diminta. Tidak perlu menghapus instalasi; pengaturan, kalibrasi, dan log tetap disimpan. Pengguna Homebrew memperbarui melalui Homebrew; pengguna pemasang online dapat menjalankan kembali perintah yang sama. Gunakan proksi jika GitHub tidak dapat diakses.",
+  "update_body": "DMG: seret MacFanControl.app yang baru ke Applications, pilih Replace, lalu buka kembali. Tutup aplikasi lama jika masih berjalan dan izinkan sinkronisasi layanan saat diminta. Tidak perlu menghapus instalasi; pengaturan, kalibrasi, dan log tetap disimpan. Pengguna Homebrew memperbarui melalui Homebrew; pengguna pemasang online dapat menjalankan kembali perintah yang sama. Gunakan proksi jika GitHub tidak dapat diakses.",
   "download": "Unduh rilis",
   "full_guide": "Panduan instalasi dan proxy",
   "source_build": "Bangun dari kode sumber",
@@ -112,7 +112,7 @@
     ],
     [
       "Cukup seret aplikasi ke Applications?",
-      "0.2.3.50+ · DMG — Seret MacFanPro ke Aplikasi, lalu buka dari sana. MacFanPro memerlukan layanan latar belakang untuk mengontrol kipas. macOS akan meminta otorisasi administrator. Rilis saat ini ditandatangani ad-hoc dan belum dinotarisasi Apple; peringatan keamanan dapat muncul saat pertama dibuka."
+      "0.2.3.50+ · DMG — Seret MacFanControl ke Aplikasi, lalu buka dari sana. MacFanControl memerlukan layanan latar belakang untuk mengontrol kipas. macOS akan meminta otorisasi administrator. Rilis saat ini ditandatangani ad-hoc dan belum dinotarisasi Apple; peringatan keamanan dapat muncul saat pertama dibuka."
     ],
     [
       "Berhenti di Password. Apa yang harus dilakukan?",
@@ -134,11 +134,12 @@
   "issues": "Laporkan masalah",
   "license": "Lisensi MIT",
   "credit": "Dibangun dari ThermalForge. Terima kasih kepada proyek asal dan semua kontributor.",
-  "image_alt": "Panel MacFanPro dengan suhu, kecepatan, mode, dan bahasa",
+  "image_alt": "Panel MacFanControl dengan suhu, kecepatan, mode, dan bahasa",
   "main_nav": "Navigasi utama",
   "languages": "Pilih bahasa",
-  "copyright": "Kontributor MacFanPro",
+  "copyright": "Kontributor MacFanControl",
   "dmg_title": "Pasang melalui DMG",
   "dmg_download": "Unduh DMG",
-  "dmg_body": "Seret MacFanPro ke Aplikasi, lalu buka dari sana. MacFanPro memerlukan layanan latar belakang untuk mengontrol kipas. macOS akan meminta otorisasi administrator."
+  "dmg_body": "Seret MacFanControl ke Aplikasi, lalu buka dari sana. MacFanControl memerlukan layanan latar belakang untuk mengontrol kipas. macOS akan meminta otorisasi administrator.",
+  "transition_note": "MacFanControl sebelumnya bernama MacFanPro."
 }

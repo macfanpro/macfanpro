@@ -1,8 +1,8 @@
 <p align="center">
-  <img src="docs/images/icon.png" width="128" alt="MacFanPro 应用图标">
+  <img src="docs/images/icon.png" width="128" alt="MacFanControl 应用图标">
 </p>
 
-<h1 align="center">MacFanPro</h1>
+<h1 align="center">MacFanControl</h1>
 
 <p align="center">
   <b>为 Apple Silicon Mac 打造的风扇控制工具。</b><br>
@@ -36,6 +36,8 @@
 > [!NOTE]
 > 需要 **macOS 14 或更高版本**及**配备实体风扇的 Apple Silicon Mac**，具体见[兼容性与验证范围](#兼容性与验证范围)。安装时需要管理员密码来配置[后台服务](#安全机制与权限)。发行包尚未经过 Apple 公证；首次打开遇到系统拦截时，请查看[首次运行说明](#下载后提示无法验证开发者)。
 
+**MacFanControl 原名 MacFanPro。** 0.2.3.64 起，应用、命令与安装包统一使用新名称；老用户继续使用原有更新入口，兼容逻辑负责旧路径衔接，配置保持可用。GitHub 仓库及官网地址暂缓迁移。详见[改名升级说明](docs/macfancontrol-transition.md)。
+
 ## 快速安装
 
 **图形化安装可直接前往 [Gitee 国内镜像](https://gitee.com/macfanpro/macfanpro/releases)下载 DMG**，打开后将应用拖入“应用程序”。镜像附件保持原样；在线安装脚本和应用更新检查仍访问 GitHub，详见[镜像说明](docs/gitee-mirror.md)。
@@ -56,13 +58,13 @@
 
 **深入了解：** [曲线与智能模式](#风扇曲线与智能模式原理) · [安全机制](#安全机制与权限) · [校准](#可选的本机校准) · [日志](#日志与数据) · [兼容性](#兼容性与验证范围) · [常见问题](#常见问题) · [开发](#开发与贡献)
 
-## 为什么选择 MacFanPro
+## 为什么选择 MacFanControl
 
 - **免费开源**：MIT 协议，没有付费版，也不需要激活码。
 - **不收集数据**：温控和日志保留在本机；每天自动或手动检查更新时访问本 GitHub 仓库，安装与更新时下载文件。没有遥测，不需要账号。
 - **原生轻量**：Swift 编写的菜单栏应用加一个小型后台服务，不是 Electron，不占 Dock。
 - **安全设计**：95°C 高温保护；后台服务自带高温兜底，应用退出后仍然生效；应用失去响应时，看门狗会把风扇交还 macOS。
-- **可脚本化**：`macfanpro` 命令行可以设置转速、输出 JSON 状态、记录 CSV 数据。
+- **可脚本化**：`macfancontrol` 命令行可以设置转速、输出 JSON 状态、记录 CSV 数据。
 - **18 种界面语言**，默认跟随系统语言，包括从右往左书写的阿拉伯语。
 
 如果你想在 Apple Silicon 上用透明、可脚本化的方式控制风扇，它是 Macs Fan Control 等工具的开源替代品。
@@ -70,11 +72,13 @@
 ## 功能与界面
 
 <p align="center">
-  <img src="docs/images/menu-bar-zh-CN.png" width="320" alt="MacFanPro 简体中文菜单：温度、风扇转速、控制模式与更新设置">
-  <img src="docs/images/menu-bar-en.png" width="320" alt="MacFanPro 英文菜单：温度、风扇转速、控制模式与更新设置">
+  <img src="docs/images/menu-bar-zh-CN.png" width="320" alt="MacFanControl 简体中文菜单：温度、风扇转速、控制模式与更新设置">
+  <img src="docs/images/menu-bar-en.png" width="320" alt="MacFanControl 英文菜单：温度、风扇转速、控制模式与更新设置">
   <br>
-  <sub>MacFanPro 0.2.3.36 在 M4 Max MacBook Pro 上的实际界面。此处展示简体中文与英文，应用共支持 18 种语言。</sub>
+  <sub>MacFanControl 0.2.3.36 在 M4 Max MacBook Pro 上的实际界面。此处展示简体中文与英文，应用共支持 18 种语言。</sub>
 </p>
+
+界面预览使用示例读数，不代表硬件实测结果。
 
 - **温度与转速监测**：查看 CPU、GPU、内存、SSD、环境温度及各风扇实际转速，具体读数取决于机型提供的传感器。
 - **自动风扇控制**：提供智能、静音、均衡、性能和最大转速模式，也可恢复 Apple 自动控制。
@@ -104,9 +108,9 @@
 
 ### 拖入应用程序安装（DMG）
 
-从 **0.2.3.50** 起，可下载 `MacFanPro-<版本>-macos-arm64.dmg` 使用图形化安装：
+从 **0.2.3.50** 起，可下载 `MacFanControl-<版本>-macos-arm64.dmg` 使用图形化安装：
 
-1. 从[发行页](https://github.com/macfanpro/macfanpro/releases/latest)下载并打开 DMG，将 **MacFanPro.app** 拖入 **“应用程序”**。国内下载不畅时，请先开启浏览器可用的代理。
+1. 从[发行页](https://github.com/macfanpro/macfanpro/releases/latest)下载并打开 DMG，将 **MacFanControl.app** 拖入 **“应用程序”**。国内下载不畅时，请先开启浏览器可用的代理。
 2. 从“应用程序”打开。遇到系统拦截时，按[首次运行说明](#下载后提示无法验证开发者)处理；当前构建尚未经过 Apple 公证。
 3. 在设置窗口点击 **“安装并启用”**，在 macOS 系统弹窗中授权。服务程序已内置，这一步无需联网、Homebrew 或 Xcode，也无需打开终端。
 
@@ -158,9 +162,9 @@ bash install.sh
 ```bash
 brew tap macfanpro/tap
 brew trust macfanpro/tap
-brew install macfanpro
-sudo "$(brew --prefix macfanpro)/bin/macfanpro" install
-open /Applications/MacFanPro.app
+brew install macfancontrol
+sudo "$(brew --prefix macfancontrol)/bin/macfancontrol" install
+open /Applications/MacFanControl.app
 ```
 
 Homebrew 7 起默认不加载第三方 tap 的配方，需要先用 `brew trust` 明确信任本 tap（只需一次）。Homebrew 负责下载、编译和管理版本；`sudo` 那条命令将对应版本的应用和后台服务安装到系统中。配方维护在 [macfanpro/homebrew-tap](https://github.com/macfanpro/homebrew-tap)。
@@ -169,16 +173,16 @@ Homebrew 7 起默认不加载第三方 tap 的配方，需要先用 `brew trust`
 
 此方式无需安装 Homebrew 或 Xcode。
 
-1. 前往 [Releases](https://github.com/macfanpro/macfanpro/releases/latest)，下载 `MacFanPro-版本号-macos-arm64.tar.gz`。请选择这个发行包，而非 GitHub 自动生成的 `Source code` 源码包。
-2. 双击解压，保留文件夹内的 `MacFanPro.app` 和 `bin` 目录。
+1. 前往 [Releases](https://github.com/macfanpro/macfanpro/releases/latest)，下载 `MacFanControl-版本号-macos-arm64.tar.gz`。请选择这个发行包，而非 GitHub 自动生成的 `Source code` 源码包。
+2. 双击解压，保留文件夹内的 `MacFanControl.app` 和 `bin` 目录。
 3. 在终端中进入解压后的文件夹，执行安装并打开应用。
 
 例如，`0.2.3.50` 解压在“下载”目录时：
 
 ```bash
-cd ~/Downloads/MacFanPro-0.2.3.50-macos-arm64
-sudo ./bin/macfanpro install
-open /Applications/MacFanPro.app
+cd ~/Downloads/MacFanControl-0.2.3.64-macos-arm64
+sudo ./bin/macfancontrol install
+open /Applications/MacFanControl.app
 ```
 
 其他版本或下载位置，请相应替换文件夹路径。安装成功后，可以删除压缩包和解压文件夹。
@@ -191,17 +195,17 @@ open /Applications/MacFanPro.app
 
 ```bash
 git clone https://github.com/macfanpro/macfanpro.git
-cd macfanpro
+cd macfancontrol
 ./setup.sh
 ```
 
-`setup.sh` 会编译源码、组装应用、请求管理员权限完成安装，并打开 MacFanPro，无需再执行其他安装命令。
+`setup.sh` 会编译源码、组装应用、请求管理员权限完成安装，并打开 MacFanControl，无需再执行其他安装命令。
 
 此方式默认构建仓库的 `main` 分支，可能包含尚未发行的修改。如需构建指定发行版，可在运行 `./setup.sh` 前执行 `git checkout v0.2.3.50`，版本号按需替换。
 
 ### 安装完成后
 
-应用安装在 `/Applications/MacFanPro.app`，打开后显示在菜单栏中，不显示 Dock 图标。需要登录后自动运行时，在“设置”中打开“登录时启动”。
+应用安装在 `/Applications/MacFanControl.app`，打开后显示在菜单栏中，不显示 Dock 图标。需要登录后自动运行时，在“设置”中打开“登录时启动”。
 
 终端输入管理员密码时不会显示字符，输入完成后按回车即可。应用与已安装后台服务配合工作，日常使用无需重复输入密码。
 
@@ -230,19 +234,19 @@ cd macfanpro
 
 | 命令 | 用途 |
 | --- | --- |
-| `macfanpro --version` | 查看当前 CLI 版本 |
-| `macfanpro status` | 以 JSON 输出风扇转速和温度 |
-| `macfanpro max` | 立即将所有风扇设为最大转速 |
-| `macfanpro set 3000` | 请求将所有风扇设为 3000 RPM，实际值受硬件范围限制 |
-| `macfanpro set 3000 --fan 0` | 仅设置索引为 0 的风扇 |
-| `macfanpro auto` | 恢复 Apple 自动控制，保留菜单栏应用运行 |
-| `macfanpro auto --stop-app` | 退出菜单栏应用并恢复 Apple 自动控制 |
-| `macfanpro log --duration 60s` | 采集 60 秒传感器数据并保存为 CSV |
-| `macfanpro --help` | 查看全部命令；单个命令可追加 `--help` |
+| `macfancontrol --version` | 查看当前 CLI 版本 |
+| `macfancontrol status` | 以 JSON 输出风扇转速和温度 |
+| `macfancontrol max` | 立即将所有风扇设为最大转速 |
+| `macfancontrol set 3000` | 请求将所有风扇设为 3000 RPM，实际值受硬件范围限制 |
+| `macfancontrol set 3000 --fan 0` | 仅设置索引为 0 的风扇 |
+| `macfancontrol auto` | 恢复 Apple 自动控制，保留菜单栏应用运行 |
+| `macfancontrol auto --stop-app` | 退出菜单栏应用并恢复 Apple 自动控制 |
+| `macfancontrol log --duration 60s` | 采集 60 秒传感器数据并保存为 CSV |
+| `macfancontrol --help` | 查看全部命令；单个命令可追加 `--help` |
 
-`max` 和 `set` 会建立终端持有的转速设置，应用会显示相应提示并暂停自己的调节。点击“默认”、重新选择模式或运行 `macfanpro auto` 可以取消该设置。仅退出菜单栏应用不会取消终端持有的转速。
+`max` 和 `set` 会建立终端持有的转速设置，应用会显示相应提示并暂停自己的调节。点击“默认”、重新选择模式或运行 `macfancontrol auto` 可以取消该设置。仅退出菜单栏应用不会取消终端持有的转速。
 
-`macfanpro auto` 不关闭应用；应用中的自动模式仍可能再次接管。需要完全交回 macOS 时，使用 `macfanpro auto --stop-app`。
+`macfancontrol auto` 不关闭应用；应用中的自动模式仍可能再次接管。需要完全交回 macOS 时，使用 `macfancontrol auto --stop-app`。
 
 高级命令 `watch` 会按模式持续控制风扇，并非只读监测；目前支持 `silent`、`balanced`、`performance`、`max`，智能模式在菜单栏应用中选择。校准会创建负载，属于可选操作，详见[本机校准](#可选的本机校准)。使用 `watch` 控制风扇或运行校准需要管理员权限。启动 `watch` 前先退出菜单栏应用，采样间隔限定为 0.01–5 秒；校准会关闭当前用户的应用，并在结束后重新打开。两者均通过已安装的后台服务写入风扇，已有命令行手动控制时会拒绝启动，请先结束该控制。按 Ctrl-C 或收到 SIGTERM 时会停止本次任务并释放控制。执行前请阅读命令的 `--help`。
 
@@ -282,7 +286,7 @@ cd macfanpro
 
 提前散热有助于应对持续编译、渲染或推理时的热量积累；实际温度、噪声和吞吐量取决于机器、环境与负载。它不保证温度始终低于 85°C，也不承诺固定性能提升或风扇寿命增幅。
 
-对应实现见 [Profile.swift](Sources/MacFanProCore/Profile.swift) 和 [ThermalMonitor.swift](Sources/MacFanProCore/ThermalMonitor.swift)。原理参考了 [ThermalForge 的技术说明](https://github.com/ProducerGuy/ThermalForge/blob/93ed7d2df231b079704156b5ae67654a50d31f62/README.md#smart-profile)，并按本仓库实现核对修订。
+对应实现见 [Profile.swift](Sources/MacFanControlCore/Profile.swift) 和 [ThermalMonitor.swift](Sources/MacFanControlCore/ThermalMonitor.swift)。原理参考了 [ThermalForge 的技术说明](https://github.com/ProducerGuy/ThermalForge/blob/93ed7d2df231b079704156b5ae67654a50d31f62/README.md#smart-profile)，并按本仓库实现核对修订。
 
 ## 安全机制与权限
 
@@ -292,7 +296,7 @@ cd macfanpro
 | --- | --- |
 | 95°C / 90°C 保护 | 应用监测到 95°C 时请求满速，并保持到低于 90°C。后台服务独立检查：如果已记录的手动设置把风扇保持在低于满速的状态且温度过高，则接管为满速；应用关闭后这层保护仍有效。 |
 | 心跳看门狗 | 对应用管理的转速设置，心跳超过 15 秒未更新时，在下一次看门狗检查中视为失效（通常每 5 秒检查），尝试交还 macOS；若高温保护已生效，则保持满速直到降温。 |
-| 终端控制归属 | 明确执行 `max`、`set` 产生的 CLI 设置不受应用心跳超时撤销；需要点击“默认”、选择模式或运行 `macfanpro auto` 解除。 |
+| 终端控制归属 | 明确执行 `max`、`set` 产生的 CLI 设置不受应用心跳超时撤销；需要点击“默认”、选择模式或运行 `macfancontrol auto` 解除。 |
 | 睡眠唤醒恢复 | 唤醒后尝试重新施加当前设置，保留高温保护，并重试失败的释放操作；固件恢复速度因机器而异。 |
 | 本机访问限制 | `/var/run/macfanpro.sock` 权限为 `0600`，属于安装时指定的用户；每个连接还会通过内核凭据再次校验，只允许该用户和 root；身份读取失败时，在读取请求前拒绝连接。 |
 | 有界通信 | 协议带版本和消息大小限制，连接有超时与并发上限，风扇写入有频率限制；硬件写入串行执行，RPM 按硬件范围检查。 |
@@ -306,20 +310,20 @@ cd macfanpro
 先查看参数：
 
 ```bash
-macfanpro calibrate --help
+macfancontrol calibrate --help
 ```
 
 确定需要测量时，执行标准 CPU + GPU 校准：
 
 ```bash
-sudo macfanpro calibrate --mode standard --stress combined
+sudo macfancontrol calibrate --mode standard --stress combined
 ```
 
-模式包括 `quick`、`standard`、`optimized`，负载包括 `cpu`、`gpu`、`combined`，耗时取决于温度稳定过程。校准会创建负载、改变转速，并临时关闭正在运行的菜单栏应用，以免应用覆盖测量设置。正常完成后会重新打开应用；Ctrl-C 中断时会尝试恢复 Apple 控制，之后请重新打开 MacFanPro，并核对原来的模式或终端转速设置。
+模式包括 `quick`、`standard`、`optimized`，负载包括 `cpu`、`gpu`、`combined`，耗时取决于温度稳定过程。校准会创建负载、改变转速，并临时关闭正在运行的菜单栏应用，以免应用覆盖测量设置。正常完成后会重新打开应用；Ctrl-C 中断时会尝试恢复 Apple 控制，之后请重新打开 MacFanControl，并核对原来的模式或终端转速设置。
 
 结果保存在 `~/Library/Application Support/MacFanPro/calibration.json`，另有 CSV 过程记录供分析。文件采用原子写入；未通过有效性检查的结果不会覆盖已有校准。选择智能模式时会重新读取数据；缺失或被拒绝的数据使用默认曲线。对比校准前后效果时，应保持负载和环境条件接近。
 
-如果明确要放弃校准、恢复默认曲线，可运行 `macfanpro calibrate --reset`，再重新选择智能模式。这会删除校准文件，并非更新必需步骤。
+如果明确要放弃校准、恢复默认曲线，可运行 `macfancontrol calibrate --reset`，再重新选择智能模式。这会删除校准文件，并非更新必需步骤。
 
 ## 更新
 
@@ -329,8 +333,8 @@ sudo macfanpro calibrate --mode standard --stress combined
 
 ### DMG 覆盖更新
 
-1. 下载并打开新版 DMG，将 **MacFanPro.app** 拖入“应用程序”，选择 **“替换”**。如果 Finder 提示应用正在使用，先退出 MacFanPro，再替换。
-2. **重新启动 MacFanPro**。如果旧应用仍在运行，先退出后再打开，确保运行的是新版。
+1. 下载并打开新版 DMG，将 **MacFanControl.app** 拖入“应用程序”，选择 **“替换”**。如果 Finder 提示应用正在使用，先退出 MacFanControl，再替换。
+2. **重新启动 MacFanControl**。如果旧应用仍在运行，先退出后再打开，确保运行的是新版。
 3. 需要同步后台服务时，按设置窗口提示点击 **“安装并启用”**，在 macOS 系统弹窗中授权；版本已一致时直接使用。
 
 **更新不用先卸载，也不用点击“移除后台服务”。** 应用会处理服务同步，原有配置、校准数据和日志会保留。Homebrew 管理的安装继续使用下方 Homebrew 更新流程。
@@ -355,10 +359,10 @@ sudo macfanpro calibrate --mode standard --stress combined
 
 ```bash
 brew update
-brew upgrade macfanpro
-macfanpro auto --stop-app
-sudo "$(brew --prefix macfanpro)/bin/macfanpro" install
-open /Applications/MacFanPro.app
+brew upgrade macfancontrol
+macfancontrol auto --stop-app
+sudo "$(brew --prefix macfancontrol)/bin/macfancontrol" install
+open /Applications/MacFanControl.app
 ```
 
 `auto --stop-app` 会在替换期间明确关闭应用并释放风扇控制。重新打开后，请核对原模式是否恢复；原来明确设置的 CLI 转速需要重新施加。
@@ -384,26 +388,26 @@ git pull --ff-only
 
 ## 卸载
 
-本节仅用于**不再使用 MacFanPro** 时，更新版本无需执行这些步骤。
+本节仅用于**不再使用 MacFanControl** 时，更新版本无需执行这些步骤。
 
-**DMG 安装**：在菜单中选择 **“设置 → 服务 → 移除后台服务”**，确认并授权，完成后退出应用，再将 MacFanPro.app 移入废纸篓。配置、校准数据和日志会保留。
+**DMG 安装**：在菜单中选择 **“设置 → 服务 → 移除后台服务”**，确认并授权，完成后退出应用，再将 MacFanControl.app 移入废纸篓。配置、校准数据和日志会保留。
 
 也可通过以下命令移除应用、命令行工具和后台服务，同时保留用户数据：
 
 ```bash
-sudo macfanpro uninstall
+sudo macfancontrol uninstall
 ```
 
 如需同时删除当前用户的模式文件、校准数据、采样记录和运行日志，以及后台服务的运行日志，请**改用**：
 
 ```bash
-sudo macfanpro uninstall --purge-data
+sudo macfancontrol uninstall --purge-data
 ```
 
 如果通过 Homebrew 安装，完成上述卸载后，还需执行：
 
 ```bash
-brew uninstall macfanpro
+brew uninstall macfancontrol
 ```
 
 `--purge-data` 清理当前用户的 `~/Library/Application Support/MacFanPro/`、`~/Library/Logs/MacFanPro/`，以及后台服务的 `/var/root/Library/Logs/MacFanPro/`；不会删除自定义导出目录或单独保存的界面偏好。仅拖走 App 或仅运行 `brew uninstall` 不会完成后台服务卸载。
@@ -412,10 +416,10 @@ brew uninstall macfanpro
 
 ### 记录一次负载
 
-短时采样可用 `macfanpro log --duration 60s`，错误或非正数的时长会被拒绝。日志采集不需要 sudo；即使使用 sudo 启动，也会先切换回当前用户再创建记录，避免生成普通用户无法访问的 root 文件。需要以 10 Hz 记录一小时并长期保留时，执行：
+短时采样可用 `macfancontrol log --duration 60s`，错误或非正数的时长会被拒绝。日志采集不需要 sudo；即使使用 sudo 启动，也会先切换回当前用户再创建记录，避免生成普通用户无法访问的 root 文件。需要以 10 Hz 记录一小时并长期保留时，执行：
 
 ```bash
-macfanpro log --rate 10 --duration 1h --no-expire
+macfancontrol log --rate 10 --duration 1h --no-expire
 ```
 
 `log` 只记录读数，不切换模式、不下发风扇转速。每次采样包含：
@@ -426,7 +430,7 @@ macfanpro log --rate 10 --duration 1h --no-expire
 | `processes.csv` | 随采样记录的高 CPU 占用进程 |
 | `metadata.json` | 机型标识、系统与应用版本、风扇范围、采样率、传感器键、起止时间和样本数 |
 
-CSV 和 JSON 可以直接交给 pandas、R 或电子表格分析。原始 SMC 键便于对照重复实验，但含义可能随芯片变化。元数据中的版本字段为兼容旧数据保留了 `thermalForgeVersion` 名称，实际值是 MacFanPro 版本。
+CSV 和 JSON 可以直接交给 pandas、R 或电子表格分析。原始 SMC 键便于对照重复实验，但含义可能随芯片变化。元数据中的版本字段为兼容旧数据保留了 `thermalForgeVersion` 名称，实际值是 MacFanControl 版本。
 
 做对比时，请记录相同的负载、模式、校准、环境温度与持续时间，并另行测量任务吞吐量。CPU 进程相关性不等于 GPU 利用率、功耗或降频证据，也不能单独证明升温原因。日志中含有进程名称，分享前请检查内容。
 
@@ -448,7 +452,7 @@ CSV 和 JSON 可以直接交给 pandas、R 或电子表格分析。原始 SMC �
 后台服务日志属于 root 用户，查看时需要管理员权限，例如查看当天最后 50 行：
 
 ```bash
-sudo tail -n 50 "/var/root/Library/Logs/MacFanPro/macfanpro-$(date +%F).log"
+sudo tail -n 50 "/var/root/Library/Logs/MacFanPro/macfancontrol-$(date +%F).log"
 ```
 
 后台服务的诊断信息同时写入系统日志（0.2.3.56 起），包括启动、启动和停止时释放风扇、高温保护、睡眠唤醒及每个请求的结果，无需管理员权限即可查看：
@@ -473,9 +477,9 @@ log show --last 1h --style compact --predicate 'subsystem == "io.github.macfanpr
 在新机器上，可先收集只读信息：
 
 ```bash
-macfanpro --version
-macfanpro status
-macfanpro discover --output discover.txt
+macfancontrol --version
+macfancontrol status
+macfancontrol discover --output discover.txt
 ```
 
 提交[兼容性报告](https://github.com/macfanpro/macfanpro/issues/new?template=compatibility-report.md)时，附上具体机型、芯片、年份、macOS 版本与安装方式，并说明实际测试过的操作。能够读取温度不代表已验证风扇写入或睡眠唤醒。
@@ -488,11 +492,11 @@ macfanpro discover --output discover.txt
 
 ### 关闭应用后，风扇仍保持固定转速
 
-检查是否有“终端正在接管风扇”的提示。明确的 CLI 设置会保留到解除，在应用中选择需要的模式即可恢复自动调节。若确实希望由 Apple 控制，可点“默认”或运行 `macfanpro auto`；加上 `--stop-app` 还会关闭应用。它会改变控制归属，不应当作普通的“关闭应用”命令使用。
+检查是否有“终端正在接管风扇”的提示。明确的 CLI 设置会保留到解除，在应用中选择需要的模式即可恢复自动调节。若确实希望由 Apple 控制，可点“默认”或运行 `macfancontrol auto`；加上 `--stop-app` 还会关闭应用。它会改变控制归属，不应当作普通的“关闭应用”命令使用。
 
 ### 提示后台服务不可用或版本不一致
 
-应用、CLI 和后台服务需要来自同一版本。先退出应用，再按原安装方式重新执行安装或同步步骤：Homebrew 用户使用配方中的 CLI，发行包用户使用解压目录内的 `./bin/macfanpro`。完成后重新打开应用；若仍失败，请保留终端错误和对应时段日志以便排查。
+应用、CLI 和后台服务需要来自同一版本。先退出应用，再按原安装方式重新执行安装或同步步骤：Homebrew 用户使用配方中的 CLI，发行包用户使用解压目录内的 `./bin/macfancontrol`。完成后重新打开应用；若仍失败，请保留终端错误和对应时段日志以便排查。
 
 ### 下载后提示无法验证开发者
 
@@ -502,11 +506,11 @@ macfanpro discover --output discover.txt
 
 ### 温度或风扇读数与其他机器不同
 
-不同机型提供的传感器、风扇数量及转速范围可能不同。提交问题时，请附上机型、macOS 版本、MacFanPro 版本、安装方式、复现步骤，以及相关状态输出或日志片段。问题反馈入口：[Issues](https://github.com/macfanpro/macfanpro/issues)。
+不同机型提供的传感器、风扇数量及转速范围可能不同。提交问题时，请附上机型、macOS 版本、MacFanControl 版本、安装方式、复现步骤，以及相关状态输出或日志片段。问题反馈入口：[Issues](https://github.com/macfanpro/macfanpro/issues)。
 
 ### 温度与 Stats 等工具不一致
 
-MacFanPro 的 CPU、GPU 行显示对应传感器中的**最高值**，可与 Stats 的“Hottest CPU / Hottest GPU”对照，不要与“Average”对照。在 M4 系列上，CPU 行使用与 Stats 相同的核心传感器；其他芯片按传感器前缀分组，可能与其他工具的选择不同。风扇控制和 95°C 安全阈值跟随芯片最热点（包括不在 CPU 行显示的热点传感器），因此风扇可能在 CPU、GPU 行都未到阈值时开始提速。对照方法与实测数据见 [传感器校准记录](docs/thermal-sensor-calibration-20260924.md)。
+MacFanControl 的 CPU、GPU 行显示对应传感器中的**最高值**，可与 Stats 的“Hottest CPU / Hottest GPU”对照，不要与“Average”对照。在 M4 系列上，CPU 行使用与 Stats 相同的核心传感器；其他芯片按传感器前缀分组，可能与其他工具的选择不同。风扇控制和 95°C 安全阈值跟随芯片最热点（包括不在 CPU 行显示的热点传感器），因此风扇可能在 CPU、GPU 行都未到阈值时开始提速。对照方法与实测数据见 [传感器校准记录](docs/thermal-sensor-calibration-20260924.md)。
 
 ## 开发与贡献
 
@@ -530,11 +534,11 @@ flowchart LR
 
 | 路径 | 内容 |
 | --- | --- |
-| [`Sources/MacFanProApp/`](Sources/MacFanProApp/) | SwiftUI 菜单栏应用、界面状态和交互 |
-| [`Sources/MacFanProCore/`](Sources/MacFanProCore/) | SMC 访问、风扇控制、后台通信、模式与日志 |
-| [`Sources/MacFanProLocalization/`](Sources/MacFanProLocalization/) | 语言选择和翻译资源 |
-| [`Sources/macfanpro/`](Sources/macfanpro/) | CLI、应用组装、安装与卸载入口 |
-| [`Tests/MacFanProTests/`](Tests/MacFanProTests/) | 自动化测试 |
+| [`Sources/MacFanControlApp/`](Sources/MacFanControlApp/) | SwiftUI 菜单栏应用、界面状态和交互 |
+| [`Sources/MacFanControlCore/`](Sources/MacFanControlCore/) | SMC 访问、风扇控制、后台通信、模式与日志 |
+| [`Sources/MacFanControlLocalization/`](Sources/MacFanControlLocalization/) | 语言选择和翻译资源 |
+| [`Sources/macfancontrol/`](Sources/macfancontrol/) | CLI、应用组装、安装与卸载入口 |
+| [`Tests/MacFanControlTests/`](Tests/MacFanControlTests/) | 自动化测试 |
 | [`Scripts/`](Scripts/) | 测试、语言资源校验与发行打包脚本 |
 | [`website/`](website/) | GitHub Pages 官网及 18 种语言的翻译 |
 
@@ -567,24 +571,24 @@ bash Scripts/package-release.sh
 - [相对上游的差异](docs/upstream-divergence.md)与[本次合并检查](docs/upstream-sync-20261003.md)：合并时要保留的功能及此次验证结果。
 - [GUI 本地化](docs/gui-localization.md)：语言表、占位符、从右往左排版与资源打包检查。
 
-上游 README 中的 `experiment`、`compare`、GPU/功耗指标、共享温度数据库等属于规划，本仓库 CLI 尚未提供这些功能；可运行 `macfanpro --help` 确认可用命令。`docs/upstream/` 和早期验收文档用于历史参考，不代表当前功能或所有机型的测试结论。
+上游 README 中的 `experiment`、`compare`、GPU/功耗指标、共享温度数据库等属于规划，本仓库 CLI 尚未提供这些功能；可运行 `macfancontrol --help` 确认可用命令。`docs/upstream/` 和早期验收文档用于历史参考，不代表当前功能或所有机型的测试结论。
 
-版本号采用 **上游版本号 + 第四段修订号**，由 [`Version.swift`](Sources/MacFanProCore/Version.swift) 定义。例如 `0.2.3.15` 基于上游 `0.2.3`；只有实际合入新的上游版本后才更新前三段。应用和 CLI 按各段数字比较版本，缺省段视为 0，不为特定旧版添加比较例外。
+版本号采用 **上游版本号 + 第四段修订号**，由 [`Version.swift`](Sources/MacFanControlCore/Version.swift) 定义。例如 `0.2.3.15` 基于上游 `0.2.3`；只有实际合入新的上游版本后才更新前三段。应用和 CLI 按各段数字比较版本，缺省段视为 0，不为特定旧版添加比较例外。
 
 ## 参与贡献
 
 欢迎任何形式的贡献，详见 [CONTRIBUTING.md](CONTRIBUTING.md)（英文，也欢迎用中文提交）。问题讨论和功能建议可以发在 [Discussions](https://github.com/macfanpro/macfanpro/discussions)；安全问题请按 [SECURITY.md](SECURITY.md) 私下报告。
 
-- **问题反馈**：在 [Issues](https://github.com/macfanpro/macfanpro/issues) 报告问题或提交兼容性报告，请附上机型、macOS 版本、MacFanPro 版本和 `macfanpro status` 输出。
+- **问题反馈**：在 [Issues](https://github.com/macfanpro/macfanpro/issues) 报告问题或提交兼容性报告，请附上机型、macOS 版本、MacFanControl 版本和 `macfancontrol status` 输出。
 - **代码**：按 [开发与贡献](#开发与贡献) 中的步骤构建和验证，再通过 [Pull Request](https://github.com/macfanpro/macfanpro/pulls) 提交。
 - **翻译**：界面翻译由维护者完成，欢迎母语用户修正或补充新语言；繁体中文由脚本从简体生成。流程见 [GUI 本地化](docs/gui-localization.md)。
 
 ### 贡献者
 
 <a href="https://github.com/macfanpro/macfanpro/graphs/contributors">
-  <img src="https://contrib.rocks/image?repo=macfanpro/macfanpro" alt="MacFanPro 贡献者">
+  <img src="https://contrib.rocks/image?repo=macfanpro/macfanpro" alt="MacFanControl 贡献者">
 </a>
 
 ## 来源与许可
 
-MacFanPro 由 [@hongyukeji](https://github.com/hongyukeji) 维护，遵循 [MIT License](LICENSE)。MacFanPro 基于 [ThermalForge](https://github.com/ProducerGuy/ThermalForge) 独立维护，使用自己的版本、安装名称和更新渠道，并非上游官方发行版。项目完整保留 ThermalForge 上游版权与许可，衍生关系及第三方依赖说明见 [NOTICE.md](NOTICE.md) 和 [ThirdPartyNotices/](ThirdPartyNotices/)。
+MacFanControl 由 [@hongyukeji](https://github.com/hongyukeji) 维护，遵循 [MIT License](LICENSE)。MacFanControl 基于 [ThermalForge](https://github.com/ProducerGuy/ThermalForge) 独立维护，使用自己的版本、安装名称和更新渠道，并非上游官方发行版。项目完整保留 ThermalForge 上游版权与许可，衍生关系及第三方依赖说明见 [NOTICE.md](NOTICE.md) 和 [ThirdPartyNotices/](ThirdPartyNotices/)。

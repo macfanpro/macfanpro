@@ -1,5 +1,5 @@
 {
-  "title": "MacFanPro — 무료 오픈 소스 Mac 팬 제어",
+  "title": "MacFanControl — 무료 오픈 소스 Mac 팬 제어",
   "description": "Apple Silicon Mac용 네이티브 팬 제어 앱. 온도 모니터링, 스마트 팬 조절, 프록시 설치와 Homebrew를 지원합니다. 앱 인터페이스 18개 언어, macOS 14 이상.",
   "skip": "본문으로 이동",
   "nav": [
@@ -17,7 +17,7 @@
   "source": "GitHub에서 소스 보기",
   "requirements": "macOS 14 이상 · Apple Silicon · 물리적 팬 필요",
   "stage_note": "메뉴 막대에 자연스럽게",
-  "caption": "실제 영문 화면 · v0.2.3.36 · M4 Max MacBook Pro",
+  "caption": "인터페이스 미리보기 · v0.2.3.64 · 예시 값",
   "facts": [
     [
       "Swift",
@@ -91,11 +91,11 @@
     ],
     [
       "메뉴 막대에서 시작",
-      "설치 후 MacFanPro를 열고 팬 아이콘을 클릭해 모드를 선택하세요."
+      "설치 후 MacFanControl를 열고 팬 아이콘을 클릭해 모드를 선택하세요."
     ]
   ],
   "update": "업데이트는 어떻게 하나요?",
-  "update_body": "DMG: 새 MacFanPro.app을 응용 프로그램으로 드래그하고 대치를 선택한 뒤 다시 실행하세요. 이전 앱이 실행 중이면 종료하고, 서비스 동기화 안내가 나오면 인증하세요. 삭제할 필요가 없으며 설정, 보정 데이터와 로그는 유지됩니다. Homebrew 사용자는 Homebrew로 업데이트하고, 온라인 설치 사용자는 기존 명령을 다시 실행할 수 있습니다. GitHub에 연결되지 않을 때 프록시를 사용하세요.",
+  "update_body": "DMG: 새 MacFanControl.app을 응용 프로그램으로 드래그하고 대치를 선택한 뒤 다시 실행하세요. 이전 앱이 실행 중이면 종료하고, 서비스 동기화 안내가 나오면 인증하세요. 삭제할 필요가 없으며 설정, 보정 데이터와 로그는 유지됩니다. Homebrew 사용자는 Homebrew로 업데이트하고, 온라인 설치 사용자는 기존 명령을 다시 실행할 수 있습니다. GitHub에 연결되지 않을 때 프록시를 사용하세요.",
   "download": "릴리스 다운로드",
   "full_guide": "전체 설치 및 프록시 가이드",
   "source_build": "소스에서 빌드",
@@ -112,7 +112,7 @@
     ],
     [
       "응용 프로그램 폴더로 옮기면 끝인가요?",
-      "0.2.3.50+ · DMG — MacFanPro를 응용 프로그램으로 옮긴 다음 실행하세요. 팬 제어를 위해 백그라운드 서비스가 필요합니다. macOS가 관리자 인증을 요청합니다. 현재 릴리스는 ad-hoc 서명을 사용하며 Apple 공증을 받지 않아 최초 실행 시 경고가 표시될 수 있습니다."
+      "0.2.3.50+ · DMG — MacFanControl를 응용 프로그램으로 옮긴 다음 실행하세요. 팬 제어를 위해 백그라운드 서비스가 필요합니다. macOS가 관리자 인증을 요청합니다. 현재 릴리스는 ad-hoc 서명을 사용하며 Apple 공증을 받지 않아 최초 실행 시 경고가 표시될 수 있습니다."
     ],
     [
       "Password에서 멈췄어요.",
@@ -134,11 +134,12 @@
   "issues": "문제 보고",
   "license": "MIT 라이선스",
   "credit": "ThermalForge 기반으로 개발했습니다. 업스트림과 모든 기여자에게 감사드립니다.",
-  "image_alt": "온도, 회전수, 제어 모드와 언어 설정을 보여 주는 MacFanPro 패널",
+  "image_alt": "온도, 회전수, 제어 모드와 언어 설정을 보여 주는 MacFanControl 패널",
   "main_nav": "주 탐색",
   "languages": "언어 선택",
-  "copyright": "MacFanPro 기여자",
+  "copyright": "MacFanControl 기여자",
   "dmg_title": "DMG로 설치",
   "dmg_download": "DMG 다운로드",
-  "dmg_body": "MacFanPro를 응용 프로그램으로 옮긴 다음 실행하세요. 팬 제어를 위해 백그라운드 서비스가 필요합니다. macOS가 관리자 인증을 요청합니다."
+  "dmg_body": "MacFanControl를 응용 프로그램으로 옮긴 다음 실행하세요. 팬 제어를 위해 백그라운드 서비스가 필요합니다. macOS가 관리자 인증을 요청합니다.",
+  "transition_note": "MacFanControl의 이전 이름은 MacFanPro입니다."
 }

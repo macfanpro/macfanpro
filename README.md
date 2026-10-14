@@ -1,8 +1,8 @@
 <p align="center">
-  <img src="docs/images/icon.png" width="128" alt="MacFanPro app icon">
+  <img src="docs/images/icon.png" width="128" alt="MacFanControl app icon">
 </p>
 
-<h1 align="center">MacFanPro</h1>
+<h1 align="center">MacFanControl</h1>
 
 <p align="center">
   <b>Fan control for Apple Silicon Macs.</b><br>
@@ -36,6 +36,8 @@
 > [!NOTE]
 > Requires **macOS 14 or later** and an **Apple Silicon Mac with physical fans**; see [compatibility](#compatibility). Installation needs an administrator password to set up the [background service](#safety-and-permissions). Release packages are not yet notarized by Apple; if macOS blocks the first launch, follow the [first-launch instructions](#macos-says-it-cant-verify-the-developer).
 
+**MacFanControl was formerly MacFanPro.** Version 0.2.3.64 introduces `MacFanControl.app`, the `macfancontrol` command and new package names. Existing users can use their usual update entry point; compatibility aliases preserve older updater contracts and existing settings. The GitHub repository and website stay at their current addresses until users have upgraded. See the [transition details](docs/macfancontrol-transition.md).
+
 ## Quick install
 
 For a manual download when GitHub is hard to reach, get the DMG from the [Gitee release mirror](https://gitee.com/macfanpro/macfanpro/releases). Mirrored packages are unchanged; the online installer below still downloads from GitHub. See [mirror details](docs/gitee-mirror.md).
@@ -55,13 +57,13 @@ When Terminal asks for your administrator password, type your Mac login password
 
 **Understand and develop:** [Fan curves](#fan-curves-and-smart-mode) · [Safety](#safety-and-permissions) · [Calibration](#optional-calibration) · [Logs](#logs-and-data) · [Compatibility](#compatibility) · [FAQ](#faq) · [Development](#development)
 
-## Why MacFanPro
+## Why MacFanControl
 
 - **Free and open source** under the MIT license — no paid tier, no license key.
 - **Private**: temperature control and logs stay on your Mac. Update checks contact this GitHub repository automatically each day or when requested; installation and updates download files. No telemetry or account is required.
 - **Native and light**: a Swift menu bar app and a small background service; no Electron, no Dock icon.
 - **Safe by design**: a 95°C safety override, a background thermal floor that works even if the app quits, and a watchdog that hands the fans back to macOS if the app stops responding.
-- **Scriptable**: a `macfanpro` CLI to set speeds, read JSON status and record CSV samples.
+- **Scriptable**: a `macfancontrol` CLI to set speeds, read JSON status and record CSV samples.
 - **18 languages**, following your system language, including right-to-left Arabic.
 
 An open-source alternative to tools like Macs Fan Control for people who want transparent, scriptable fan control on Apple Silicon.
@@ -69,11 +71,13 @@ An open-source alternative to tools like Macs Fan Control for people who want tr
 ## Features
 
 <p align="center">
-  <img src="docs/images/menu-bar-en.png" width="320" alt="MacFanPro English menu showing temperatures, fan speeds, profiles and update settings">
-  <img src="docs/images/menu-bar-zh-CN.png" width="320" alt="MacFanPro Simplified Chinese menu showing temperatures, fan speeds, profiles and update settings">
+  <img src="docs/images/menu-bar-en.png" width="320" alt="MacFanControl English menu showing temperatures, fan speeds, profiles and update settings">
+  <img src="docs/images/menu-bar-zh-CN.png" width="320" alt="MacFanControl Simplified Chinese menu showing temperatures, fan speeds, profiles and update settings">
   <br>
-  <sub>MacFanPro 0.2.3.36 on an M4 Max MacBook Pro. English and Simplified Chinese shown; 18 interface languages available.</sub>
+  <sub>MacFanControl 0.2.3.36 on an M4 Max MacBook Pro. English and Simplified Chinese shown; 18 interface languages available.</sub>
 </p>
+
+Interface previews use sample readings; no hardware test is implied.
 
 - **Temperature and fan monitoring**: CPU, GPU, memory, SSD and ambient temperatures, and each fan's actual speed. Which readings appear depends on the sensors your Mac provides.
 - **Automatic fan control**: Smart, Silent, Balanced, Performance and Max profiles, plus a one-click return to Apple's automatic control.
@@ -103,9 +107,9 @@ MacBook Pro, Mac mini, Mac Studio and iMac configurations with Apple Silicon and
 
 ### Drag to Applications (DMG)
 
-Starting with **0.2.3.50**, download `MacFanPro-<version>-macos-arm64.dmg` for graphical installation:
+Starting with **0.2.3.50**, download `MacFanControl-<version>-macos-arm64.dmg` for graphical installation:
 
-1. Download the DMG from [Releases](https://github.com/macfanpro/macfanpro/releases/latest), open it, and drag **MacFanPro.app** into **Applications**.
+1. Download the DMG from [Releases](https://github.com/macfanpro/macfanpro/releases/latest), open it, and drag **MacFanControl.app** into **Applications**.
 2. Open the app from Applications. If macOS blocks it, follow the [first-launch instructions](#macos-says-it-cant-verify-the-developer); these builds are not notarized.
 3. Choose **Install and enable** in the setup window and approve the macOS administrator authorization dialog. The app includes the service executable, so this step needs no network, Homebrew or Xcode.
 
@@ -155,9 +159,9 @@ Run in Terminal:
 ```bash
 brew tap macfanpro/tap
 brew trust macfanpro/tap
-brew install macfanpro
-sudo "$(brew --prefix macfanpro)/bin/macfanpro" install
-open /Applications/MacFanPro.app
+brew install macfancontrol
+sudo "$(brew --prefix macfancontrol)/bin/macfancontrol" install
+open /Applications/MacFanControl.app
 ```
 
 Since Homebrew 7, formulae from third-party taps are not loaded until you trust the tap with `brew trust` (once). Homebrew downloads, builds and manages the version; the `sudo` command installs that version's app and background service. The formula lives in [macfanpro/homebrew-tap](https://github.com/macfanpro/homebrew-tap).
@@ -166,16 +170,16 @@ Since Homebrew 7, formulae from third-party taps are not loaded until you trust 
 
 No Homebrew or Xcode needed.
 
-1. Go to [Releases](https://github.com/macfanpro/macfanpro/releases/latest) and download `MacFanPro-<version>-macos-arm64.tar.gz`. Choose this package, not GitHub's automatic `Source code` archives.
-2. Double-click to extract it. Keep `MacFanPro.app` and the `bin` folder together.
+1. Go to [Releases](https://github.com/macfanpro/macfanpro/releases/latest) and download `MacFanControl-<version>-macos-arm64.tar.gz`. Choose this package, not GitHub's automatic `Source code` archives.
+2. Double-click to extract it. Keep `MacFanControl.app` and the `bin` folder together.
 3. In Terminal, go into the extracted folder, install, and open the app.
 
 For example, with `0.2.3.50` extracted in Downloads:
 
 ```bash
-cd ~/Downloads/MacFanPro-0.2.3.50-macos-arm64
-sudo ./bin/macfanpro install
-open /Applications/MacFanPro.app
+cd ~/Downloads/MacFanControl-0.2.3.64-macos-arm64
+sudo ./bin/macfancontrol install
+open /Applications/MacFanControl.app
 ```
 
 For another version or location, change the folder path. After a successful install you can delete the archive and the extracted folder.
@@ -188,17 +192,17 @@ You need Xcode 16 or later.
 
 ```bash
 git clone https://github.com/macfanpro/macfanpro.git
-cd macfanpro
+cd macfancontrol
 ./setup.sh
 ```
 
-`setup.sh` builds the code, assembles the app, asks for your administrator password to install, and opens MacFanPro. No further install command is needed.
+`setup.sh` builds the code, assembles the app, asks for your administrator password to install, and opens MacFanControl. No further install command is needed.
 
 This builds the repository's `main` branch, which may include unreleased changes. To build a specific release, run `git checkout v0.2.3.50` (with the version you want) before `./setup.sh`.
 
 ### After installing
 
-The app is installed at `/Applications/MacFanPro.app`. It lives in the menu bar and has no Dock icon. To start it automatically, turn on Launch at Login in Settings.
+The app is installed at `/Applications/MacFanControl.app`. It lives in the menu bar and has no Dock icon. To start it automatically, turn on Launch at Login in Settings.
 
 Terminal shows nothing while you type your administrator password; press Return when done. The app works with the installed background service, so everyday use doesn't ask for your password again.
 
@@ -227,19 +231,19 @@ Run these individually as needed. With a normal install and the background servi
 
 | Command | Purpose |
 | --- | --- |
-| `macfanpro --version` | Show the CLI version |
-| `macfanpro status` | Print fan speeds and temperatures as JSON |
-| `macfanpro max` | Set all fans to maximum now |
-| `macfanpro set 3000` | Request 3000 RPM on all fans, within each fan's hardware range |
-| `macfanpro set 3000 --fan 0` | Set only fan 0 |
-| `macfanpro auto` | Return to Apple's automatic control; the menu bar app keeps running |
-| `macfanpro auto --stop-app` | Quit the menu bar app and return to Apple's automatic control |
-| `macfanpro log --duration 60s` | Record 60 seconds of sensor data to CSV |
-| `macfanpro --help` | List all commands; add `--help` to any command for details |
+| `macfancontrol --version` | Show the CLI version |
+| `macfancontrol status` | Print fan speeds and temperatures as JSON |
+| `macfancontrol max` | Set all fans to maximum now |
+| `macfancontrol set 3000` | Request 3000 RPM on all fans, within each fan's hardware range |
+| `macfancontrol set 3000 --fan 0` | Set only fan 0 |
+| `macfancontrol auto` | Return to Apple's automatic control; the menu bar app keeps running |
+| `macfancontrol auto --stop-app` | Quit the menu bar app and return to Apple's automatic control |
+| `macfancontrol log --duration 60s` | Record 60 seconds of sensor data to CSV |
+| `macfancontrol --help` | List all commands; add `--help` to any command for details |
 
-`max` and `set` create a speed held from Terminal; the app shows a notice and pauses its own control. Press Default, pick a profile, or run `macfanpro auto` to release it. Quitting the menu bar app alone does not release a speed held from Terminal.
+`max` and `set` create a speed held from Terminal; the app shows a notice and pauses its own control. Press Default, pick a profile, or run `macfancontrol auto` to release it. Quitting the menu bar app alone does not release a speed held from Terminal.
 
-`macfanpro auto` does not quit the app, and the app's automatic profiles may take over again. To hand control back to macOS completely, use `macfanpro auto --stop-app`.
+`macfancontrol auto` does not quit the app, and the app's automatic profiles may take over again. To hand control back to macOS completely, use `macfancontrol auto --stop-app`.
 
 The advanced `watch` command keeps controlling the fans by profile (it is not read-only). It supports `silent`, `balanced`, `performance` and `max`; Smart is selected in the menu bar app. Calibration is optional and creates a load; see [Calibration](#optional-calibration). Both controlling `watch` and running a calibration need administrator rights. Quit the menu bar app before starting `watch`; its polling interval must be 0.01–5 seconds. Calibration closes the invoking user's app and reopens it afterwards. Both commands use the installed daemon for fan writes and refuse to start over an existing manual CLI hold; finish that hold first. Ctrl-C or SIGTERM stops the foreground session and releases its control. Read the command's `--help` before using either.
 
@@ -279,7 +283,7 @@ The ramp governor limits how quickly the requested speed changes. Smart and Bala
 
 Earlier cooling can reduce heat buildup during sustained compilation, rendering or inference. Actual temperature, noise and throughput depend on the machine, room temperature and workload. The profile does not guarantee an 85°C maximum, a fixed performance gain or a measured increase in fan lifespan.
 
-The implementation is in [Profile.swift](Sources/MacFanProCore/Profile.swift) and [ThermalMonitor.swift](Sources/MacFanProCore/ThermalMonitor.swift). The concepts are adapted from [ThermalForge's technical documentation](https://github.com/ProducerGuy/ThermalForge/blob/93ed7d2df231b079704156b5ae67654a50d31f62/README.md#smart-profile), with the descriptions checked against this fork.
+The implementation is in [Profile.swift](Sources/MacFanControlCore/Profile.swift) and [ThermalMonitor.swift](Sources/MacFanControlCore/ThermalMonitor.swift). The concepts are adapted from [ThermalForge's technical documentation](https://github.com/ProducerGuy/ThermalForge/blob/93ed7d2df231b079704156b5ae67654a50d31f62/README.md#smart-profile), with the descriptions checked against this fork.
 
 ## Safety and permissions
 
@@ -289,7 +293,7 @@ The menu bar app runs as your login user. A root-owned background service perfor
 | --- | --- |
 | 95°C / 90°C protection | The app's monitor requests maximum speed at 95°C and keeps the override until below 90°C. The daemon independently protects against a recorded manual hold keeping fans below maximum at high temperature. This daemon protection works while the app is closed. |
 | Heartbeat watchdog | For app-supervised holds, a heartbeat older than 15 s is treated as expired on the watchdog's next check (normally every 5 s). It attempts to return control to macOS; an active thermal override keeps maximum speed until cooldown. |
-| Terminal ownership | Deliberate `max`/`set` CLI holds are unsupervised: closing the app or losing its heartbeat does not cancel them. Release them with Default, a profile selection, or `macfanpro auto`. |
+| Terminal ownership | Deliberate `max`/`set` CLI holds are unsupervised: closing the app or losing its heartbeat does not cancel them. Release them with Default, a profile selection, or `macfancontrol auto`. |
 | Sleep/wake recovery | The daemon attempts to reapply its current hold after wake, while retaining the safety override and retrying failed releases. Firmware readiness differs by machine. |
 | Local access control | `/var/run/macfanpro.sock` uses mode `0600` and belongs to the installation's designated user. Each connection is also checked against kernel-provided credentials: only that user and root are allowed; unreadable credentials are rejected before a request is read. |
 | Bounded requests | Versioned messages, size limits, timeouts, bounded concurrent clients and write-rate limits protect the service. Hardware writes are serialized and RPM requests are checked against the fan's range. |
@@ -303,20 +307,20 @@ The protections depend on working software, firmware and sensor readings; they a
 Read the available modes first:
 
 ```bash
-macfanpro calibrate --help
+macfancontrol calibrate --help
 ```
 
 To deliberately start a standard CPU + GPU calibration:
 
 ```bash
-sudo macfanpro calibrate --mode standard --stress combined
+sudo macfancontrol calibrate --mode standard --stress combined
 ```
 
-Modes are `quick`, `standard` and `optimized`; workloads are `cpu`, `gpu` and `combined`. Completion time depends on thermal settling. This operation creates load, changes fan speeds and temporarily closes a running menu bar app so the app cannot overwrite the measurements. Normal completion reopens it. If interrupted with Ctrl-C, the command attempts to restore Apple control; reopen MacFanPro afterwards and check your selected profile or previous Terminal hold.
+Modes are `quick`, `standard` and `optimized`; workloads are `cpu`, `gpu` and `combined`. Completion time depends on thermal settling. This operation creates load, changes fan speeds and temporarily closes a running menu bar app so the app cannot overwrite the measurements. Normal completion reopens it. If interrupted with Ctrl-C, the command attempts to restore Apple control; reopen MacFanControl afterwards and check your selected profile or previous Terminal hold.
 
 Results live in `~/Library/Application Support/MacFanPro/calibration.json`, with a CSV trace for analysis. Saving is atomic and a result rejected by validation does not replace an existing calibration. Selecting Smart reloads the data; missing or rejected data uses the default curve. Keep workload and ambient conditions comparable when assessing whether calibration helped.
 
-To intentionally discard calibration and use the default curve again, run `macfanpro calibrate --reset`, then reselect Smart. This deletes your calibration file; it is not required for an update.
+To intentionally discard calibration and use the default curve again, run `macfancontrol calibrate --reset`, then reselect Smart. This deletes your calibration file; it is not required for an update.
 
 ## Updating
 
@@ -326,8 +330,8 @@ The app checks this repository's releases once a day. In **Settings → Updates*
 
 ### DMG updates
 
-1. Download and open the new DMG, drag **MacFanPro.app** into Applications, and choose **Replace**. If Finder says the app is in use, quit MacFanPro and retry.
-2. **Relaunch MacFanPro**. If the old app is still running, quit it and open it again so the new version starts.
+1. Download and open the new DMG, drag **MacFanControl.app** into Applications, and choose **Replace**. If Finder says the app is in use, quit MacFanControl and retry.
+2. **Relaunch MacFanControl**. If the old app is still running, quit it and open it again so the new version starts.
 3. If the service needs synchronization, choose **Install and enable** in the setup window and approve the macOS authorization dialog. If the versions already match, the app is ready to use.
 
 **Do not uninstall or choose Remove background service when updating.** The app handles service synchronization and preserves settings, calibration and logs. Homebrew-managed installations continue to use the Homebrew update flow below.
@@ -352,10 +356,10 @@ The in-app update check uses the macOS system proxy. “Update in Terminal” re
 
 ```bash
 brew update
-brew upgrade macfanpro
-macfanpro auto --stop-app
-sudo "$(brew --prefix macfanpro)/bin/macfanpro" install
-open /Applications/MacFanPro.app
+brew upgrade macfancontrol
+macfancontrol auto --stop-app
+sudo "$(brew --prefix macfancontrol)/bin/macfancontrol" install
+open /Applications/MacFanControl.app
 ```
 
 `auto --stop-app` intentionally stops the app and releases fan control during replacement. After reopening, check that your previous profile is selected; a deliberate CLI hold needs to be set again.
@@ -381,26 +385,26 @@ If you checked out a release tag, run `git fetch origin --tags`, check out the n
 
 ## Uninstall
 
-These steps are only for **stopping use of MacFanPro**, not for updating it.
+These steps are only for **stopping use of MacFanControl**, not for updating it.
 
-**DMG installation**: choose **Settings → Background service → Remove background service**, confirm and authorize, then quit the app and move MacFanPro.app to the Trash. Settings, calibration and logs are kept.
+**DMG installation**: choose **Settings → Background service → Remove background service**, confirm and authorize, then quit the app and move MacFanControl.app to the Trash. Settings, calibration and logs are kept.
 
 Alternatively, remove the app, command-line tool and background service with this command, keeping your data:
 
 ```bash
-sudo macfanpro uninstall
+sudo macfancontrol uninstall
 ```
 
 To also delete your profiles, calibration data, samples and runtime logs, and the background service's logs, run this **instead**:
 
 ```bash
-sudo macfanpro uninstall --purge-data
+sudo macfancontrol uninstall --purge-data
 ```
 
 If you installed with Homebrew, also run afterwards:
 
 ```bash
-brew uninstall macfanpro
+brew uninstall macfancontrol
 ```
 
 `--purge-data` removes your `~/Library/Application Support/MacFanPro/` and `~/Library/Logs/MacFanPro/`, and the background service's `/var/root/Library/Logs/MacFanPro/`. It does not delete custom export folders or separately stored interface preferences. Dragging the app to the Trash or running only `brew uninstall` does not remove the background service.
@@ -409,10 +413,10 @@ brew uninstall macfanpro
 
 ### Record a workload
 
-For a short capture, use `macfanpro log --duration 60s`. Invalid or nonpositive durations are rejected. Logging does not need sudo; if launched with sudo, it drops to the invoking user before creating recordings, so the files remain accessible to that user. For a 10 Hz, one-hour session that you want to retain:
+For a short capture, use `macfancontrol log --duration 60s`. Invalid or nonpositive durations are rejected. Logging does not need sudo; if launched with sudo, it drops to the invoking user before creating recordings, so the files remain accessible to that user. For a 10 Hz, one-hour session that you want to retain:
 
 ```bash
-macfanpro log --rate 10 --duration 1h --no-expire
+macfancontrol log --rate 10 --duration 1h --no-expire
 ```
 
 `log` records readings without choosing a profile or commanding fan speeds. Each session contains:
@@ -423,7 +427,7 @@ macfanpro log --rate 10 --duration 1h --no-expire
 | `processes.csv` | The top CPU-consuming processes captured with the samples |
 | `metadata.json` | Machine identifier, OS and application version, fan range, sample rate, sensor keys, timestamps and sample count |
 
-CSV and JSON can be opened in pandas, R or a spreadsheet. Raw SMC keys help compare repeated runs, but their meanings vary by chip generation. The version field in metadata retains the historical key `thermalForgeVersion` for compatibility; its value is the MacFanPro version.
+CSV and JSON can be opened in pandas, R or a spreadsheet. Raw SMC keys help compare repeated runs, but their meanings vary by chip generation. The version field in metadata retains the historical key `thermalForgeVersion` for compatibility; its value is the MacFanControl version.
 
 For a useful comparison, record the same workload, profile, calibration, ambient conditions and duration, and measure workload throughput separately. CPU-process correlation alone does not measure GPU utilization, power draw, clock throttling or prove why a temperature changed. Logs include process names; review them before sharing.
 
@@ -445,7 +449,7 @@ Runtime logs are pruned at launch, when a new file starts (size limit or a new d
 Background service logs belong to root and need administrator rights to read, for example the last 50 lines of today's log:
 
 ```bash
-sudo tail -n 50 "/var/root/Library/Logs/MacFanPro/macfanpro-$(date +%F).log"
+sudo tail -n 50 "/var/root/Library/Logs/MacFanPro/macfancontrol-$(date +%F).log"
 ```
 
 The background service also writes its diagnostics to the system log (from 0.2.3.56): starting, fan release at start and stop, the thermal floor, sleep/wake and each request's outcome. No administrator rights are needed to read them:
@@ -464,15 +468,15 @@ Fan control needs **Apple Silicon, macOS 14+, and physical fans**. Intel Macs an
 
 | Evidence | Scope |
 | --- | --- |
-| MacFanPro testing on an M4 Max MacBook Pro | Includes [documented thermal and full sleep/wake checks](docs/macfanpro-0.2.3.23-hardware-validation.md), plus later per-release checks. These records describe the versions tested, not every future build. |
-| ThermalForge upstream reports | The [upstream compatibility table](https://github.com/ProducerGuy/ThermalForge/blob/93ed7d2df231b079704156b5ae67654a50d31f62/README.md#compatibility) lists additional MacBook Pro, Mac Studio and Mac mini configurations, with chip families through M6. The latest additions include a reported 14-inch M4 Pro MacBook Pro (2024) and years on the Mac mini entries. Those are upstream claims, not independent MacFanPro acceptance results. |
+| MacFanControl testing on an M4 Max MacBook Pro | Includes [documented thermal and full sleep/wake checks](docs/macfanpro-0.2.3.23-hardware-validation.md), plus later per-release checks. These records describe the versions tested, not every future build. |
+| ThermalForge upstream reports | The [upstream compatibility table](https://github.com/ProducerGuy/ThermalForge/blob/93ed7d2df231b079704156b5ae67654a50d31f62/README.md#compatibility) lists additional MacBook Pro, Mac Studio and Mac mini configurations, with chip families through M6. The latest additions include a reported 14-inch M4 Pro MacBook Pro (2024) and years on the Mac mini entries. Those are upstream claims, not independent MacFanControl acceptance results. |
 
 For a new machine, collect read-only information first:
 
 ```bash
-macfanpro --version
-macfanpro status
-macfanpro discover --output discover.txt
+macfancontrol --version
+macfancontrol status
+macfancontrol discover --output discover.txt
 ```
 
 Open a [compatibility report](https://github.com/macfanpro/macfanpro/issues/new?template=compatibility-report.md) with the exact model, chip, year, macOS version and installation method. Include which actions you actually tested; do not infer fan-write or wake support from temperature readings alone.
@@ -485,11 +489,11 @@ Smart remains selected while idle. Below its release threshold it allows macOS t
 
 ### Fans remain at a fixed speed after closing the app
 
-Check for a “Fans held from Terminal” banner. An explicit CLI hold survives app exit. Select the profile you want in the app to resume automatic control. If you intentionally want Apple control, use Default or `macfanpro auto`; `--stop-app` also quits the app. Do not use that option as a generic “close app” command: it changes fan ownership.
+Check for a “Fans held from Terminal” banner. An explicit CLI hold survives app exit. Select the profile you want in the app to resume automatic control. If you intentionally want Apple control, use Default or `macfancontrol auto`; `--stop-app` also quits the app. Do not use that option as a generic “close app” command: it changes fan ownership.
 
 ### The background service is unavailable or its version doesn't match
 
-The app, the CLI and the background service must come from the same version. Quit the app, then repeat the install or sync steps for how you installed: Homebrew users use the formula's CLI, release-download users use `./bin/macfanpro` in the extracted folder. Then reopen the app. If it still fails, keep the Terminal error and the logs from that time for troubleshooting.
+The app, the CLI and the background service must come from the same version. Quit the app, then repeat the install or sync steps for how you installed: Homebrew users use the formula's CLI, release-download users use `./bin/macfancontrol` in the extracted folder. Then reopen the app. If it still fails, keep the Terminal error and the logs from that time for troubleshooting.
 
 ### macOS says it can't verify the developer
 
@@ -499,11 +503,11 @@ Each release includes `SHA256SUMS`. Put it in the same folder as the archive and
 
 ### Temperatures or fan readings differ from another Mac
 
-Models differ in their sensors, number of fans and speed ranges. When reporting an issue, include your Mac model, macOS version, MacFanPro version, install method, steps to reproduce, and the relevant status output or log excerpt. Report issues at [Issues](https://github.com/macfanpro/macfanpro/issues).
+Models differ in their sensors, number of fans and speed ranges. When reporting an issue, include your Mac model, macOS version, MacFanControl version, install method, steps to reproduce, and the relevant status output or log excerpt. Report issues at [Issues](https://github.com/macfanpro/macfanpro/issues).
 
 ### Temperatures don't match Stats or similar tools
 
-MacFanPro's CPU and GPU rows show the **highest** reading of their sensors. Compare them with Stats' "Hottest CPU / Hottest GPU", not "Average". On the M4 family, the CPU row uses the same core sensors as Stats; other chips group sensors by prefix, which may differ from other tools. Fan control and the 95°C safety threshold follow the chip's hottest point, including hotspot sensors that the CPU row doesn't show, so the fans may speed up before the CPU or GPU rows reach the threshold. The comparison method and measurements are in the [sensor calibration record](docs/thermal-sensor-calibration-20260924.md).
+MacFanControl's CPU and GPU rows show the **highest** reading of their sensors. Compare them with Stats' "Hottest CPU / Hottest GPU", not "Average". On the M4 family, the CPU row uses the same core sensors as Stats; other chips group sensors by prefix, which may differ from other tools. Fan control and the 95°C safety threshold follow the chip's hottest point, including hotspot sensors that the CPU row doesn't show, so the fans may speed up before the CPU or GPU rows reach the threshold. The comparison method and measurements are in the [sensor calibration record](docs/thermal-sensor-calibration-20260924.md).
 
 ## Development
 
@@ -527,11 +531,11 @@ Preserve the distinction between an app-supervised hold and a deliberate CLI hol
 
 | Path | Contents |
 | --- | --- |
-| [`Sources/MacFanProApp/`](Sources/MacFanProApp/) | SwiftUI menu bar app, UI state and interaction |
-| [`Sources/MacFanProCore/`](Sources/MacFanProCore/) | SMC access, fan control, background service communication, profiles and logging |
-| [`Sources/MacFanProLocalization/`](Sources/MacFanProLocalization/) | Language selection and translations |
-| [`Sources/macfanpro/`](Sources/macfanpro/) | CLI, app assembly, install and uninstall |
-| [`Tests/MacFanProTests/`](Tests/MacFanProTests/) | Automated tests |
+| [`Sources/MacFanControlApp/`](Sources/MacFanControlApp/) | SwiftUI menu bar app, UI state and interaction |
+| [`Sources/MacFanControlCore/`](Sources/MacFanControlCore/) | SMC access, fan control, background service communication, profiles and logging |
+| [`Sources/MacFanControlLocalization/`](Sources/MacFanControlLocalization/) | Language selection and translations |
+| [`Sources/macfancontrol/`](Sources/macfancontrol/) | CLI, app assembly, install and uninstall |
+| [`Tests/MacFanControlTests/`](Tests/MacFanControlTests/) | Automated tests |
 | [`Scripts/`](Scripts/) | Test, localization check and release packaging scripts |
 | [`website/`](website/) | GitHub Pages website, with translations for all 18 languages |
 
@@ -564,24 +568,24 @@ When opening a [Pull Request](https://github.com/macfanpro/macfanpro/pulls), des
 - [Upstream differences](docs/upstream-divergence.md) and [2026-10-03 integration review](docs/upstream-sync-20261003.md): which fork behaviors must survive an upstream merge and what was checked this time.
 - [GUI localization](docs/gui-localization.md): language catalogs, placeholders, right-to-left layout and packaged resources.
 
-Some upstream README items, including `experiment`, `compare`, GPU/power metrics and a shared thermal database, are proposals. This CLI does not provide them. Check `macfanpro --help` for implemented commands. Historical documents in `docs/upstream/` and earlier validation records describe their original versions, not the current feature set.
+Some upstream README items, including `experiment`, `compare`, GPU/power metrics and a shared thermal database, are proposals. This CLI does not provide them. Check `macfancontrol --help` for implemented commands. Historical documents in `docs/upstream/` and earlier validation records describe their original versions, not the current feature set.
 
-Versions are **the upstream version plus a fourth revision number**, defined in [`Version.swift`](Sources/MacFanProCore/Version.swift). For example, `0.2.3.15` is based on upstream `0.2.3`; the first three parts change only after a new upstream release is merged. The app and CLI compare versions part by part numerically, treating missing parts as 0, with no special cases for older versions.
+Versions are **the upstream version plus a fourth revision number**, defined in [`Version.swift`](Sources/MacFanControlCore/Version.swift). For example, `0.2.3.15` is based on upstream `0.2.3`; the first three parts change only after a new upstream release is merged. The app and CLI compare versions part by part numerically, treating missing parts as 0, with no special cases for older versions.
 
 ## Contributing
 
 All kinds of contributions are welcome — see [CONTRIBUTING.md](CONTRIBUTING.md) for details. For questions and ideas, use [Discussions](https://github.com/macfanpro/macfanpro/discussions); report security problems privately as described in [SECURITY.md](SECURITY.md).
 
-- **Bug reports**: report problems or submit a compatibility report in [Issues](https://github.com/macfanpro/macfanpro/issues), with your Mac model, macOS version, MacFanPro version and `macfanpro status` output.
+- **Bug reports**: report problems or submit a compatibility report in [Issues](https://github.com/macfanpro/macfanpro/issues), with your Mac model, macOS version, MacFanControl version and `macfancontrol status` output.
 - **Code**: build and test as described in [Development](#development), then open a [Pull Request](https://github.com/macfanpro/macfanpro/pulls).
 - **Translations**: the interface translations were made by the maintainer; native speakers are welcome to correct them or add a language. See [GUI localization](docs/gui-localization.md).
 
 ### Contributors
 
 <a href="https://github.com/macfanpro/macfanpro/graphs/contributors">
-  <img src="https://contrib.rocks/image?repo=macfanpro/macfanpro" alt="MacFanPro contributors">
+  <img src="https://contrib.rocks/image?repo=macfanpro/macfanpro" alt="MacFanControl contributors">
 </a>
 
 ## Credits and license
 
-MacFanPro is maintained by [@hongyukeji](https://github.com/hongyukeji) under the [MIT License](LICENSE). It is independently maintained on top of [ThermalForge](https://github.com/ProducerGuy/ThermalForge), with its own versions, install names and update channel; it is not an official upstream release. The ThermalForge upstream copyright and license are kept in full; see [NOTICE.md](NOTICE.md) and [ThirdPartyNotices/](ThirdPartyNotices/) for the derivation and third-party dependencies.
+MacFanControl is maintained by [@hongyukeji](https://github.com/hongyukeji) under the [MIT License](LICENSE). It is independently maintained on top of [ThermalForge](https://github.com/ProducerGuy/ThermalForge), with its own versions, install names and update channel; it is not an official upstream release. The ThermalForge upstream copyright and license are kept in full; see [NOTICE.md](NOTICE.md) and [ThirdPartyNotices/](ThirdPartyNotices/) for the derivation and third-party dependencies.

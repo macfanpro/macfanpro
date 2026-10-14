@@ -1,5 +1,5 @@
 {
-  "title": "MacFanPro — Contrôle gratuit et libre des ventilateurs Mac",
+  "title": "MacFanControl — Contrôle gratuit et libre des ventilateurs Mac",
   "description": "Contrôle natif des ventilateurs pour Mac Apple Silicon. Températures, courbes intelligentes, installation avec proxy ou Homebrew. Application en 18 langues, dès macOS 14.",
   "skip": "Aller au contenu",
   "nav": [
@@ -17,7 +17,7 @@
   "source": "Voir le code sur GitHub",
   "requirements": "macOS 14+ · Apple Silicon · Ventilateurs physiques requis",
   "stage_note": "Dans votre barre des menus",
-  "caption": "Interface réelle en anglais · v0.2.3.36 · M4 Max MacBook Pro",
+  "caption": "Aperçu de l’interface · v0.2.3.64 · Valeurs d’exemple",
   "facts": [
     [
       "Swift",
@@ -91,11 +91,11 @@
     ],
     [
       "Retrouvez l’icône dans les menus",
-      "Ouvrez MacFanPro, cliquez sur le ventilateur et choisissez un mode."
+      "Ouvrez MacFanControl, cliquez sur le ventilateur et choisissez un mode."
     ]
   ],
   "update": "Et pour les mises à jour ?",
-  "update_body": "DMG : glissez la nouvelle MacFanPro.app dans Applications, choisissez Remplacer et relancez-la. Quittez l’ancienne app si elle tourne encore et autorisez la synchronisation du service si nécessaire. Aucune désinstallation n’est requise. Réglages, étalonnage et journaux sont conservés. Utilisez Homebrew pour une installation Homebrew, ou relancez la commande de l’installateur en ligne. Utilisez un proxy si GitHub est inaccessible.",
+  "update_body": "DMG : glissez la nouvelle MacFanControl.app dans Applications, choisissez Remplacer et relancez-la. Quittez l’ancienne app si elle tourne encore et autorisez la synchronisation du service si nécessaire. Aucune désinstallation n’est requise. Réglages, étalonnage et journaux sont conservés. Utilisez Homebrew pour une installation Homebrew, ou relancez la commande de l’installateur en ligne. Utilisez un proxy si GitHub est inaccessible.",
   "download": "Télécharger une version",
   "full_guide": "Guide d’installation et de proxy",
   "source_build": "Compiler le code source",
@@ -112,7 +112,7 @@
     ],
     [
       "Suffit-il de glisser l’application dans Applications ?",
-      "0.2.3.50+ · DMG — Glissez MacFanPro dans Applications, puis ouvrez-le depuis ce dossier. MacFanPro a besoin d’un service en arrière-plan pour contrôler les ventilateurs. macOS demandera une autorisation administrateur. Les versions actuelles ont une signature ad-hoc et ne sont pas notariées par Apple ; un avertissement peut apparaître au premier lancement."
+      "0.2.3.50+ · DMG — Glissez MacFanControl dans Applications, puis ouvrez-le depuis ce dossier. MacFanControl a besoin d’un service en arrière-plan pour contrôler les ventilateurs. macOS demandera une autorisation administrateur. Les versions actuelles ont une signature ad-hoc et ne sont pas notariées par Apple ; un avertissement peut apparaître au premier lancement."
     ],
     [
       "Le Terminal attend à Password. Que faire ?",
@@ -134,11 +134,12 @@
   "issues": "Signaler un problème",
   "license": "Licence MIT",
   "credit": "Basé sur ThermalForge. Merci au projet d’origine et à toutes les contributions.",
-  "image_alt": "Panneau MacFanPro : températures, vitesses, modes et langues",
+  "image_alt": "Panneau MacFanControl : températures, vitesses, modes et langues",
   "main_nav": "Navigation principale",
   "languages": "Choisir une langue",
-  "copyright": "Contributeurs MacFanPro",
+  "copyright": "Contributeurs MacFanControl",
   "dmg_title": "Installer avec un DMG",
   "dmg_download": "Télécharger le DMG",
-  "dmg_body": "Glissez MacFanPro dans Applications, puis ouvrez-le depuis ce dossier. MacFanPro a besoin d’un service en arrière-plan pour contrôler les ventilateurs. macOS demandera une autorisation administrateur."
+  "dmg_body": "Glissez MacFanControl dans Applications, puis ouvrez-le depuis ce dossier. MacFanControl a besoin d’un service en arrière-plan pour contrôler les ventilateurs. macOS demandera une autorisation administrateur.",
+  "transition_note": "MacFanControl portait auparavant le nom MacFanPro."
 }

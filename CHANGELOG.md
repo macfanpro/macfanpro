@@ -1,4 +1,11 @@
-# MacFanPro changelog
+# MacFanControl changelog
+
+## 0.2.3.64
+
+- Rename the app and website display name to **MacFanControl**, formerly MacFanPro, across all 18 languages.
+- Accept release redirects to either `macfanpro/macfanpro` or the future `macfancontrol/macfancontrol` repository. The repository stays at its current address during this transition.
+- Preserve app filenames, CLI/Homebrew commands, release asset names, bundle/service identifiers and settings so existing installations can update in place.
+- Center the website language selector arrow independently of font metrics.
 
 ## 0.2.3.63
 
