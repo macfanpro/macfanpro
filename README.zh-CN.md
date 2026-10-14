@@ -69,7 +69,7 @@
   <img src="docs/images/menu-bar-zh-CN.png" width="320" alt="MacFanPro 简体中文菜单：温度、风扇转速、控制模式与更新设置">
   <img src="docs/images/menu-bar-en.png" width="320" alt="MacFanPro 英文菜单：温度、风扇转速、控制模式与更新设置">
   <br>
-  <sub>MacFanPro 0.2.3.66 界面渲染，传感器数据为示例。此处展示简体中文与英文，应用共支持 18 种语言。</sub>
+  <sub>MacFanPro 0.2.3.66 真机运行截图，展示实际传感器读数。此处展示简体中文与英文，应用共支持 18 种语言。</sub>
 </p>
 
 - **温度与转速监测**：查看 CPU、GPU、内存、SSD、环境温度及各风扇实际转速，具体读数取决于机型提供的传感器。

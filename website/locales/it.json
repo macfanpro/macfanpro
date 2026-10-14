@@ -17,7 +17,7 @@
   "source": "Codice su GitHub",
   "requirements": "macOS 14+ · Apple Silicon · Richiede ventole fisiche",
   "stage_note": "Nella barra dei menu",
-  "caption": "Interfaccia dell’app · v0.2.3.66 · Valori dei sensori di esempio",
+  "caption": "Schermata reale dell’app · v0.2.3.66",
   "facts": [
     [
       "Swift",

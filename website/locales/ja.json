@@ -17,7 +17,7 @@
   "source": "GitHub でソースを見る",
   "requirements": "macOS 14以降 · Apple Silicon · 物理ファンが必要",
   "stage_note": "メニューバーに自然になじむ",
-  "caption": "アプリ画面 · v0.2.3.66 · センサー値はサンプル",
+  "caption": "実機のアプリ画面 · v0.2.3.66",
   "facts": [
     [
       "Swift",

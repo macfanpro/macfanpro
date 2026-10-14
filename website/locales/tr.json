@@ -17,7 +17,7 @@
   "source": "GitHub’da kaynak kodu",
   "requirements": "macOS 14+ · Apple Silicon · Fiziksel fan gerekir",
   "stage_note": "Menü çubuğunuzda",
-  "caption": "Uygulama arayüzü · v0.2.3.66 · Örnek sensör değerleri",
+  "caption": "Çalışan uygulamanın ekran görüntüsü · v0.2.3.66",
   "facts": [
     [
       "Swift",

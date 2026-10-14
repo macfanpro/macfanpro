@@ -17,7 +17,7 @@
   "source": "Voir le code sur GitHub",
   "requirements": "macOS 14+ · Apple Silicon · Ventilateurs physiques requis",
   "stage_note": "Dans votre barre des menus",
-  "caption": "Interface de l’application · v0.2.3.66 · Valeurs de capteurs illustratives",
+  "caption": "Capture réelle de l’application · v0.2.3.66",
   "facts": [
     [
       "Swift",

@@ -17,7 +17,7 @@
   "source": "Kod na GitHubie",
   "requirements": "macOS 14+ · Apple Silicon · Wymagane fizyczne wentylatory",
   "stage_note": "Wprost na pasku menu",
-  "caption": "Interfejs aplikacji · v0.2.3.66 · Przykładowe odczyty czujników",
+  "caption": "Zrzut działającej aplikacji · v0.2.3.66",
   "facts": [
     [
       "Swift",
