@@ -17,4 +17,11 @@
 
 ## 发行附件
 
-草稿附件下载、SHA-256、签名、DMG 与在线安装器验收将在公开发布前完成并记录。
+- GitHub Release 工作流 38502776173 与主分支 CI 38502770304 通过。
+- 六个草稿附件已下载；压缩包、DMG、在线安装器 SHA-256 全部通过。
+- 使用 v0.2.3.63 原安装脚本的 verify_archive / verify_package 验证新版包通过；未调用安装步骤。
+- CLI 版本、应用版本与稳定 bundle identifier 正确；codesign --verify --deep --strict 通过。
+- DMG 只读挂载后，应用与压缩包中的应用一致，Applications 链接正确，内置安装器与独立附件一致。
+- 包内 18 个 JSON 语言表与源码逐字节一致，CFBundleLocalizations 含 18 种语言。
+- 官网 18 个已部署页面均显示新版示例图注，四张远端图片的 SHA-256 与提交文件一致。
+- 当前仍使用 ad-hoc 签名，未经过 Apple 公证。
