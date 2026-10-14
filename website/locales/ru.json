@@ -17,7 +17,7 @@
   "source": "Исходный код на GitHub",
   "requirements": "macOS 14+ · Apple Silicon · Нужны физические вентиляторы",
   "stage_note": "Прямо в строке меню",
-  "caption": "Реальный интерфейс на английском · v0.2.3.36 · M4 Max MacBook Pro",
+  "caption": "Интерфейс приложения · v0.2.3.66 · Пример показаний датчиков",
   "facts": [
     [
       "Swift",

@@ -68,7 +68,7 @@ An open-source alternative to tools like Macs Fan Control for people who want tr
   <img src="docs/images/menu-bar-en.png" width="320" alt="MacFanPro English menu showing temperatures, fan speeds, profiles and update settings">
   <img src="docs/images/menu-bar-zh-CN.png" width="320" alt="MacFanPro Simplified Chinese menu showing temperatures, fan speeds, profiles and update settings">
   <br>
-  <sub>MacFanPro 0.2.3.36 on an M4 Max MacBook Pro. English and Simplified Chinese shown; 18 interface languages available.</sub>
+  <sub>MacFanPro 0.2.3.66 interface rendered with sample sensor readings. English and Simplified Chinese shown; 18 interface languages available.</sub>
 </p>
 
 - **Temperature and fan monitoring**: CPU, GPU, memory, SSD and ambient temperatures, and each fan's actual speed. Which readings appear depends on the sensors your Mac provides.

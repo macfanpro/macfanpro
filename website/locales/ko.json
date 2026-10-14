@@ -17,7 +17,7 @@
   "source": "GitHub에서 소스 보기",
   "requirements": "macOS 14 이상 · Apple Silicon · 물리적 팬 필요",
   "stage_note": "메뉴 막대에 자연스럽게",
-  "caption": "실제 영문 화면 · v0.2.3.36 · M4 Max MacBook Pro",
+  "caption": "앱 화면 · v0.2.3.66 · 센서 값은 예시입니다",
   "facts": [
     [
       "Swift",

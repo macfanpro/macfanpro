@@ -17,7 +17,7 @@
   "source": "在 GitHub 查看源码",
   "requirements": "macOS 14+ · Apple Silicon · 需要实体风扇",
   "stage_note": "原生菜单栏应用",
-  "caption": "真实应用界面 · v0.2.3.36 · M4 Max MacBook Pro",
+  "caption": "应用界面 · v0.2.3.66 · 传感器数据为示例",
   "facts": [
     [
       "Swift",

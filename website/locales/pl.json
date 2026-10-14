@@ -17,7 +17,7 @@
   "source": "Kod na GitHubie",
   "requirements": "macOS 14+ · Apple Silicon · Wymagane fizyczne wentylatory",
   "stage_note": "Wprost na pasku menu",
-  "caption": "Rzeczywisty interfejs po angielsku · v0.2.3.36 · M4 Max MacBook Pro",
+  "caption": "Interfejs aplikacji · v0.2.3.66 · Przykładowe odczyty czujników",
   "facts": [
     [
       "Swift",

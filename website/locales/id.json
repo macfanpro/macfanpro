@@ -17,7 +17,7 @@
   "source": "Lihat kode di GitHub",
   "requirements": "macOS 14+ · Apple Silicon · Memerlukan kipas fisik",
   "stage_note": "Nyaman di bar menu",
-  "caption": "Antarmuka nyata berbahasa Inggris · v0.2.3.36 · M4 Max MacBook Pro",
+  "caption": "Antarmuka aplikasi · v0.2.3.66 · Contoh pembacaan sensor",
   "facts": [
     [
       "Swift",

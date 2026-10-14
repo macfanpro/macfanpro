@@ -17,7 +17,7 @@
   "source": "Codice su GitHub",
   "requirements": "macOS 14+ · Apple Silicon · Richiede ventole fisiche",
   "stage_note": "Nella barra dei menu",
-  "caption": "Interfaccia reale in inglese · v0.2.3.36 · M4 Max MacBook Pro",
+  "caption": "Interfaccia dell’app · v0.2.3.66 · Valori dei sensori di esempio",
   "facts": [
     [
       "Swift",

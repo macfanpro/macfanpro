@@ -17,7 +17,7 @@
   "source": "Quellcode auf GitHub",
   "requirements": "macOS 14+ · Apple Silicon · Physische Lüfter erforderlich",
   "stage_note": "Zuhause in der Menüleiste",
-  "caption": "Echte englische Oberfläche · v0.2.3.36 · M4 Max MacBook Pro",
+  "caption": "App-Oberfläche · v0.2.3.66 · Beispiel-Sensorwerte",
   "facts": [
     [
       "Swift",

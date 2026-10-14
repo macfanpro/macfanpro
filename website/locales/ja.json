@@ -17,7 +17,7 @@
   "source": "GitHub でソースを見る",
   "requirements": "macOS 14以降 · Apple Silicon · 物理ファンが必要",
   "stage_note": "メニューバーに自然になじむ",
-  "caption": "実際の英語画面 · v0.2.3.36 · M4 Max MacBook Pro",
+  "caption": "アプリ画面 · v0.2.3.66 · センサー値はサンプル",
   "facts": [
     [
       "Swift",

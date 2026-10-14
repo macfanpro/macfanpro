@@ -1,5 +1,11 @@
 # MacFanPro changelog
 
+## 0.2.3.66
+
+- Continue the MacFanPro name and original GitHub, website, Homebrew and Gitee addresses.
+- Keep the application behavior of 0.2.3.63, with refreshed menu screenshots and download documentation.
+- Versions 0.2.3.64 and 0.2.3.65 were withdrawn; this release advances the version for normal update detection.
+
 ## 0.2.3.63
 
 - Merge the update window into Settings. The **Updates** section moves to the bottom (General, Background service, Updates) and, when a release is available, shows the new version, **What's new** and the update action, with **Other update methods** and **Download help** collapsed. The panel's update row opens Settings; the separate update window is removed.
