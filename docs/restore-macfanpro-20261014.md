@@ -6,7 +6,7 @@ The maintainer cancelled the MacFanControl rename and requested restoration of 0
 - Original GitHub repository ID 1378207908 is restored to macfanpro/macfanpro, preserving history and stars. macfancontrol/macfancontrol is an informational link to it.
 - Homebrew is restored to macfanpro/homebrew-tap and the existing 0.2.3.63 bottle.
 - Gitee repository ID 50759731 is restored to macfanpro/macfanpro, as a mirror only. Mirror automation and current main-branch contributor instructions are retained.
-- The unpublished 0.2.3.65 draft and authoritative tag were removed. 0.2.3.63 is latest stable; 0.2.3.64 is marked prerelease to stop stable update prompts, preserving historical artifacts.
+- The cancelled 0.2.3.64 release, unpublished 0.2.3.65 draft and their authoritative tags were removed at the maintainer’s request. 0.2.3.63 is latest stable. No rename compatibility code remains.
 
 ## Verification
 
