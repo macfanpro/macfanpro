@@ -56,26 +56,26 @@ class Fixture:
 class MirrorTests(unittest.TestCase):
     def test_old_github_download_links_are_rewritten_after_transfer(self):
         old = "https://github.com/macfanpro/macfanpro/releases/download/v1/app.dmg"
-        source = [{"name": "app.dmg", "browser_download_url": old.replace("macfanpro/macfanpro", "macfancontrol/macfancontrol")}]
+        source = [{"name": "app.dmg", "browser_download_url": old.replace("macfanpro/macfanpro", "macfanpro/macfanpro")}]
         target = [{"name": "app.dmg", "browser_download_url": "https://gitee.com/download/app.dmg"}]
         self.assertEqual(mirror.rewrite_downloads(old, source, target), target[0]["browser_download_url"])
 
     def test_download_links_keep_checksum_suffixes_and_evidence(self):
-        prefix = "https://github.com/macfancontrol/macfancontrol/releases/download/v1/"
+        prefix = "https://github.com/macfanpro/macfanpro/releases/download/v1/"
         original = [{"name": name, "browser_download_url": prefix + name}
                     for name in ["app.dmg", "app.dmg.sha256"]]
         target = [{"name": name, "browser_download_url": "https://gitee.com/download/" + name}
                   for name in ["app.dmg", "app.dmg.sha256"]]
-        body = prefix + "app.dmg " + prefix + "app.dmg.sha256 https://github.com/macfancontrol/macfancontrol/actions/runs/1"
+        body = prefix + "app.dmg " + prefix + "app.dmg.sha256 https://github.com/macfanpro/macfanpro/actions/runs/1"
         result = mirror.rewrite_downloads(body, original, target)
         self.assertEqual(result, "https://gitee.com/download/app.dmg https://gitee.com/download/app.dmg.sha256 "
-                                "https://github.com/macfancontrol/macfancontrol/actions/runs/1")
+                                "https://github.com/macfanpro/macfanpro/actions/runs/1")
 
     def test_attachment_names_cannot_escape_or_break_multipart_headers(self):
         for name in ["", ".", "..", "../key", "/tmp/key", "a\\b", 'a"b', "a\r\nb"]:
             with self.subTest(name=name), self.assertRaises(mirror.MirrorError):
                 mirror.safe_name(name)
-        mirror.safe_name("MacFanControl-0.2.3.63-macos-arm64.dmg")
+        mirror.safe_name("MacFanPro-0.2.3.63-macos-arm64.dmg")
 
     def test_restart_is_idempotent_and_corrupt_destination_is_preserved(self):
         api = Fixture()

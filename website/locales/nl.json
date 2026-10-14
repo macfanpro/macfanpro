@@ -1,5 +1,5 @@
 {
-  "title": "MacFanControl — Gratis open-source ventilatorregeling voor Mac",
+  "title": "MacFanPro — Gratis open-source ventilatorregeling voor Mac",
   "description": "Native ventilatorregeling voor Apple Silicon Macs. Temperaturen, slimme curves en installatie met proxy of Homebrew. App in 18 talen. Vanaf macOS 14.",
   "skip": "Naar de inhoud",
   "nav": [
@@ -17,7 +17,7 @@
   "source": "Broncode op GitHub",
   "requirements": "macOS 14+ · Apple Silicon · Fysieke ventilatoren nodig",
   "stage_note": "Thuis in je menubalk",
-  "caption": "Interfacevoorbeeld · v0.2.3.64 · Voorbeeldwaarden",
+  "caption": "Echte Engelse interface · v0.2.3.36 · M4 Max MacBook Pro",
   "facts": [
     [
       "Swift",
@@ -91,11 +91,11 @@
     ],
     [
       "Begin in de menubalk",
-      "Open MacFanControl, klik op de ventilator en kies een modus."
+      "Open MacFanPro, klik op de ventilator en kies een modus."
     ]
   ],
   "update": "Hoe werk ik later bij?",
-  "update_body": "DMG: sleep de nieuwe MacFanControl.app naar Programma’s, kies Vervang en start de app opnieuw. Sluit de oude app als die nog actief is en geef toestemming om de service te synchroniseren wanneer daarom wordt gevraagd. Verwijderen is niet nodig; instellingen, kalibratie en logboeken blijven bewaard. Homebrew-gebruikers werken bij via Homebrew; bij de online installer kun je dezelfde opdracht herhalen. Gebruik een proxy als GitHub niet bereikbaar is.",
+  "update_body": "DMG: sleep de nieuwe MacFanPro.app naar Programma’s, kies Vervang en start de app opnieuw. Sluit de oude app als die nog actief is en geef toestemming om de service te synchroniseren wanneer daarom wordt gevraagd. Verwijderen is niet nodig; instellingen, kalibratie en logboeken blijven bewaard. Homebrew-gebruikers werken bij via Homebrew; bij de online installer kun je dezelfde opdracht herhalen. Gebruik een proxy als GitHub niet bereikbaar is.",
   "download": "Release downloaden",
   "full_guide": "Installatie- en proxyhandleiding",
   "source_build": "Bouwen vanuit broncode",
@@ -112,7 +112,7 @@
     ],
     [
       "Kan ik de app gewoon naar Apps slepen?",
-      "0.2.3.50+ · DMG — Sleep MacFanControl naar Programma’s en open het van daaruit. MacFanControl heeft een achtergrondservice nodig om ventilatoren te regelen. macOS vraagt om beheerdersmachtiging. Releases zijn ad-hoc ondertekend en niet door Apple genotariseerd; bij de eerste start kan een waarschuwing verschijnen."
+      "0.2.3.50+ · DMG — Sleep MacFanPro naar Programma’s en open het van daaruit. MacFanPro heeft een achtergrondservice nodig om ventilatoren te regelen. macOS vraagt om beheerdersmachtiging. Releases zijn ad-hoc ondertekend en niet door Apple genotariseerd; bij de eerste start kan een waarschuwing verschijnen."
     ],
     [
       "Het stopt bij Password. Wat nu?",
@@ -134,12 +134,11 @@
   "issues": "Probleem melden",
   "license": "MIT-licentie",
   "credit": "Gebaseerd op ThermalForge. Dank aan het oorspronkelijke project en alle bijdragers.",
-  "image_alt": "MacFanControl-paneel met temperaturen, snelheden, modi en talen",
+  "image_alt": "MacFanPro-paneel met temperaturen, snelheden, modi en talen",
   "main_nav": "Hoofdnavigatie",
   "languages": "Taal kiezen",
-  "copyright": "MacFanControl-bijdragers",
+  "copyright": "MacFanPro-bijdragers",
   "dmg_title": "Installeren via DMG",
   "dmg_download": "DMG downloaden",
-  "dmg_body": "Sleep MacFanControl naar Programma’s en open het van daaruit. MacFanControl heeft een achtergrondservice nodig om ventilatoren te regelen. macOS vraagt om beheerdersmachtiging.",
-  "transition_note": "MacFanControl heette voorheen MacFanPro."
+  "dmg_body": "Sleep MacFanPro naar Programma’s en open het van daaruit. MacFanPro heeft een achtergrondservice nodig om ventilatoren te regelen. macOS vraagt om beheerdersmachtiging."
 }

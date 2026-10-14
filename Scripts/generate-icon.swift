@@ -1,6 +1,6 @@
 #!/usr/bin/env swift
 //
-// Generates MacFanControl app icon from SF Symbol
+// Generates MacFanPro app icon from SF Symbol
 //
 
 import AppKit
@@ -67,7 +67,7 @@ func savePNG(_ image: NSImage, to path: String) {
 }
 
 // Create iconset directory
-let iconsetPath = "MacFanControl.iconset"
+let iconsetPath = "MacFanPro.iconset"
 try? FileManager.default.removeItem(atPath: iconsetPath)
 try! FileManager.default.createDirectory(atPath: iconsetPath, withIntermediateDirectories: true)
 

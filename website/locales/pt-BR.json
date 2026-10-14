@@ -1,5 +1,5 @@
 {
-  "title": "MacFanControl — Controle gratuito e aberto das ventoinhas do Mac",
+  "title": "MacFanPro — Controle gratuito e aberto das ventoinhas do Mac",
   "description": "Controle nativo para Macs com Apple Silicon. Monitore temperaturas, use curvas inteligentes e instale com proxy ou Homebrew. Aplicativo em 18 idiomas. macOS 14 ou posterior.",
   "skip": "Ir para o conteúdo",
   "nav": [
@@ -17,7 +17,7 @@
   "source": "Ver código no GitHub",
   "requirements": "macOS 14+ · Apple Silicon · Requer ventoinhas físicas",
   "stage_note": "Na sua barra de menus",
-  "caption": "Prévia da interface · v0.2.3.64 · Leituras de exemplo",
+  "caption": "Interface real em inglês · v0.2.3.36 · M4 Max MacBook Pro",
   "facts": [
     [
       "Swift",
@@ -91,11 +91,11 @@
     ],
     [
       "Comece na barra de menus",
-      "Abra o MacFanControl, clique no ícone da ventoinha e escolha um modo."
+      "Abra o MacFanPro, clique no ícone da ventoinha e escolha um modo."
     ]
   ],
   "update": "Como atualizar depois?",
-  "update_body": "DMG: arraste a nova MacFanControl.app para Aplicativos, escolha Substituir e abra-a novamente. Encerre o app antigo se ainda estiver aberto e autorize a sincronização do serviço quando solicitado. Não é preciso desinstalar; configurações, calibração e logs são mantidos. Usuários do Homebrew devem atualizar pelo Homebrew; quem usou o instalador online pode repetir o comando. Use um proxy se não conseguir acessar o GitHub.",
+  "update_body": "DMG: arraste a nova MacFanPro.app para Aplicativos, escolha Substituir e abra-a novamente. Encerre o app antigo se ainda estiver aberto e autorize a sincronização do serviço quando solicitado. Não é preciso desinstalar; configurações, calibração e logs são mantidos. Usuários do Homebrew devem atualizar pelo Homebrew; quem usou o instalador online pode repetir o comando. Use um proxy se não conseguir acessar o GitHub.",
   "download": "Baixar uma versão",
   "full_guide": "Guia de instalação e proxy",
   "source_build": "Compilar a partir do código",
@@ -112,7 +112,7 @@
     ],
     [
       "Basta arrastar o aplicativo para Aplicativos?",
-      "0.2.3.50+ · DMG — Arraste o MacFanControl para Aplicativos e abra-o de lá. O MacFanControl precisa de um serviço em segundo plano para controlar as ventoinhas. O macOS solicitará autorização de administrador. As versões atuais têm assinatura ad-hoc e não são autenticadas pela Apple; um alerta pode aparecer na primeira abertura."
+      "0.2.3.50+ · DMG — Arraste o MacFanPro para Aplicativos e abra-o de lá. O MacFanPro precisa de um serviço em segundo plano para controlar as ventoinhas. O macOS solicitará autorização de administrador. As versões atuais têm assinatura ad-hoc e não são autenticadas pela Apple; um alerta pode aparecer na primeira abertura."
     ],
     [
       "Parou em Password. O que fazer?",
@@ -134,12 +134,11 @@
   "issues": "Relatar problema",
   "license": "Licença MIT",
   "credit": "Baseado no ThermalForge. Obrigado ao projeto original e a todos os colaboradores.",
-  "image_alt": "Painel do MacFanControl com temperaturas, velocidades, modos e idiomas",
+  "image_alt": "Painel do MacFanPro com temperaturas, velocidades, modos e idiomas",
   "main_nav": "Navegação principal",
   "languages": "Escolher idioma",
-  "copyright": "Colaboradores do MacFanControl",
+  "copyright": "Colaboradores do MacFanPro",
   "dmg_title": "Instalar por DMG",
   "dmg_download": "Baixar DMG",
-  "dmg_body": "Arraste o MacFanControl para Aplicativos e abra-o de lá. O MacFanControl precisa de um serviço em segundo plano para controlar as ventoinhas. O macOS solicitará autorização de administrador.",
-  "transition_note": "MacFanControl se chamava MacFanPro."
+  "dmg_body": "Arraste o MacFanPro para Aplicativos e abra-o de lá. O MacFanPro precisa de um serviço em segundo plano para controlar as ventoinhas. O macOS solicitará autorização de administrador."
 }

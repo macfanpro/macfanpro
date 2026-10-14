@@ -1,7 +1,7 @@
 #!/usr/bin/env swift
 // Renders the social preview images (1280x640) from the app icon and a menu screenshot:
-//   swift Scripts/generate-social-preview.swift docs/images/icon.png docs/images/macfancontrol-menu-en.png docs/images/macfancontrol-social-en.png en
-//   swift Scripts/generate-social-preview.swift docs/images/icon.png docs/images/macfancontrol-menu-zh-CN.png docs/images/macfancontrol-social-zh-CN.png
+//   swift Scripts/generate-social-preview.swift docs/images/icon.png docs/images/menu-bar-en.png docs/images/social-preview.png en
+//   swift Scripts/generate-social-preview.swift docs/images/icon.png docs/images/menu-bar-zh-CN.png docs/images/social-preview-zh-CN.png
 import AppKit
 let args = CommandLine.arguments
 let icon = NSImage(contentsOfFile: args[1])!, shot = NSImage(contentsOfFile: args[2])!, out = args[3]
@@ -35,7 +35,7 @@ func text(_ s: String, _ font: NSFont, _ color: NSColor, _ x: CGFloat, _ y: CGFl
 // Keep the project icon sharp at social-preview size.
 NSGraphicsContext.current?.imageInterpolation = .high
 icon.draw(in: NSRect(x: 72, y: 430, width: 120, height: 120))
-text("MacFanControl", .systemFont(ofSize: 62, weight: .bold), .white, 214, 440)
+text("MacFanPro", .systemFont(ofSize: 74, weight: .bold), .white, 214, 440)
 
 // Gradient accent line under the title.
 NSGradient(colors: [cyan, blue, violet.withAlphaComponent(0)])!.draw(in: NSRect(x: 72, y: 402, width: 460, height: 3), angle: 0)
@@ -52,7 +52,7 @@ for (i, line) in lines.enumerated() {
     NSGraphicsContext.restoreGraphicsState()
     text(line, .systemFont(ofSize: 30, weight: .medium), rgb(200, 220, 240), 110, y)
 }
-text("MacFanControl · Free & Open Source", .monospacedSystemFont(ofSize: 22, weight: .regular), cyan.withAlphaComponent(0.75), 72, 40)
+text("github.com/macfanpro/macfanpro", .monospacedSystemFont(ofSize: 22, weight: .regular), cyan.withAlphaComponent(0.75), 72, 40)
 
 // Menu screenshot with a cyan edge glow.
 let h: CGFloat = 588, w = shot.size.width / shot.size.height * h

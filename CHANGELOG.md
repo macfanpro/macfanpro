@@ -1,18 +1,4 @@
-# MacFanControl changelog
-
-## 0.2.3.65
-
-- Move the authoritative repository and 18-language website to `macfancontrol/macfancontrol`.
-- Keep verified legacy releases at the old repository so existing update clients continue working.
-- Use the new repository for update checks, downloads, source installation, Homebrew and Gitee synchronization.
-- Automatically synchronize the compatibility endpoint after publication, with scheduled retries and checksum verification.
-
-## 0.2.3.64
-
-- Rename the app and website display name to **MacFanControl**, formerly MacFanPro, across all 18 languages.
-- Accept release redirects to either `macfanpro/macfanpro` or the future `macfancontrol/macfancontrol` repository. The repository stays at its current address during this transition.
-- Preserve app filenames, CLI/Homebrew commands, release asset names, bundle/service identifiers and settings so existing installations can update in place.
-- Center the website language selector arrow independently of font metrics.
+# MacFanPro changelog
 
 ## 0.2.3.63
 

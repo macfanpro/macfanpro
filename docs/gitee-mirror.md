@@ -1,14 +1,14 @@
 # Gitee 镜像
 
-- GitHub 维护源：<https://github.com/macfancontrol/macfancontrol>
-- Gitee 镜像：<https://gitee.com/macfancontrol/macfancontrol>
-- Gitee 发行版本：<https://gitee.com/macfancontrol/macfancontrol/releases>
+- GitHub 维护源：<https://github.com/macfanpro/macfanpro>
+- Gitee 镜像：<https://gitee.com/macfanpro/macfanpro>
+- Gitee 发行版本：<https://gitee.com/macfanpro/macfanpro/releases>
 
 镜像包括代码历史、全部分支和标签、已公开 Release 的标题、说明、预发布标记及全部附件。发行说明中的附件下载链接替换为 Gitee 地址，上传后重新下载核对 SHA-256；附件内容保持原样。Gitee 的发行记录创建时间是同步时间，原始发布时间以 GitHub 为准。
 
 ## 改名迁移（2026-10-14）
 
-原镜像已原地改名并转入 `macfancontrol` 组织，仓库 ID 保持不变，37 个公开发行版本及其附件记录保留。GitHub 维护源暂未迁移，镜像脚本分别配置 GitHub 来源和 Gitee 目标。请将已有 Gitee 克隆的 remote 更新为 `https://gitee.com/macfancontrol/macfancontrol.git`。
+原镜像已原地改名并转入 `macfanpro` 组织，仓库 ID 保持不变，37 个公开发行版本及其附件记录保留。GitHub 维护源暂未迁移，镜像脚本分别配置 GitHub 来源和 Gitee 目标。请将已有 Gitee 克隆的 remote 更新为 `https://gitee.com/macfanpro/macfanpro.git`。
 
 ## 自动同步
 
@@ -28,13 +28,13 @@ GitHub 是唯一维护源；请在 GitHub 修改代码和版本说明。Gitee �
 在 GitHub 仓库的 Actions secret 中配置 `GITEE_TOKEN`，使用拥有目标仓库写权限、包含 `projects` 权限的 Gitee 私人令牌。令牌同时用于 Gitee Git HTTPS 推送和发行 API；不要提交到代码、配置文件或日志中。
 
 ```bash
-gh workflow run mirror-gitee.yml -R macfancontrol/macfancontrol
+gh workflow run mirror-gitee.yml -R macfanpro/macfanpro
 ```
 
 单独重试某个版本时，在网页运行表单填写 `tag`，或执行：
 
 ```bash
-gh workflow run mirror-gitee.yml -R macfancontrol/macfancontrol -f tag=v0.2.3.63
+gh workflow run mirror-gitee.yml -R macfanpro/macfanpro -f tag=v0.2.3.63
 ```
 
 全量补同步需要重新下载全部历史附件核验，跨境网络较慢时耗时较长。日常发布只同步对应版本；修复某个版本的失败时，优先指定其标签重跑。

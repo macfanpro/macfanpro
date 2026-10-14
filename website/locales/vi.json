@@ -1,5 +1,5 @@
 {
-  "title": "MacFanControl — Điều khiển quạt Mac miễn phí, mã nguồn mở",
+  "title": "MacFanPro — Điều khiển quạt Mac miễn phí, mã nguồn mở",
   "description": "Ứng dụng gốc cho Mac Apple Silicon: theo dõi nhiệt độ, đường cong quạt thông minh, cài đặt qua proxy hoặc Homebrew. Giao diện ứng dụng có 18 ngôn ngữ. macOS 14 trở lên.",
   "skip": "Đến nội dung chính",
   "nav": [
@@ -17,7 +17,7 @@
   "source": "Xem mã trên GitHub",
   "requirements": "macOS 14+ · Apple Silicon · Cần có quạt vật lý",
   "stage_note": "Ngay trên thanh menu",
-  "caption": "Xem trước giao diện · v0.2.3.64 · Số liệu mẫu",
+  "caption": "Giao diện thực bằng tiếng Anh · v0.2.3.36 · M4 Max MacBook Pro",
   "facts": [
     [
       "Swift",
@@ -91,11 +91,11 @@
     ],
     [
       "Bắt đầu từ thanh menu",
-      "Mở MacFanControl, nhấp biểu tượng quạt và chọn chế độ."
+      "Mở MacFanPro, nhấp biểu tượng quạt và chọn chế độ."
     ]
   ],
   "update": "Cập nhật về sau thế nào?",
-  "update_body": "DMG: kéo MacFanControl.app mới vào Applications, chọn Replace rồi mở lại. Thoát ứng dụng cũ nếu vẫn đang chạy và cấp quyền đồng bộ dịch vụ khi được yêu cầu. Không cần gỡ cài đặt; cài đặt, dữ liệu hiệu chuẩn và nhật ký được giữ lại. Người dùng Homebrew tiếp tục cập nhật bằng Homebrew; người dùng trình cài trực tuyến có thể chạy lại lệnh cũ. Dùng proxy nếu không truy cập được GitHub.",
+  "update_body": "DMG: kéo MacFanPro.app mới vào Applications, chọn Replace rồi mở lại. Thoát ứng dụng cũ nếu vẫn đang chạy và cấp quyền đồng bộ dịch vụ khi được yêu cầu. Không cần gỡ cài đặt; cài đặt, dữ liệu hiệu chuẩn và nhật ký được giữ lại. Người dùng Homebrew tiếp tục cập nhật bằng Homebrew; người dùng trình cài trực tuyến có thể chạy lại lệnh cũ. Dùng proxy nếu không truy cập được GitHub.",
   "download": "Tải bản phát hành",
   "full_guide": "Hướng dẫn cài đặt và proxy",
   "source_build": "Biên dịch từ mã nguồn",
@@ -112,7 +112,7 @@
     ],
     [
       "Chỉ kéo ứng dụng vào Applications là đủ?",
-      "0.2.3.50+ · DMG — Kéo MacFanControl vào Ứng dụng rồi mở từ đó. MacFanControl cần dịch vụ nền để điều khiển quạt. macOS sẽ yêu cầu quyền quản trị viên. Bản hiện tại dùng chữ ký ad-hoc, chưa được Apple công chứng; lần đầu mở có thể có cảnh báo bảo mật."
+      "0.2.3.50+ · DMG — Kéo MacFanPro vào Ứng dụng rồi mở từ đó. MacFanPro cần dịch vụ nền để điều khiển quạt. macOS sẽ yêu cầu quyền quản trị viên. Bản hiện tại dùng chữ ký ad-hoc, chưa được Apple công chứng; lần đầu mở có thể có cảnh báo bảo mật."
     ],
     [
       "Dừng ở Password thì làm gì?",
@@ -134,12 +134,11 @@
   "issues": "Báo lỗi",
   "license": "Giấy phép MIT",
   "credit": "Phát triển từ ThermalForge. Cảm ơn dự án gốc và mọi người đóng góp.",
-  "image_alt": "Bảng MacFanControl hiển thị nhiệt độ, tốc độ, chế độ và ngôn ngữ",
+  "image_alt": "Bảng MacFanPro hiển thị nhiệt độ, tốc độ, chế độ và ngôn ngữ",
   "main_nav": "Điều hướng chính",
   "languages": "Chọn ngôn ngữ",
-  "copyright": "Những người đóng góp cho MacFanControl",
+  "copyright": "Những người đóng góp cho MacFanPro",
   "dmg_title": "Cài đặt từ DMG",
   "dmg_download": "Tải DMG",
-  "dmg_body": "Kéo MacFanControl vào Ứng dụng rồi mở từ đó. MacFanControl cần dịch vụ nền để điều khiển quạt. macOS sẽ yêu cầu quyền quản trị viên.",
-  "transition_note": "MacFanControl trước đây có tên MacFanPro."
+  "dmg_body": "Kéo MacFanPro vào Ứng dụng rồi mở từ đó. MacFanPro cần dịch vụ nền để điều khiển quạt. macOS sẽ yêu cầu quyền quản trị viên."
 }

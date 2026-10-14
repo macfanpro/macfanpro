@@ -1,5 +1,5 @@
 {
-  "title": "MacFanControl — Mac için ücretsiz, açık kaynaklı fan kontrolü",
+  "title": "MacFanPro — Mac için ücretsiz, açık kaynaklı fan kontrolü",
   "description": "Apple Silicon Mac için yerel fan kontrolü. Sıcaklık izleme, akıllı eğriler, proxy ve Homebrew ile kurulum. Uygulamada 18 dil. macOS 14 ve üzeri.",
   "skip": "İçeriğe geç",
   "nav": [
@@ -17,7 +17,7 @@
   "source": "GitHub’da kaynak kodu",
   "requirements": "macOS 14+ · Apple Silicon · Fiziksel fan gerekir",
   "stage_note": "Menü çubuğunuzda",
-  "caption": "Arayüz önizlemesi · v0.2.3.64 · Örnek değerler",
+  "caption": "Gerçek İngilizce arayüz · v0.2.3.36 · M4 Max MacBook Pro",
   "facts": [
     [
       "Swift",
@@ -91,11 +91,11 @@
     ],
     [
       "Menü çubuğundan başlayın",
-      "MacFanControl’yu açın, fan simgesine tıklayın ve bir mod seçin."
+      "MacFanPro’yu açın, fan simgesine tıklayın ve bir mod seçin."
     ]
   ],
   "update": "Nasıl güncellenir?",
-  "update_body": "DMG: yeni MacFanControl.app dosyasını Uygulamalar’a sürükleyin, Değiştir’i seçin ve yeniden açın. Eski uygulama hâlâ çalışıyorsa kapatın; istendiğinde hizmet eşitlemesine izin verin. Kaldırma gerekmez; ayarlar, kalibrasyon ve günlükler korunur. Homebrew kullanıcıları Homebrew ile güncellemelidir; çevrimiçi yükleyici kullanıcıları aynı komutu yeniden çalıştırabilir. GitHub’a erişilemiyorsa vekil sunucu kullanın.",
+  "update_body": "DMG: yeni MacFanPro.app dosyasını Uygulamalar’a sürükleyin, Değiştir’i seçin ve yeniden açın. Eski uygulama hâlâ çalışıyorsa kapatın; istendiğinde hizmet eşitlemesine izin verin. Kaldırma gerekmez; ayarlar, kalibrasyon ve günlükler korunur. Homebrew kullanıcıları Homebrew ile güncellemelidir; çevrimiçi yükleyici kullanıcıları aynı komutu yeniden çalıştırabilir. GitHub’a erişilemiyorsa vekil sunucu kullanın.",
   "download": "Sürüm indir",
   "full_guide": "Kurulum ve proxy rehberi",
   "source_build": "Kaynak koddan derle",
@@ -112,7 +112,7 @@
     ],
     [
       "Uygulamayı Uygulamalar’a sürüklemek yeterli mi?",
-      "0.2.3.50+ · DMG — MacFanControl’yu Uygulamalar’a sürükleyin ve oradan açın. MacFanControl, fanları kontrol etmek için bir arka plan hizmetine ihtiyaç duyar. macOS yönetici yetkisi isteyecek. Sürümler ad-hoc imzalıdır ve Apple noter onayı yoktur; ilk açılışta güvenlik uyarısı görülebilir."
+      "0.2.3.50+ · DMG — MacFanPro’yu Uygulamalar’a sürükleyin ve oradan açın. MacFanPro, fanları kontrol etmek için bir arka plan hizmetine ihtiyaç duyar. macOS yönetici yetkisi isteyecek. Sürümler ad-hoc imzalıdır ve Apple noter onayı yoktur; ilk açılışta güvenlik uyarısı görülebilir."
     ],
     [
       "Password yazısında kaldı. Ne yapmalıyım?",
@@ -134,12 +134,11 @@
   "issues": "Sorun bildir",
   "license": "MIT lisansı",
   "credit": "ThermalForge temel alınmıştır. Üst projeye ve tüm katkıda bulunanlara teşekkürler.",
-  "image_alt": "Sıcaklıkları, hızları, modları ve dilleri gösteren MacFanControl paneli",
+  "image_alt": "Sıcaklıkları, hızları, modları ve dilleri gösteren MacFanPro paneli",
   "main_nav": "Ana gezinme",
   "languages": "Dil seçin",
-  "copyright": "MacFanControl katkıda bulunanları",
+  "copyright": "MacFanPro katkıda bulunanları",
   "dmg_title": "DMG ile kurulum",
   "dmg_download": "DMG indir",
-  "dmg_body": "MacFanControl’yu Uygulamalar’a sürükleyin ve oradan açın. MacFanControl, fanları kontrol etmek için bir arka plan hizmetine ihtiyaç duyar. macOS yönetici yetkisi isteyecek.",
-  "transition_note": "MacFanControl daha önce MacFanPro olarak adlandırılıyordu."
+  "dmg_body": "MacFanPro’yu Uygulamalar’a sürükleyin ve oradan açın. MacFanPro, fanları kontrol etmek için bir arka plan hizmetine ihtiyaç duyar. macOS yönetici yetkisi isteyecek."
 }

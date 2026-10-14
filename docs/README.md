@@ -13,7 +13,7 @@ Start with [English README](../README.md) or [中文 README](../README.zh-CN.md)
 | Fan curves, Smart and calibration / 曲线、智能与校准 | [English](../README.md#fan-curves-and-smart-mode) · [中文](../README.zh-CN.md#风扇曲线与智能模式原理) |
 | Sensor readings and comparison with Stats / 传感器读数对照 | [Sensor calibration / 传感器校准记录](thermal-sensor-calibration-20260924.md) |
 | Runtime logs and CSV recording / 运行日志与采样 | [English](../README.md#logs-and-data) · [中文](../README.zh-CN.md#日志与数据) |
-| Release changes / 已发行变化 | [Changelog](../CHANGELOG.md) · [GitHub Releases](https://github.com/macfancontrol/macfancontrol/releases) |
+| Release changes / 已发行变化 | [Changelog](../CHANGELOG.md) · [GitHub Releases](https://github.com/macfanpro/macfanpro/releases) |
 
 ## Develop and maintain / 开发与维护
 
@@ -54,6 +54,6 @@ Automated tests, package checks, installed-app checks and real hardware acceptan
 
 自动化测试、发行包检查、本机安装检查和实机验收分别对应不同证据；构建通过不能代表所有 Mac 的温控和睡眠唤醒都已验证。
 
-`upstream/PLAN.md` and `upstream/ROADMAP.md` are historical upstream plans, not a list of implemented MacFanControl features.
+`upstream/PLAN.md` and `upstream/ROADMAP.md` are historical upstream plans, not a list of implemented MacFanPro features.
 
-`upstream/PLAN.md` 与 `upstream/ROADMAP.md` 保存上游早期规划，不是 MacFanControl 已实现功能清单。
+`upstream/PLAN.md` 与 `upstream/ROADMAP.md` 保存上游早期规划，不是 MacFanPro 已实现功能清单。

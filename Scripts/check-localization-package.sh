@@ -3,57 +3,56 @@
 set -euo pipefail
 cd "$(dirname "$0")/.."
 bin_dir="${1:-$(swift build --show-bin-path)}"
-check_dir="$(mktemp -d "${TMPDIR:-/tmp}/macfancontrol-package.XXXXXX")"
+check_dir="$(mktemp -d "${TMPDIR:-/tmp}/macfanpro-package.XXXXXX")"
 trap 'rm -rf "$check_dir"' EXIT
-bundle=MacFanControl_MacFanControlLocalization.bundle
+bundle=MacFanPro_MacFanProLocalization.bundle
 # The assembler only copies the icon; a fixture avoids an unrelated icon build.
 : > "$check_dir/icon.icns"
-"$bin_dir/macfancontrol" build-app --binary "$bin_dir/MacFanControlApp" --icon "$check_dir/icon.icns" --dest "$check_dir/Check.app"
+"$bin_dir/macfanpro" build-app --binary "$bin_dir/MacFanProApp" --icon "$check_dir/icon.icns" --dest "$check_dir/Check.app"
 test "$(/usr/libexec/PlistBuddy -c 'Print CFBundleIdentifier' "$check_dir/Check.app/Contents/Info.plist")" = io.github.macfanpro.app
-test "$(/usr/libexec/PlistBuddy -c 'Print CFBundleName' "$check_dir/Check.app/Contents/Info.plist")" = MacFanControl
-test "$(/usr/libexec/PlistBuddy -c 'Print CFBundleDisplayName' "$check_dir/Check.app/Contents/Info.plist")" = MacFanControl
-cmp "$bin_dir/macfancontrol" "$check_dir/Check.app/Contents/Helpers/macfancontrol"
-test -x "$check_dir/Check.app/Contents/Helpers/macfancontrol"
+test "$(/usr/libexec/PlistBuddy -c 'Print CFBundleName' "$check_dir/Check.app/Contents/Info.plist")" = MacFanPro
+cmp "$bin_dir/macfanpro" "$check_dir/Check.app/Contents/Helpers/macfanpro"
+test -x "$check_dir/Check.app/Contents/Helpers/macfanpro"
 cmp NOTICE.md "$check_dir/Check.app/Contents/Resources/NOTICE.md"
 cmp LICENSE "$check_dir/Check.app/Contents/Resources/LICENSE"
-version="$("$bin_dir/macfancontrol" --version)"
+version="$("$bin_dir/macfanpro" --version)"
 sed "s/@MACFANPRO_VERSION@/$version/g" Scripts/install.sh > "$check_dir/install.sh"
 cmp "$check_dir/install.sh" "$check_dir/Check.app/Contents/Resources/install.sh"
 bash -n "$check_dir/install.sh"
 resource_dir="$check_dir/Check.app/Contents/Resources/$bundle"
 if [ -d "$resource_dir/Contents/Resources" ]; then resource_dir="$resource_dir/Contents/Resources"; fi
-tables=(Sources/MacFanControlLocalization/Resources/*.json)
+tables=(Sources/MacFanProLocalization/Resources/*.json)
 for table in "${tables[@]}"; do
  cmp "$table" "$resource_dir/$(basename "$table")"
 done
 test "$(/usr/libexec/PlistBuddy -c 'Print CFBundleLocalizations' "$check_dir/Check.app/Contents/Info.plist" | grep -c '^ ')" = "${#tables[@]}"
 mkdir "$check_dir/unbundled"
-cp "$bin_dir/MacFanControlApp" "$check_dir/unbundled/MacFanControlApp"
+cp "$bin_dir/MacFanProApp" "$check_dir/unbundled/MacFanProApp"
 echo preserve > "$check_dir/Check.app/sentinel"
-if "$bin_dir/macfancontrol" build-app --binary "$check_dir/unbundled/MacFanControlApp" --icon "$check_dir/icon.icns" --dest "$check_dir/Check.app" > "$check_dir/rejection.log" 2>&1; then
+if "$bin_dir/macfanpro" build-app --binary "$check_dir/unbundled/MacFanProApp" --icon "$check_dir/icon.icns" --dest "$check_dir/Check.app" > "$check_dir/rejection.log" 2>&1; then
  echo "Unexpected success with missing localization resources" >&2
  exit 1
 fi
 test "$(cat "$check_dir/Check.app/sentinel")" = preserve
-if "$bin_dir/macfancontrol" build-app --binary "$bin_dir/MacFanControlApp" --icon "$check_dir/icon.icns" --dest "$check_dir/Check.app" --installer-script "$check_dir/missing.sh" > "$check_dir/rejection.log" 2>&1; then
+if "$bin_dir/macfanpro" build-app --binary "$bin_dir/MacFanProApp" --icon "$check_dir/icon.icns" --dest "$check_dir/Check.app" --installer-script "$check_dir/missing.sh" > "$check_dir/rejection.log" 2>&1; then
  echo "Unexpected success with a missing installer script" >&2
  exit 1
 fi
 test "$(cat "$check_dir/Check.app/sentinel")" = preserve
-if "$bin_dir/macfancontrol" build-app --binary "$check_dir/unbundled/MacFanControlApp" --localization-resources "$bin_dir/$bundle" --icon "$check_dir/icon.icns" --dest "$check_dir/Check.app" > "$check_dir/rejection.log" 2>&1; then
+if "$bin_dir/macfanpro" build-app --binary "$check_dir/unbundled/MacFanProApp" --localization-resources "$bin_dir/$bundle" --icon "$check_dir/icon.icns" --dest "$check_dir/Check.app" > "$check_dir/rejection.log" 2>&1; then
  echo "Unexpected success with a missing bundled service executable" >&2
  exit 1
 fi
 test "$(cat "$check_dir/Check.app/sentinel")" = preserve
 # A late copy failure must also preserve the old app, after staging has begun.
 ln -s "$check_dir/icon.icns" "$check_dir/linked-icon.icns"
-if "$bin_dir/macfancontrol" build-app --binary "$bin_dir/MacFanControlApp" --icon "$check_dir/linked-icon.icns" --dest "$check_dir/Check.app" > "$check_dir/rejection.log" 2>&1; then
+if "$bin_dir/macfanpro" build-app --binary "$bin_dir/MacFanProApp" --icon "$check_dir/linked-icon.icns" --dest "$check_dir/Check.app" > "$check_dir/rejection.log" 2>&1; then
  echo "Unexpected success copying a symlinked icon" >&2
  exit 1
 fi
 test "$(cat "$check_dir/Check.app/sentinel")" = preserve
 # A successful replacement contains only the complete new build, and remains signable.
-"$bin_dir/macfancontrol" build-app --binary "$bin_dir/MacFanControlApp" --icon "$check_dir/icon.icns" --dest "$check_dir/Check.app"
+"$bin_dir/macfanpro" build-app --binary "$bin_dir/MacFanProApp" --icon "$check_dir/icon.icns" --dest "$check_dir/Check.app"
 test ! -e "$check_dir/Check.app/sentinel"
 codesign --force --deep --sign - "$check_dir/Check.app"
 codesign --verify --deep --strict "$check_dir/Check.app"

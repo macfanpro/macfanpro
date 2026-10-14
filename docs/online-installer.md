@@ -3,7 +3,7 @@
 ## 入口与发布
 
 ```bash
-curl -fsSL https://github.com/macfancontrol/macfancontrol/releases/latest/download/install.sh | bash
+curl -fsSL https://github.com/macfanpro/macfanpro/releases/latest/download/install.sh | bash
 ```
 
 此入口自 0.2.3.33 起可用；更早的版本没有 `install.sh` 附件。
@@ -14,7 +14,7 @@ curl -fsSL https://github.com/macfancontrol/macfancontrol/releases/latest/downlo
 
 附件：
 
-- `MacFanControl-<版本>-macos-arm64.tar.gz`
+- `MacFanPro-<版本>-macos-arm64.tar.gz`
 - `SHA256SUMS`：仅包含上述压缩包，兼容旧更新器。
 - `install.sh`
 - `install.sh.sha256`：仅包含脚本的 SHA256。

@@ -9,7 +9,7 @@ permissions:
 
 jobs:
   release:
-    if: github.repository == 'macfancontrol/macfancontrol'
+    if: github.repository == 'macfanpro/macfanpro'
     runs-on: macos-15
     steps:
       - uses: actions/checkout@v4
@@ -30,4 +30,4 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           RELEASE_TAG: ${{ github.ref_name }}
         # Publish only after the downloaded artifact has passed local acceptance.
-        run: gh release create "$RELEASE_TAG" dist/*.tar.gz dist/*.dmg dist/*.dmg.sha256 dist/SHA256SUMS dist/MacFanControl-SHA256SUMS dist/install.sh dist/install.sh.sha256 --verify-tag --draft --title "MacFanControl ${RELEASE_TAG#v}" --notes-file "docs/releases/${RELEASE_TAG#v}.md"
+        run: gh release create "$RELEASE_TAG" dist/*.tar.gz dist/*.dmg dist/*.dmg.sha256 dist/SHA256SUMS dist/install.sh dist/install.sh.sha256 --verify-tag --draft --title "MacFanPro ${RELEASE_TAG#v}" --notes-file "docs/releases/${RELEASE_TAG#v}.md"

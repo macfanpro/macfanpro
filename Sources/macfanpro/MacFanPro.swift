@@ -1,0 +1,1410 @@
+//
+//  MacFanPro.swift
+//  MacFanPro
+//
+//  CLI entry point. Fan control for Apple Silicon Macs with fans.
+//
+
+import ArgumentParser
+import Foundation
+import MacFanProCore
+import MacFanProLocalization
+
+@main
+struct MacFanPro: ParsableCommand {
+    static let configuration = CommandConfiguration(
+        commandName: "macfanpro",
+        abstract: "Fan control for Apple Silicon Macs with fans: MacBook Pro, Mac mini, Mac Studio, iMac",
+        version: MacFanProVersion.current,
+        subcommands: [
+            Max.self,
+            Auto.self,
+            SetSpeed.self,
+            Status.self,
+            Discover.self,
+            Watch.self,
+            Calibrate.self,
+            Log.self,
+            Install.self,
+            Uninstall.self,
+            Daemon.self,
+            BuildApp.self,
+        ]
+    )
+}
+
+// MARK: - Daemon version reconciliation
+
+/// Warn (on stderr, non-blocking) if a background daemon from a different build
+/// is running. The daemon is a long-lived launchd process; after `brew upgrade`
+/// it keeps running the OLD binary until `macfanpro install` re-syncs it, so
+/// the menu bar app can silently diverge from this CLI. Called by every
+/// fan-affecting command. Advisory only — it never blocks the command.
+func warnIfDaemonVersionMismatch() {
+    guard MacFanProDaemon.isRunning else { return }
+
+    // A legacy (pre-Phase-2) daemon can't answer the framed `version` request — but
+    // its socket is up, so this is a real mismatch that MUST warn (this is the very
+    // message telling the user to reinstall). Any other failure (daemon down /
+    // transient) stays silent so we don't nag on a blip.
+    let daemonVersion: String
+    do {
+        let response = try DaemonClient().request(DaemonRequest(verb: .version))
+        // Both the `version` reply (ok) and an `unsupportedVersion` reply carry the
+        // daemon's build; a response without one means a build we can't name.
+        daemonVersion = response.version ?? "an older build"
+        guard daemonVersion != MacFanProVersion.current else { return }
+    } catch DaemonError.incompatibleDaemon {
+        daemonVersion = "an older build"
+    } catch {
+        return
+    }
+
+    let message = """
+        ⚠️  Version mismatch: the background daemon is running \(daemonVersion), \
+        but this CLI is \(MacFanProVersion.current).
+            They're from different installs, so the menu bar app may not behave \
+        like the command line until you re-sync them.
+            Fix it with one command:  sudo macfanpro install
+
+        """
+    FileHandle.standardError.write(Data(message.utf8))
+}
+
+/// Emit the single stderr warning (never silent, never doubled) for a routed
+/// fan command: the specific consequence when the daemon is too old to do what
+/// was asked, or a plain version-mismatch nudge when it routed fine but is a
+/// different build. The router already did the one version query this needs.
+func reportRoute(_ route: FanRoute) {
+    let message: String
+    switch route {
+    case .direct:
+        return
+    case .daemon(let version):
+        // Routed and honored. Warn only if the daemon is a different build than
+        // this CLI — the command worked, but the menu bar app may differ.
+        let daemonVersion = version ?? "an older build"
+        guard daemonVersion != MacFanProVersion.current else { return }
+        message = """
+            ⚠️  Version mismatch: the background daemon is running \(daemonVersion), \
+            but this CLI is \(MacFanProVersion.current).
+                The command was applied, but the menu bar app may not behave like \
+            the command line until you re-sync.
+                Fix it with one command:  sudo macfanpro install
+
+            """
+    case .daemonHoldWillRevert(let version):
+        message = """
+            ⚠️  The background daemon (\(version)) is too old to hold this without \
+            supervision — it will revert to auto in about 15 seconds.
+                Re-sync to make holds stick:  sudo macfanpro install
+
+            """
+    case .directOldDaemon(let version):
+        message = """
+            ⚠️  The background daemon (\(version)) is too old to route per-fan \
+            commands, so this used a direct hardware write (which needs sudo).
+                Re-sync to drop the sudo requirement:  sudo macfanpro install
+
+            """
+    case .directLegacyDaemon:
+        message = """
+            ⚠️  The background daemon is an older build that can't use the updated \
+            control protocol, so this used a direct hardware write.
+                Finish the upgrade to reconnect it:  sudo macfanpro install
+
+            """
+    }
+    FileHandle.standardError.write(Data(message.utf8))
+}
+
+// MARK: - Max
+
+struct Max: ParsableCommand {
+    static let configuration = CommandConfiguration(
+        commandName: "max",
+        abstract: "Set all fans to maximum speed"
+    )
+
+    func run() throws {
+        // Route through the daemon (no sudo) when it's running; oneshot so a
+        // fire-and-forget max hold isn't reverted by the watchdog. The router
+        // handles the version query and reportRoute the single mismatch warning.
+        let (route, _, _, _) = try FanCommandRouter.apply(.setMax, oneshot: true)
+        reportRoute(route)
+
+        // Status readout is a read — works without root regardless of route.
+        if let fc = try? FanControl(), let status = try? fc.status() {
+            for fan in status.fans {
+                print("Fan \(fan.index): \(fan.actualRPM) RPM → max (\(fan.maxRPM) RPM)")
+            }
+        }
+    }
+}
+
+// MARK: - Auto
+
+struct Auto: ParsableCommand {
+    static let configuration = CommandConfiguration(
+        commandName: "auto",
+        abstract: "Reset fans to Apple defaults"
+    )
+
+    @Flag(name: .long, help: """
+        Also quit the menu bar app. A running app with an active profile
+        re-applies its curve within seconds, so use --stop-app when the reset
+        must STICK (e.g. handing control fully back to macOS). Leave it off — the
+        default — when a script, benchmark, or inference run just needs to restore
+        fans without closing the user's app.
+        """)
+    var stopApp: Bool = false
+
+    func run() throws {
+        // Only quit the menu bar app when explicitly asked. A plain fan reset must
+        // not close the user's app as a side effect — callers that shell out to
+        // restore fans (scripts, benchmark harnesses) would otherwise silently
+        // lose their GUI. The app-override concern is real, so it's preserved
+        // behind --stop-app rather than removed.
+        var appStopped = false
+        if stopApp {
+            let uid: uid_t? = geteuid() == 0 ? nil : getuid()
+            switch SystemTools.stopApp(
+                isRunning: { SystemTools.processRunning(uid: uid) },
+                kill: { SystemTools.run("/usr/bin/killall", ["MacFanProApp"]) }) {
+            case .stopped: appStopped = true
+            case .notRunning: break
+            case .failed(let message):
+                FileHandle.standardError.write(Data("Warning: \(message).\n".utf8))
+            }
+        }
+
+        // Route through the daemon (coordinates its state, no sudo) when running;
+        // resetAuto isn't a hold, so oneshot doesn't apply.
+        let (route, _, _, _) = try FanCommandRouter.apply(.resetAuto, oneshot: false)
+        // --stop-app is the step just before `sudo macfanpro install` during an
+        // update, where a newer CLI reaching the old daemon is expected; the plain
+        // mismatch nudge there reads like a failure. Other routes still report.
+        if case .daemon = route, stopApp {} else { reportRoute(route) }
+        print(appStopped
+            ? "Menu bar app stopped; fans reset to Apple defaults"
+            : "Fans reset to Apple defaults")
+    }
+}
+
+// MARK: - Set
+
+struct SetSpeed: ParsableCommand {
+    static let configuration = CommandConfiguration(
+        commandName: "set",
+        abstract: "Set fan speed to a specific RPM"
+    )
+
+    @Argument(help: "Target RPM")
+    var rpm: Int
+
+    @Option(name: .shortAndLong, help: "Fan index (default: all fans)")
+    var fan: Int?
+
+    /// Printed instead of a "Fan N → X RPM" line when a daemon applied the command but
+    /// is too old (pre-0.2.1) to report the RPM it clamped to. We echo the value the
+    /// daemon says it applied — never a target-register read-back (it lags a command
+    /// ~1s) and never the raw request as if the daemon confirmed it. On the direct
+    /// (no-daemon) path per-fan writes validate the request, while all-fan writes
+    /// return each clamped target. Older daemons' scalar replies cannot establish
+    /// every fan's target, so an all-fan result without the list is reported unknown.
+    private static let appliedUnknownByOldDaemon = """
+        Fan speed set, but the background daemon is an older build that doesn't report \
+        the applied RPM, so the exact value can't be shown. Re-sync to fix:
+          sudo macfanpro install
+        """
+
+    func run() throws {
+        let target = Float(rpm)
+
+        if let index = fan {
+            // Per-fan now routes through the daemon too (0.1.5 `setfan`); older
+            // daemons fall back to direct SMC, which reportRoute flags.
+            let (route, note, applied, _) = try FanCommandRouter.apply(.setFan(index: index, rpm: target), oneshot: true)
+            reportRoute(route)
+            if let note { print(note) }
+            if let shown = applied ?? (route.wentThroughDaemon ? nil : rpm) {
+                print("Fan \(index) → \(shown) RPM")
+            } else {
+                print(Self.appliedUnknownByOldDaemon)
+            }
+        } else {
+            let (route, note, _, targets) = try FanCommandRouter.apply(.setRPM(target), oneshot: true)
+            reportRoute(route)
+            if let note { print(note) }
+            if let targets {
+                for target in targets {
+                    print("Fan \(target.index) target → \(target.rpm) RPM")
+                }
+            } else {
+                print(Self.appliedUnknownByOldDaemon)
+            }
+        }
+    }
+}
+
+// MARK: - Status
+
+struct Status: ParsableCommand {
+    static let configuration = CommandConfiguration(
+        commandName: "status",
+        abstract: "Print current fan speeds and temperatures as JSON"
+    )
+
+    func run() throws {
+        let fc = try FanControl()
+        let status = try fc.status()
+
+        let encoder = JSONEncoder()
+        encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
+        encoder.keyEncodingStrategy = .convertToSnakeCase
+        let json = try encoder.encode(status)
+        print(String(data: json, encoding: .utf8)!)
+    }
+}
+
+// MARK: - Discover
+
+struct Discover: ParsableCommand {
+    static let configuration = CommandConfiguration(
+        commandName: "discover",
+        abstract: "Dump all SMC keys (run first on new hardware)"
+    )
+
+    @Option(name: .shortAndLong, help: "Filter keys by prefix (e.g., F for fans, T for temps)")
+    var filter: String?
+
+    @Option(name: .shortAndLong, help: "Write output to file")
+    var output: String?
+
+    func run() throws {
+        let fc = try FanControl()
+        let keys = fc.discover(prefix: filter)
+
+        // Machine info
+        var sysSize = 0
+        sysctlbyname("hw.model", nil, &sysSize, nil, 0)
+        var modelBuf = [CChar](repeating: 0, count: max(sysSize, 1))
+        sysctlbyname("hw.model", &modelBuf, &sysSize, nil, 0)
+        let machineModel = String(cString: modelBuf)
+        let osVersion = ProcessInfo.processInfo.operatingSystemVersionString
+
+        var lines: [String] = []
+        lines.append("MacFanPro Key Dump")
+        lines.append("Date: \(ISO8601DateFormatter().string(from: Date()))")
+        lines.append("Machine: \(machineModel)")
+        lines.append("macOS: \(osVersion)")
+        lines.append("Keys found: \(keys.count)")
+        lines.append(String(repeating: "\u{2500}", count: 72))
+        lines.append("Key    Type   Size  Value")
+        lines.append(String(repeating: "\u{2500}", count: 72))
+
+        for entry in keys {
+            let hex = entry.bytes.map { String(format: "%02x", $0) }.joined(separator: " ")
+
+            var note = ""
+            if entry.size == 4 && entry.bytes.count >= 4 && entry.type == "flt " {
+                let floatVal = smcBytesToFloat(entry.bytes, size: entry.size)
+                if entry.key.hasPrefix("F") && floatVal >= 0 && floatVal <= 10000 {
+                    note = " = \(Int(floatVal)) RPM"
+                } else if entry.key.hasPrefix("T") && floatVal > 0 && floatVal < 150 {
+                    note = " = \(String(format: "%.1f", floatVal)) C"
+                }
+            } else if entry.size == 8 && entry.bytes.count >= 4 && entry.type == "ioft" {
+                let floatVal = ioftBytesToFloat(entry.bytes)
+                if floatVal > 0 && floatVal < 150 {
+                    note = " = \(String(format: "%.1f", floatVal)) C"
+                }
+            } else if entry.size == 1 && !entry.bytes.isEmpty {
+                note = " = \(entry.bytes[0])"
+            }
+
+            let key = entry.key.padding(toLength: 6, withPad: " ", startingAt: 0)
+            let type = entry.type.padding(toLength: 6, withPad: " ", startingAt: 0)
+            let sizeStr = String(repeating: " ", count: max(0, 4 - "\(entry.size)".count)) + "\(entry.size)"
+            lines.append("\(key) \(type) \(sizeStr)  \(hex)\(note)")
+        }
+
+        let report = lines.joined(separator: "\n")
+
+        if let path = output {
+            try report.write(toFile: path, atomically: true, encoding: .utf8)
+            print("Wrote \(keys.count) keys to \(path)")
+        } else {
+            print(report)
+        }
+    }
+}
+
+// MARK: - Watch
+
+struct Watch: ParsableCommand {
+    static let configuration = CommandConfiguration(
+        commandName: "watch",
+        abstract: "Monitor temps and auto-adjust fans based on a profile"
+    )
+
+    @Option(name: .shortAndLong, help: "Profile: silent, balanced, performance, max")
+    var profile: String = "balanced"
+
+    @Option(name: .shortAndLong, help: "Poll interval: 0.01–5 seconds (default 0.1 = 100ms)")
+    var interval: Double = 0.1
+
+    @Flag(name: .long, help: "Output JSON on each update")
+    var json: Bool = false
+
+    func run() throws {
+        warnIfDaemonVersionMismatch()
+        let profiles = FanProfile.builtIn
+        guard let selectedProfile = profiles.first(where: { $0.id == profile }) else {
+            throw ValidationError(
+                "Unknown profile '\(profile)'. Options: \(profiles.map(\.id).joined(separator: ", "))"
+            )
+        }
+
+        guard interval.isFinite, (0.01...5).contains(interval) else {
+            throw ValidationError("--interval must be between 0.01 and 5 seconds")
+        }
+        guard geteuid() == 0 else { throw ValidationError("Run with sudo: sudo macfanpro watch") }
+        guard SystemTools.processRunning(uid: nil) == false else {
+            throw ValidationError("Quit the MacFanPro menu bar app before starting watch; two profile controllers cannot run together.")
+        }
+        let control = try ForegroundFanControl()
+        let fc = try FanControl()
+        let monitor = ThermalMonitor(fanControl: fc, profile: selectedProfile)
+
+        print("MacFanPro watch — profile: \(selectedProfile.name)")
+        print("Hardware: \(fc.hardwareInfo)")
+        print("Polling every \(interval)s. Ctrl-C to stop.\n")
+
+        monitor.onFanCommand = control.apply
+
+        monitor.onUpdate = { [json] status, activeProfile, state in
+            if json {
+                let encoder = JSONEncoder()
+                encoder.outputFormatting = [.sortedKeys]
+                encoder.keyEncodingStrategy = .convertToSnakeCase
+                if let data = try? encoder.encode(status),
+                   let line = String(data: data, encoding: .utf8)
+                {
+                    print(line)
+                }
+            } else {
+                let cpuTemp = status.temperatures
+                    .filter { k, _ in k.hasPrefix("TC") || k.hasPrefix("Tp") }
+                    .values.max() ?? 0
+                let gpuTemp = status.temperatures
+                    .filter { k, _ in k.hasPrefix("TG") || k.hasPrefix("Tg") }
+                    .values.max() ?? 0
+                let fan0 = status.fans.first.map { $0.actualRPM } ?? 0
+                let stateLabel: String
+                switch state {
+                case .idle: stateLabel = "idle"
+                case .active(let name): stateLabel = name
+                case .safetyOverride: stateLabel = "SAFETY"
+                }
+                let timestamp = ISO8601DateFormatter().string(from: Date())
+                print("[\(timestamp)] CPU: \(String(format: "%.0f", cpuTemp))°C  GPU: \(String(format: "%.0f", gpuTemp))°C  Fan: \(fan0) RPM  [\(stateLabel)]")
+            }
+        }
+
+        // Dispatch handles signals outside the async-signal-unsafe C handler.
+        // stop() drains the monitor, so no late write can follow the final release.
+        signal(SIGINT, SIG_IGN)
+        signal(SIGTERM, SIG_IGN)
+        let signals = [SIGINT, SIGTERM].map { number in
+            let source = DispatchSource.makeSignalSource(signal: number, queue: .main)
+            source.setEventHandler {
+                monitor.stop()
+                do {
+                    try control.finish()
+                    Darwin.exit(0)
+                } catch {
+                    FileHandle.standardError.write(Data("Could not release fan control: \(error)\n".utf8))
+                    Darwin.exit(1)
+                }
+            }
+            source.resume()
+            return source
+        }
+        defer { signals.forEach { $0.cancel() } }
+
+        monitor.start(interval: interval)
+
+        // Keep the process alive
+        RunLoop.main.run()
+    }
+}
+
+// MARK: - Calibrate
+
+struct Calibrate: ParsableCommand {
+    static let configuration = CommandConfiguration(
+        commandName: "calibrate",
+        abstract: "Measure this machine's thermal characteristics for the Smart profile"
+    )
+
+    @Option(name: .shortAndLong, help: "Calibration mode: quick (~14 min), standard (~32 min), optimized (until stable)")
+    var mode: String = "standard"
+
+    @Option(name: .shortAndLong, help: "Stress type: combined (CPU+GPU, default), cpu, gpu")
+    var stress: String = "combined"
+
+    @Flag(name: .long, help: "Clear calibration data and start fresh")
+    var reset: Bool = false
+
+    func run() throws {
+        // Reset doesn't need sudo — it's user data
+        if reset {
+            if try CalibrationData.remove() {
+                print("Calibration data cleared. Smart will use the default curve.")
+                TFLogger.shared.calibration("Calibration data reset by user")
+            } else {
+                print("No calibration data to clear.")
+            }
+            return
+        }
+
+        guard geteuid() == 0 else {
+            throw ValidationError("Run with sudo: sudo macfanpro calibrate")
+        }
+
+        guard let calMode = CalibrationMode(rawValue: mode) else {
+            throw ValidationError("Unknown mode '\(mode)'. Options: quick, standard, optimized")
+        }
+
+        guard let calStress = CalibrationStressType(rawValue: stress) else {
+            throw ValidationError("Unknown stress type '\(stress)'. Options: combined, cpu, gpu")
+        }
+
+        // Prevent downgrade
+        if CalibrationRunner.wouldDowngrade(mode: calMode) {
+            let existing = CalibrationData.load()
+            let existingMode = existing?.mode ?? "unknown"
+            throw ValidationError(
+                "Existing calibration was run at '\(existingMode)' level. " +
+                "Running '\(mode)' would downgrade your data. " +
+                "Use --mode \(existingMode) or higher."
+            )
+        }
+
+        // A running app with a controlling profile (Smart) keeps rewriting fan
+        // targets through the daemon and overrides every calibration level. Quit it
+        // the same way `auto --stop-app` does, and reopen it when calibration ends.
+        let control = try ForegroundFanControl()
+        let stoppedApp = try Self.stopApp()
+        defer { if let app = stoppedApp { Self.reopen(app) } }
+
+        print("MacFanPro Calibration")
+        print("========================")
+        print("Mode: \(calMode.description)")
+        print("Stress: \(calStress.description)")
+        print("")
+        print("This will stress your \(calStress == .combined ? "CPU and GPU" : calStress == .cpu ? "CPU" : "GPU") and measure thermal response at 5 fan speed levels.")
+        print("Fans will be loud during the test.")
+        print("")
+        print("DISCLAIMER: Calibration pushes your Mac to full load and cycles fan speeds.")
+        print("This is within normal operating parameters but MacFanPro is provided")
+        print("as-is with no warranty. Use at your own risk.")
+        print("")
+        print("Press Ctrl-C at any time to stop. Fans will reset to Apple defaults.\n")
+
+        let fc = try FanControl()
+        let runner = CalibrationRunner(fanControl: fc, mode: calMode, stressType: calStress,
+                                       applyCommand: control.apply)
+
+        let previousINT = signal(SIGINT, SIG_IGN)
+        let previousTERM = signal(SIGTERM, SIG_IGN)
+        let signals = [SIGINT, SIGTERM].map { number in
+            let source = DispatchSource.makeSignalSource(signal: number, queue: .global(qos: .userInitiated))
+            source.setEventHandler { runner.cancel() }
+            source.resume()
+            return source
+        }
+        defer {
+            signals.forEach { $0.cancel() }
+            signal(SIGINT, previousINT); signal(SIGTERM, previousTERM)
+        }
+
+        runner.onProgress = { message in
+            print(message)
+        }
+
+        let data: CalibrationData
+        do {
+            data = try runner.run()
+            try runner.checkCancellation()
+            try data.save()
+        } catch is CancellationError {
+            print("\nCalibration interrupted. No calibration data was saved.")
+            return
+        } catch let invalid as CalibrationData.InvalidResult {
+            // Keep the previous calibration: the app would reject this one and fall
+            // back to the default curve.
+            print("\nCalibration finished, but the result was NOT saved: \(invalid.reason)")
+            print("The existing calibration file was left unchanged:")
+            print("  \(CalibrationData.filePath.path)")
+            if let logPath = runner.logPath {
+                print("The sensor log of this run is at:")
+                print("  \(logPath.path)")
+            }
+            throw invalid
+        }
+
+        print("\nCalibration complete.")
+        print("\nSaved to:")
+        print("  \(CalibrationData.filePath.path)")
+        if let logPath = runner.logPath {
+            print("  \(logPath.path)")
+        }
+        print("\nResults:")
+        for m in data.measurements {
+            print("  \(Int(m.targetTemp))°C → \(Int(m.holdingRPMPercent * 100))% fan speed")
+        }
+        print("\nThe Smart profile will now use these measurements for this machine.")
+        if runner.logPath != nil {
+            print("The CSV log contains every sensor reading taken during calibration.")
+        }
+    }
+
+    /// Quits the menu bar app if the invoking user runs it, and returns its bundle
+    /// path for `reopen`. Nil when it was not running.
+    private static func stopApp() throws -> String? {
+        guard let uid = ProcessInfo.processInfo.environment["SUDO_UID"], uid_t(uid) != nil,
+              let pid = output("/usr/bin/pgrep", ["-x", "-u", uid, "MacFanProApp"])?
+                .split(separator: "\n").first else {
+            guard SystemTools.processRunning(uid: nil) == false else {
+                throw ValidationError("Quit the MacFanPro menu bar app before calibrating from this account.")
+            }
+            return nil
+        }
+        let executable = output("/bin/ps", ["-o", "comm=", "-p", String(pid)]) ?? ""
+        let bundle = executable.range(of: ".app/").map { String(executable[..<$0.lowerBound]) + ".app" }
+            ?? "/Applications/MacFanPro.app"
+
+        switch SystemTools.stopApp(
+            isRunning: { SystemTools.processRunning(uid: uid_t(uid)) },
+            kill: { SystemTools.run("/usr/bin/pkill", ["-x", "-u", uid, "MacFanProApp"]) }) {
+        case .failed(let message): throw ValidationError("Cannot start calibration: \(message)")
+        case .notRunning: return nil
+        case .stopped: break
+        }
+        print("Quit the MacFanPro menu bar app for calibration. It will be reopened afterwards.\n")
+        return bundle
+    }
+
+    /// Reopens the app in the invoking user's session, as Install does after an upgrade.
+    private static func reopen(_ bundle: String) {
+        guard let uid = ProcessInfo.processInfo.environment["SUDO_UID"] else { return }
+        let open = Process()
+        open.executableURL = URL(fileURLWithPath: "/bin/launchctl")
+        open.arguments = ["asuser", uid, "/usr/bin/open", bundle]
+        do { try open.run() }
+        catch {
+            print("Could not reopen MacFanPro: \(error). Open it from Applications.")
+            return
+        }
+        open.waitUntilExit()
+        print("\nReopening the MacFanPro menu bar app. If it does not appear, open it from Applications.")
+    }
+
+    private static func output(_ path: String, _ args: [String]) -> String? {
+        let process = Process()
+        let pipe = Pipe()
+        process.executableURL = URL(fileURLWithPath: path)
+        process.arguments = args
+        process.standardOutput = pipe
+        process.standardError = FileHandle.nullDevice
+        guard (try? process.run()) != nil else { return nil }
+        let data = pipe.fileHandleForReading.readDataToEndOfFile()
+        process.waitUntilExit()
+        guard process.terminationStatus == 0 else { return nil }
+        let text = String(decoding: data, as: UTF8.self).trimmingCharacters(in: .whitespacesAndNewlines)
+        return text.isEmpty ? nil : text
+    }
+}
+
+// MARK: - Log
+
+struct Log: ParsableCommand {
+    static let configuration = CommandConfiguration(
+        commandName: "log",
+        abstract: "Record thermal data to CSV for research and analysis"
+    )
+
+    @Option(name: .shortAndLong, help: "Sample rate in Hz (default: 1)")
+    var rate: Double = 1.0
+
+    @Option(name: .shortAndLong, help: "Duration (e.g., 1h, 30m, 60s). Omit for indefinite.")
+    var duration: String?
+
+    @Option(name: .shortAndLong, help: "Export directory (custom output is kept permanently)")
+    var output: String?
+
+    @Flag(name: .long, help: "Keep logs permanently (temporary default captures expire 24h after completion)")
+    var noExpire: Bool = false
+
+    func run() throws {
+        let durationSec: TimeInterval?
+        if let duration {
+            guard let parsed = CaptureDuration.parse(duration) else {
+                throw ValidationError("--duration must be a positive duration, for example 60s, 30m or 1h")
+            }
+            durationSec = parsed
+        } else { durationSec = nil }
+        // Logging only reads SMC. Under sudo, permanently become the invoking user
+        // before opening output paths or starting background logging threads.
+        if geteuid() == 0, let text = ProcessInfo.processInfo.environment["SUDO_UID"] {
+            guard let uid = uid_t(text), uid > 0, let account = getpwuid(uid),
+                  let name = account.pointee.pw_name else {
+                throw ValidationError("Cannot resolve the login user. Run macfanpro log without sudo.")
+            }
+            let user = String(cString: name), gid = account.pointee.pw_gid
+            guard initgroups(user, Int32(bitPattern: gid)) == 0, setgid(gid) == 0, setuid(uid) == 0 else {
+                throw ValidationError("Cannot switch to the login user. Run macfanpro log without sudo.")
+            }
+        }
+        let fc = try FanControl()
+
+        let outputURL = output.map { URL(fileURLWithPath: $0) }
+
+        let logger = try ThermalLogger(
+            fanControl: fc,
+            rateHz: rate,
+            duration: durationSec,
+            outputDir: outputURL,
+            noExpire: noExpire || output != nil
+        )
+
+        // Clean expired sessions on startup
+        ThermalLogger.cleanExpired()
+
+        let durationStr = durationSec.map { formatDuration($0) } ?? "indefinite"
+        print("MacFanPro Log")
+        print("  Rate: \(rate) Hz")
+        print("  Duration: \(durationStr)")
+        print("  Output: \(logger.outputPath.path)")
+        print("  Retention: \((noExpire || output != nil) ? "permanent" : "24h after completion; cleaned periodically while the app runs")")
+        if !noExpire && output == nil { print("  Size limit: 100 MiB per temporary recording") }
+        print("\nLogging... Ctrl-C to stop.\n")
+
+        // Handle termination outside a signal handler so CSV handles, metadata
+        // and expiry markers are finalized normally, even with a slow sample rate.
+        let previousINT = signal(SIGINT, SIG_IGN)
+        let previousTERM = signal(SIGTERM, SIG_IGN)
+        let signals = [SIGINT, SIGTERM].map { number in
+            let source = DispatchSource.makeSignalSource(signal: number, queue: .global(qos: .utility))
+            source.setEventHandler { logger.stop() }
+            source.resume()
+            return source
+        }
+        defer {
+            signals.forEach { $0.cancel() }
+            signal(SIGINT, previousINT)
+            signal(SIGTERM, previousTERM)
+        }
+
+        logger.onSample = { line in
+            print(line)
+        }
+
+        try logger.run()
+
+        print("\nLog saved to: \(logger.outputPath.path)")
+        print("  thermal.csv   — sensor readings + fan state")
+        print("  processes.csv — top processes by CPU")
+        print("  metadata.json — session info + data dictionary")
+    }
+
+    private func formatDuration(_ t: TimeInterval) -> String {
+        if t >= 3600 { return "\(Int(t / 3600))h" }
+        if t >= 60 { return "\(Int(t / 60))m" }
+        return "\(Int(t))s"
+    }
+}
+
+// MARK: - Install
+
+struct Install: ParsableCommand {
+    static let configuration = CommandConfiguration(
+        commandName: "install",
+        abstract: "Install the background daemon (one-time, requires sudo)"
+    )
+
+    @Flag(name: .long, help: "Back up and replace an existing ThermalForge installation")
+    var migrateThermalforge = false
+
+    @Option(name: .long, help: .hidden)
+    var embeddedOwnerUID: UInt32?
+
+    func run() throws {
+        guard geteuid() == 0 else {
+            throw ValidationError("Run with sudo: sudo macfanpro install")
+        }
+
+        guard let executable = SystemTools.currentExecutablePath() else {
+            throw ValidationError("Could not locate the running MacFanPro executable. Re-run the installer by its full path.")
+        }
+        let installationLock = try ServiceInstallationLock()
+        defer { withExtendedLifetime(installationLock) {} }
+        let embedded = embeddedOwnerUID != nil
+        if let owner = embeddedOwnerUID {
+            try EmbeddedServiceInstallation.validateOwner(owner)
+            try EmbeddedServiceInstallation.validateBundle(
+                URL(fileURLWithPath: EmbeddedServiceInstallation.appPath),
+                executable: URL(fileURLWithPath: executable),
+                version: MacFanProVersion.current)
+            guard !EmbeddedServiceInstallation.homebrewPaths.contains(where: FileManager.default.fileExists(atPath:))
+                else { throw EmbeddedServiceInstallation.Failure.homebrew }
+            try EmbeddedServiceInstallation.verifySignature()
+            let plist = FileManager.default.fileExists(atPath: MacFanProDaemon.plistPath)
+                ? try Data(contentsOf: URL(fileURLWithPath: MacFanProDaemon.plistPath)) : nil
+            try EmbeddedServiceInstallation.validateExistingPlist(plist, owner: owner)
+            let client = DaemonClient()
+            try EmbeddedServiceInstallation.validateLiveService(
+                version: try? client.request(DaemonRequest(verb: .version)).version,
+                target: MacFanProVersion.current, state: try? client.readState())
+        }
+
+        // The daemon runs under launchd with no SUDO_UID of its own, so capture the
+        // controlling user here and bake it into the plist (1c). Absent means
+        // "already root, not via sudo" (a root shell) — refuse rather than default to
+        // 0, which would make the socket root-only and brick the user's app. A
+        // non-root user never reaches this line — the geteuid() guard above stops them.
+        guard let ownerUID = embeddedOwnerUID.map(Int.init) ?? ProcessInfo.processInfo.environment["SUDO_UID"].flatMap(Int.init),
+              ownerUID > 0, uid_t(exactly: ownerUID) != nil else {
+            throw ValidationError("""
+                Can't determine who should own fan control: SUDO_UID isn't set.
+                Run the install with sudo from your normal user account:
+
+                    sudo macfanpro install
+
+                Don't run it from a root shell (su / sudo -i) — the daemon needs your
+                user's id so your app and CLI work without sudo. Installing as root
+                would lock every non-root account out of fan control.
+                """)
+        }
+
+        try EmbeddedServiceInstallation.validateOwner(uid_t(ownerUID))
+        let sourceBinary = URL(fileURLWithPath: executable)
+        // The version this run installs: this binary's, or a newer Homebrew keg's when
+        // this is the installed copy re-run after `brew upgrade`. The app bundle must
+        // match it, both here and when the bundle is copied below.
+        let resyncKeg = sourceBinary.path == URL(fileURLWithPath: MacFanProDaemon.installPath).resolvingSymlinksInPath().path
+            ? Self.newerHomebrewKeg(than: MacFanProVersion.current) : nil
+        let installVersion = resyncKeg?.version ?? MacFanProVersion.current
+        let selectedBinary = resyncKeg.map { URL(fileURLWithPath: $0.path) } ?? sourceBinary
+        let appCandidates = embedded ? [EmbeddedServiceInstallation.appPath] : [
+            selectedBinary.deletingLastPathComponent().appendingPathComponent("MacFanPro.app").path,
+            selectedBinary.deletingLastPathComponent().deletingLastPathComponent().appendingPathComponent("MacFanPro.app").path,
+            "/opt/homebrew/opt/macfanpro/MacFanPro.app",
+            "/usr/local/opt/macfanpro/MacFanPro.app",
+            EmbeddedServiceInstallation.appPath,
+        ]
+        guard let appSource = appCandidates.map({ URL(fileURLWithPath: $0) }).first(where: {
+            AppInstallSource.matches($0, binary: selectedBinary, version: installVersion)
+        }) else {
+            throw ValidationError("No MacFanPro.app matching this exact build was found. Reinstall with Homebrew or run ./setup.sh from its source checkout.")
+        }
+        try AppInstallSource.verifySignature(of: appSource)
+
+        let fm = FileManager.default
+        let appDest = EmbeddedServiceInstallation.appPath
+        let preparedApp = embedded ? nil : try AppBundleReplacement.Prepared(at: URL(fileURLWithPath: appDest)) { staged in
+            try fm.copyItem(at: appSource, to: staged)
+            guard AppInstallSource.matches(staged, binary: selectedBinary, version: installVersion) else {
+                throw ValidationError("The staged app does not match the selected service. The existing installation is untouched.")
+            }
+            try AppInstallSource.verifySignature(of: staged)
+            try AppBundleAttributes.clear(in: staged)
+            guard let account = getpwuid(uid_t(ownerUID)) else { throw EmbeddedServiceInstallation.Failure.account }
+            try AppBundleReplacement.handOver(staged, uid: uid_t(ownerUID), gid: account.pointee.pw_gid)
+        }
+
+        let migration: LegacyMigration?
+        if LegacyMigration.isPresent {
+            guard migrateThermalforge else {
+                throw ValidationError("ThermalForge is installed. To replace it, run: sudo macfanpro install --migrate-thermalforge")
+            }
+            migration = try LegacyMigration(ownerUID: ownerUID)
+            try migration?.prepare()
+        } else { migration = nil }
+        defer { migration?.rollback() }
+
+        // Non-destructively capture whether the controlling user's app is running
+        // NOW — before this install kills anything — as the signal for whether to
+        // relaunch it at the end (upgrade recovery). Captured here, not inferred from
+        // a later pkill, so it can't be confused by whatever killed the app first
+        // (./setup.sh quits it before calling install; brew leaves it running).
+        func runTool(_ path: String, _ args: [String]) -> Int32 {
+            if case .exited(let status, _) = SystemTools.run(path, args) { return status }
+            return -1
+        }
+        func runToolOutput(_ path: String, _ args: [String]) -> String? {
+            guard case .exited(0, let output) = SystemTools.run(path, args) else { return nil }
+            return output.split(separator: "\n").first.map(String.init)
+        }
+        // Capture the controlling user's app PID now — before this install kills
+        // anything — both as the signal for whether to relaunch (upgrade recovery)
+        // and as the baseline for confirming a real relaunch (a different pid).
+        let prePid = runToolOutput("/usr/bin/pgrep", ["-x", "-u", "\(ownerUID)", "MacFanProApp"])
+        let appWasRunning = prePid != nil || migration?.appWasRunning == true
+
+        // dyld identifies the actual executable even for a bare-name invocation.
+        let binaryPath = executable
+        let installPath = MacFanProDaemon.installPath
+
+        // Copy the real binary to /usr/local/bin as a root-owned regular file
+        // (root:wheel 0755). launchd execs this as root, so it must live on a
+        // path that isn't user-writable — never a link back into /opt/homebrew/bin
+        // (user-writable → a root daemon exec'ing from there is privilege
+        // escalation). Always overwrite so re-running after `brew upgrade`
+        // re-syncs the installed copy.
+        // On a clean Apple Silicon machine /usr/local/bin may not exist. Fail
+        // loud if it can't be created — silently ignoring it makes every step
+        // after this fail for reasons that make no sense.
+        // (createDirectory(withIntermediateDirectories: true) is a no-op if the
+        // directory already exists, so this only throws on a real failure.)
+        do {
+            try fm.createDirectory(atPath: "/usr/local/bin", withIntermediateDirectories: true)
+        } catch {
+            throw ValidationError("""
+                Couldn't create /usr/local/bin: \(error.localizedDescription)
+                The daemon binary can't be installed without it.
+                """)
+        }
+
+        // #28 self-delete + upgrade re-sync. Two separate concerns, kept separate.
+        //
+        // SAFETY (never brick): never remove installPath. Stage into installPath.new
+        // (same directory → same filesystem → rename() is atomic, no EXDEV) and
+        // rename() over installPath. The source is read into the temp before
+        // installPath is touched, so a same-path or failed install can never delete
+        // the binary it's reading from (#28), installPath is never absent (the
+        // emergency-reset escape hatch always exists), and a dangling symlink is
+        // replaced too — what the old removeItem was for.
+        //
+        // SOURCE (re-sync, path-independent): install the binary the user invoked
+        // (dyld's executable path) when it's a DISTINCT file from installPath — right for a
+        // from-source build (.build/release: even same version, newer code) and for
+        // Homebrew-via-/opt/homebrew (the keg). When this path IS installPath — re-run
+        // install from the installed binary, e.g. sudo's secure_path resolving to the
+        // stale /usr/local/bin copy after `brew upgrade` — copying it onto itself is a
+        // permanent no-op that would leave the daemon stale and the mismatch warning
+        // firing forever. So fall back to the Homebrew keg and install it IF it's a
+        // newer version. The keg's version is read from its Cellar PATH (opt/<formula>
+        // → Cellar/<formula>/<version>), never by executing an untrusted-path binary
+        // as root — the installer only ever copies it.
+        let attrs: [FileAttributeKey: Any] =
+            [.ownerAccountID: 0, .groupOwnerAccountID: 0, .posixPermissions: 0o755]
+        let resolvedBinary = URL(fileURLWithPath: binaryPath).resolvingSymlinksInPath().path
+        let resolvedInstall = URL(fileURLWithPath: installPath).resolvingSymlinksInPath().path
+
+        // Stage a checked regular executable beside the destination, creating it
+        // as the installer (root) with its final 0755 permissions. rename keeps
+        // the previous executable available until the replacement is complete.
+        func installBinary(from source: String) throws {
+            // Refuse an unexpectedly writable source; staged permissions are also
+            // enforced independently by SafeFileCopy on its opened output handle.
+            if let perms = (try? fm.attributesOfItem(atPath: source))?[.posixPermissions] as? Int,
+               perms & 0o022 != 0 {
+                throw ValidationError("""
+                    Refusing to install \(source): it is group/other-writable
+                    (mode \(String(perms, radix: 8))). Fix with:
+                        chmod go-w "\(source)"
+                    """)
+            }
+
+            let tempPath = installPath + ".new"
+            try? fm.removeItem(atPath: tempPath)   // clear a stale temp from a prior crash
+            do {
+                try SafeFileCopy.copyRegularFile(from: source, to: tempPath, requireExecutable: true, permissions: 0o755)
+                try fm.setAttributes(attrs, ofItemAtPath: tempPath)
+            } catch {
+                try? fm.removeItem(atPath: tempPath)
+                throw ValidationError("""
+                    Couldn't stage the daemon binary at \(tempPath):
+                    \(error.localizedDescription)
+                    The existing install at \(installPath) is untouched.
+                    """)
+            }
+            guard rename(tempPath, installPath) == 0 else {
+                let err = errno
+                try? fm.removeItem(atPath: tempPath)
+                throw ValidationError(
+                    "Couldn't install the binary to \(installPath) (rename failed: errno \(err)). " +
+                    "The existing install is untouched."
+                )
+            }
+        }
+
+        try EmbeddedServiceInstallation.validateDirectory(URL(fileURLWithPath: "/usr/local/bin"))
+        try EmbeddedServiceInstallation.validateDirectory(URL(fileURLWithPath: "/Library/LaunchDaemons"))
+        let snapshot = try ServiceFileSnapshot()
+        let wasRegistered = try MacFanProDaemon.registrationStatus()
+        let previousVersion = wasRegistered ? (try? DaemonClient().request(DaemonRequest(verb: .version)).version) : nil
+        try ServiceLifecycle.install(stop: {
+            // Release the fans to Apple before stopping the daemon (ThermalForge #31).
+            // A bootout of a daemon from before 0.2.3.55 has no SIGTERM release, and
+            // the new daemon starts holding nothing. Through the daemon when it's up,
+            // so it also clears the daemon's record; direct otherwise. Best effort:
+            // the new daemon's startup reconcile is the backstop.
+            let released: Bool
+            do {
+                _ = try FanCommandRouter.apply(.resetAuto, oneshot: false)
+                released = true
+            } catch {
+                released = (try? FanControl().resetAuto()) != nil
+            }
+            print(released
+                ? "Fans released to Apple defaults for the daemon restart."
+                : "Warning: couldn't reset fans before the daemon restart; the new daemon will reset them when it starts.")
+            try MacFanProDaemon.bootoutIfRegistered()
+        }, replaceFiles: {
+            if resolvedBinary != resolvedInstall {
+                // Install the binary the user invoked.
+                try installBinary(from: binaryPath)
+            } else {
+                // Self-referential invocation → a re-sync request. The running binary's
+                // version IS installPath's version (same file), so only a strictly-newer
+                // Homebrew keg is worth installing (found above as resyncKeg); never downgrade.
+                let current = MacFanProVersion.current
+                if let keg = resyncKeg {
+                    print("Re-syncing daemon binary from Homebrew keg \(keg.version) at \(keg.path).")
+                    try installBinary(from: keg.path)
+                } else {
+                    // Already current — nothing newer to install. Re-assert ownership/
+                    // perms and fail LOUD if it doesn't take. launchd execs installPath as
+                    // root at every boot, so if a prior bad state left it user-owned or
+                    // user-writable, a silent failure here would leave a local user able to
+                    // replace the root daemon binary. This is also the most common path
+                    // (re-install when already current), so it must not swallow errors —
+                    // every other write in this file throws; so does this.
+                    print("Binary at \(installPath) is already current (\(current)) — nothing to copy.")
+                    do {
+                        try fm.setAttributes(attrs, ofItemAtPath: installPath)
+                    } catch {
+                        throw ValidationError("""
+                            Couldn't re-assert ownership/permissions on \(installPath):
+                            \(error.localizedDescription)
+                            """)
+                    }
+                }
+            }
+
+            // Write launchd plist
+            let plist = """
+                <?xml version="1.0" encoding="UTF-8"?>
+                <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" \
+                "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+                <plist version="1.0">
+                <dict>
+                    <key>Label</key>
+                    <string>\(MacFanProDaemon.label)</string>
+                    <key>ProgramArguments</key>
+                    <array>
+                        <string>\(installPath)</string>
+                        <string>daemon</string>
+                        <string>--owner-uid</string>
+                        <string>\(ownerUID)</string>
+                    </array>
+                    <key>RunAtLoad</key>
+                    <true/>
+                    <key>KeepAlive</key>
+                    <true/>
+                </dict>
+                </plist>
+                """
+            try ServiceFileSnapshot.replace(URL(fileURLWithPath: MacFanProDaemon.plistPath),
+                                            data: Data(plist.utf8), mode: 0o644)
+            // Migration: drop the legacy world-writable /tmp socket so no old client can
+            // find (or squat) it. The daemon now serves /var/run; a literal path here
+            // because socketPath is /var/run/... from Phase 1a.
+            //
+            // Safe despite being a root unlink() of a path in a world-writable directory
+            // (the classic /tmp symlink/hardlink attack surface), for three reasons:
+            //   - Symlink redirect: unlink() acts on the link itself, never follows it, so
+            //     a planted symlink can't make us delete its target.
+            //   - Hardlink to a victim file: unlink() only removes THIS /tmp directory
+            //     entry and decrements the link count — the victim file persists at its
+            //     original path.
+            //   - Directory planted at that name: unlink() fails with EISDIR; we ignore
+            //     the return, so it's a harmless no-op.
+            unlink("/tmp/macfanpro.sock")
+
+        }, start: {
+            try MacFanProDaemon.bootstrap { print($0) }
+        }, verify: {
+            guard MacFanProDaemon.waitUntilRunning(version: installVersion) else {
+                throw ValidationError("The background service did not confirm installed version \(installVersion) within the startup wait. Re-run the installer; check Console.app for io.github.macfanpro.daemon if it still fails.")
+            }
+        }, commitApp: {
+            if let preparedApp {
+                guard AppInstallSource.matches(preparedApp.staged, binary: URL(fileURLWithPath: installPath), version: installVersion) else {
+                    throw ValidationError("The staged app does not match the installed service. Restoring the previous service.")
+                }
+                if let warning = try preparedApp.commit() { print("Warning: \(warning)") }
+                print("Installed MacFanPro.app to \(appDest)")
+            }
+        }, recover: {
+            try snapshot.restoreService(stop: { try MacFanProDaemon.bootoutIfRegistered() }) {
+                guard wasRegistered else { return }
+                try MacFanProDaemon.bootstrap()
+                if let previousVersion, !MacFanProDaemon.waitUntilRunning(version: previousVersion) {
+                    throw ValidationError("The previous service files were restored, but version \(previousVersion) did not respond. Re-run the installer.")
+                }
+            }
+        })
+        if embedded {
+            migration?.complete()
+            print("Background service installed and verified.")
+            return // The running bundle is already installed. Never delete/copy it onto itself.
+        }
+
+        let moveGuidance = "MacFanPro.app was updated but could not be reopened automatically. Quit it if it is still open, then open it from Applications."
+        if appWasRunning {
+            let stopped = SystemTools.stopApp(
+                isRunning: { SystemTools.processRunning(uid: uid_t(ownerUID)) },
+                kill: { SystemTools.run("/usr/bin/pkill", ["-x", "-u", "\(ownerUID)", "MacFanProApp"]) }, toolName: "pkill")
+            if case .failed(let message) = stopped {
+                print("Warning: \(message). \(moveGuidance)")
+                migration?.complete()
+                return
+            }
+            _ = runTool("/bin/launchctl",
+                ["asuser", "\(ownerUID)", "/usr/bin/open", appDest])
+            // Don't trust open's exit code — on some macOS versions it returns 0
+            // without launching into the GUI session. Confirm a genuinely NEW app
+            // pid (different from the one captured before install) actually appeared;
+            // if pkill failed and the old app survived, the pid is unchanged and we
+            // fall through to the guidance rather than claim a relaunch.
+            // Poll for a genuinely new pid instead of sleeping a fixed interval and
+            // hoping — the app can register slower than any single guess, which would
+            // print the guidance on a successful relaunch. Up to ~5 checks at 0.5s,
+            // stopping the moment a pid different from prePid appears.
+            var relaunched = false
+            for _ in 0..<5 {
+                Thread.sleep(forTimeInterval: 0.5)
+                if let newPid = runToolOutput("/usr/bin/pgrep", ["-x", "-u", "\(ownerUID)", "MacFanProApp"]),
+                   newPid != prePid {
+                    relaunched = true
+                    break
+                }
+            }
+            if !relaunched {
+                print(moveGuidance)
+            }
+        }
+
+        migration?.complete()
+        print("Done.")
+    }
+
+    /// When this run IS the installed copy (sudo's secure_path picks /usr/local/bin
+    /// after `brew upgrade`), the Homebrew keg to re-sync from if it is strictly newer.
+    /// Its version is read from the keg's resolved Cellar path — no execution.
+    static func newerHomebrewKeg(than current: String) -> (path: String, version: String)? {
+        let fm = FileManager.default
+        let kegBinaries = [
+            "/opt/homebrew/opt/macfanpro/bin/macfanpro",
+            "/usr/local/opt/macfanpro/bin/macfanpro",
+        ]
+        // opt/<f> symlinks to Cellar/<f>/<version>; take the component after it.
+        func kegVersion(_ path: String) -> String? {
+            let real = URL(fileURLWithPath: path).resolvingSymlinksInPath().path
+            let parts = real.components(separatedBy: "/Cellar/macfanpro/")
+            guard parts.count == 2 else { return nil }
+            return parts[1].components(separatedBy: "/").first
+        }
+        for keg in kegBinaries {
+            guard fm.fileExists(atPath: keg) else { continue }
+            guard let version = kegVersion(keg) else {
+                // Keg is present but its version couldn't be read from the path —
+                // most likely the formula was renamed (the parse keys on
+                // "/Cellar/macfanpro/"). Say so loudly: otherwise re-sync goes
+                // silent and no one would know why a stale daemon won't update.
+                let resolved = URL(fileURLWithPath: keg).resolvingSymlinksInPath().path
+                print("""
+                    Found a Homebrew keg at \(keg) but couldn't parse its version \
+                    from the resolved path \(resolved) (expected \
+                    .../Cellar/macfanpro/<version>/...). Skipping re-sync — \
+                    check whether the formula was renamed.
+                    """)
+                continue
+            }
+            // Only a numerically newer version qualifies for automatic re-sync.
+            guard MacFanProVersion.isNewerRelease(version, than: current) else { continue }
+            return (URL(fileURLWithPath: keg).resolvingSymlinksInPath().path, version)
+        }
+        return nil
+    }
+}
+
+// MARK: - Uninstall
+
+struct Uninstall: ParsableCommand {
+    static let configuration = CommandConfiguration(
+        commandName: "uninstall",
+        abstract: "Remove the background daemon"
+    )
+
+    @Flag(name: .long, help: "Also delete this user's MacFanPro profiles, calibration and logs, and the daemon's logs")
+    var purgeData = false
+
+    @Option(name: .long, help: .hidden)
+    var embeddedOwnerUID: UInt32?
+
+    func run() throws {
+        guard geteuid() == 0 else {
+            throw ValidationError("Run with sudo: sudo macfanpro uninstall")
+        }
+
+        let installationLock = try ServiceInstallationLock()
+        defer { withExtendedLifetime(installationLock) {} }
+        if let owner = embeddedOwnerUID {
+            guard !purgeData else { throw EmbeddedServiceInstallation.Failure.account }
+            try EmbeddedServiceInstallation.validateOwner(owner)
+            guard let executable = SystemTools.currentExecutablePath() else {
+                throw EmbeddedServiceInstallation.Failure.location
+            }
+            try EmbeddedServiceInstallation.validateBundle(
+                URL(fileURLWithPath: EmbeddedServiceInstallation.appPath),
+                executable: URL(fileURLWithPath: executable),
+                version: MacFanProVersion.current)
+            try EmbeddedServiceInstallation.verifySignature()
+            try EmbeddedServiceInstallation.validateDirectory(URL(fileURLWithPath: "/usr/local/bin"))
+            try EmbeddedServiceInstallation.validateDirectory(URL(fileURLWithPath: "/Library/LaunchDaemons"))
+            let plist = FileManager.default.fileExists(atPath: MacFanProDaemon.plistPath)
+                ? try Data(contentsOf: URL(fileURLWithPath: MacFanProDaemon.plistPath)) : nil
+            try EmbeddedServiceInstallation.validateExistingPlist(plist, owner: owner)
+            // User explicitly confirmed removal and return to automatic control.
+            // Stop the daemon first; otherwise its next ramp can undo the reset.
+            try ServiceLifecycle.uninstall(stop: {
+                try MacFanProDaemon.bootoutIfRegistered(rerun: "sudo macfanpro uninstall")
+            }, resetFans: { try FanControl().resetAuto() }, removeFiles: {
+                for path in [MacFanProDaemon.plistPath, MacFanProDaemon.installPath, MacFanProDaemon.socketPath] {
+                    if FileManager.default.fileExists(atPath: path) { try FileManager.default.removeItem(atPath: path) }
+                }
+            })
+            print("Background service removed. Application and user data preserved.")
+            return
+        }
+        let fm = FileManager.default
+        let ownerUID = ProcessInfo.processInfo.environment["SUDO_UID"].flatMap(UInt32.init) ?? getuid()
+        guard ownerUID != 0, let account = getpwuid(ownerUID), let directory = account.pointee.pw_dir else {
+            throw ValidationError("Run uninstall with sudo from your normal user account.")
+        }
+        let home = URL(fileURLWithPath: String(cString: directory))
+
+        if case .failed(let message) = SystemTools.stopApp(
+            isRunning: { SystemTools.processRunning(uid: nil) },
+            kill: { SystemTools.run("/usr/bin/killall", ["MacFanProApp"]) }) {
+            throw ValidationError("Could not stop the app: \(message). Quit MacFanPro and retry uninstall.")
+        }
+
+        try ServiceLifecycle.uninstall(stop: {
+            try MacFanProDaemon.bootoutIfRegistered(rerun: "sudo macfanpro uninstall")
+        }, resetFans: { try FanControl().resetAuto() }, removeFiles: {
+            for path in [MacFanProDaemon.plistPath, MacFanProDaemon.installPath,
+                         MacFanProDaemon.socketPath, "/tmp/macfanpro.sock"] {
+                var info = stat()
+                if lstat(path, &info) == 0 {
+                    try fm.removeItem(atPath: path)
+                } else if errno != ENOENT {
+                    throw NSError(domain: NSPOSIXErrorDomain, code: Int(errno))
+                }
+            }
+        })
+
+        // Remove user data
+        let appSupport = home.appendingPathComponent("Library/Application Support/MacFanPro")
+        let logs = home.appendingPathComponent("Library/Logs/MacFanPro")
+        // The daemon logged as root; it has been stopped above, so its directory is idle.
+        let daemonLogs = TFLogger.logDirectory(forUID: 0)
+        if purgeData {
+            if fm.fileExists(atPath: appSupport.path) { try fm.removeItem(at: appSupport) }
+            if fm.fileExists(atPath: logs.path) { try fm.removeItem(at: logs) }
+            if let daemonLogs, daemonLogs != logs, fm.fileExists(atPath: daemonLogs.path) {
+                try fm.removeItem(at: daemonLogs)
+            }
+        }
+
+        // Remove app bundle
+        if fm.fileExists(atPath: "/Applications/MacFanPro.app") {
+            try fm.removeItem(atPath: "/Applications/MacFanPro.app")
+        }
+
+        print("MacFanPro fully uninstalled.")
+        print("Removed: daemon, binary and app.")
+        print(purgeData ? "Removed user profiles, calibration and logs, and the daemon's logs."
+                        : "User profiles, calibration and logs, and the daemon's logs, were preserved.")
+        print("If installed with Homebrew, finish with: brew uninstall macfanpro")
+    }
+}
+
+// MARK: - BuildApp (internal)
+
+/// Assembles MacFanPro.app from a built app binary + icon, writing the
+/// Info.plist from MacFanProVersion.current. This is the SINGLE place the
+/// bundle is assembled — both install paths (Homebrew formula and setup.sh)
+/// call it, so no field (version included) can drift between them.
+struct BuildApp: ParsableCommand {
+    static let configuration = CommandConfiguration(
+        commandName: "build-app",
+        abstract: "Assemble MacFanPro.app from a built app binary and icon (internal)",
+        shouldDisplay: false
+    )
+
+    @Option(name: .long, help: "Path to the built MacFanProApp executable")
+    var binary: String
+
+    @Option(name: .long, help: "Path to the .icns app icon")
+    var icon: String
+
+    @Option(name: .long, help: "Destination .app bundle path (created or replaced)")
+    var dest: String
+
+    @Option(name: .long, help: "Localization resource bundle (defaults to beside the app executable)")
+    var localizationResources: String?
+
+    @Option(name: .long, help: "MIT license file to include in the application")
+    var licenseFile: String = "LICENSE"
+
+    @Option(name: .long, help: "Online installer script to bundle with the app")
+    var installerScript: String = "Scripts/install.sh"
+
+    @Option(name: .long, help: "Source checkout this app was built from (setup.sh), for the update banner")
+    var sourceDir: String?
+
+    func run() throws {
+        let fm = FileManager.default
+        let installer = try String(contentsOfFile: installerScript, encoding: .utf8)
+            .replacingOccurrences(of: "@MACFANPRO_VERSION@", with: MacFanProVersion.current)
+
+        guard fm.fileExists(atPath: binary) else {
+            throw ValidationError("App binary not found: \(binary)")
+        }
+        guard fm.fileExists(atPath: icon) else {
+            throw ValidationError("Icon not found: \(icon)")
+        }
+
+        guard fm.fileExists(atPath: licenseFile) else {
+            throw ValidationError("License file not found: \(licenseFile)")
+        }
+
+        let resourceSource = localizationResources.map { URL(fileURLWithPath: $0) }
+            ?? URL(fileURLWithPath: binary).deletingLastPathComponent()
+                .appendingPathComponent(LocalizationCatalog.resourceBundleName)
+        guard let localizationBundle = Bundle(url: resourceSource),
+              (try? LocalizationCatalog(bundle: localizationBundle)) != nil else {
+            throw ValidationError("Localization resources missing or invalid: \(resourceSource.path)")
+        }
+
+        let helperSource = URL(fileURLWithPath: binary).deletingLastPathComponent().appendingPathComponent("macfanpro")
+        guard fm.isExecutableFile(atPath: helperSource.path) else {
+            throw ValidationError("Bundled service executable missing: \(helperSource.path)")
+        }
+        if let warning = try AppBundleReplacement.replace(at: URL(fileURLWithPath: dest), prepare: { staged in
+            let contents = "\(staged.path)/Contents"
+            let macOSDir = "\(contents)/MacOS"
+            let resources = "\(contents)/Resources"
+
+            try fm.createDirectory(atPath: macOSDir, withIntermediateDirectories: true)
+            try fm.createDirectory(atPath: resources, withIntermediateDirectories: true)
+
+            try fm.createDirectory(atPath: "\(contents)/Helpers", withIntermediateDirectories: true)
+            try SafeFileCopy.copyRegularFile(from: helperSource.path, to: "\(contents)/Helpers/macfanpro", requireExecutable: true)
+            try SafeFileCopy.copyRegularFile(from: binary, to: "\(macOSDir)/MacFanProApp", requireExecutable: true)
+            try SafeFileCopy.copyRegularFile(from: icon, to: "\(resources)/AppIcon.icns", requireExecutable: false)
+            try SafeFileCopy.copyRegularFile(from: licenseFile, to: "\(resources)/LICENSE", requireExecutable: false)
+            if fm.fileExists(atPath: "NOTICE.md") {
+                try SafeFileCopy.copyRegularFile(from: "NOTICE.md", to: "\(resources)/NOTICE.md", requireExecutable: false)
+            }
+            if fm.fileExists(atPath: "ThirdPartyNotices") {
+                try fm.copyItem(atPath: "ThirdPartyNotices", toPath: "\(resources)/ThirdPartyNotices")
+            }
+            try installer.write(toFile: "\(resources)/install.sh", atomically: true, encoding: .utf8)
+            try fm.copyItem(at: resourceSource,
+                            to: URL(fileURLWithPath: resources).appendingPathComponent(LocalizationCatalog.resourceBundleName))
+
+            // Only setup.sh passes it: release and Homebrew builds come from temporary
+            // directories that are gone after the build.
+            let sourceDirEntry = sourceDir.map { dir in
+                let escaped = dir.replacingOccurrences(of: "&", with: "&amp;")
+                    .replacingOccurrences(of: "<", with: "&lt;").replacingOccurrences(of: ">", with: "&gt;")
+                return "<key>MacFanProSourceDirectory</key><string>\(escaped)</string>"
+            } ?? ""
+
+            let plist = """
+                <?xml version="1.0" encoding="UTF-8"?>
+                <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" \
+                "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+                <plist version="1.0">
+                <dict>
+                    <key>CFBundleName</key>
+                    <string>MacFanPro</string>
+                    <key>CFBundleDisplayName</key>
+                    <string>MacFanPro</string>
+                    <key>CFBundleIdentifier</key>
+                    <string>io.github.macfanpro.app</string>
+                    <key>CFBundleDevelopmentRegion</key>
+                    <string>en</string>
+                    <key>CFBundleLocalizations</key>
+                    <array>\(LocalizationCatalog.supportedLanguages.map { "<string>\($0.rawValue)</string>" }.joined())</array>
+                    <key>CFBundleVersion</key>
+                    <string>\(MacFanProVersion.current)</string>
+                    <key>CFBundleShortVersionString</key>
+                    <string>\(MacFanProVersion.current)</string>
+                    <key>CFBundleExecutable</key>
+                    <string>MacFanProApp</string>
+                    <key>CFBundleIconFile</key>
+                    <string>AppIcon</string>
+                    <key>CFBundlePackageType</key>
+                    <string>APPL</string>
+                    <key>LSMinimumSystemVersion</key>
+                    <string>\(MacFanProVersion.minimumMacOS)</string>
+                    <key>LSUIElement</key>
+                    <true/>
+                    <key>NSHighResolutionCapable</key>
+                    <true/>
+                    \(sourceDirEntry)
+                </dict>
+                </plist>
+                """
+            try plist.write(toFile: "\(contents)/Info.plist", atomically: true, encoding: .utf8)
+
+            if let owner = ProcessInfo.processInfo.environment["SUDO_UID"].flatMap(uid_t.init),
+               geteuid() == 0, owner > 0, let account = getpwuid(owner) {
+                try AppBundleReplacement.handOver(staged, uid: owner, gid: account.pointee.pw_gid)
+            }
+        }) { print("Warning: \(warning)") }
+
+        print("Assembled \(dest) (version \(MacFanProVersion.current))")
+    }
+}
+
+// MARK: - Daemon
+
+struct Daemon: ParsableCommand {
+    static let configuration = CommandConfiguration(
+        commandName: "daemon",
+        abstract: "Run the privileged socket server (called by launchd)"
+    )
+
+    /// uid of the controlling user, injected by Install.run() into the launchd
+    /// plist's ProgramArguments. Required: the daemon has no SUDO_UID of its own,
+    /// so without this it can't know who owns the socket. Absent → parse failure →
+    /// visible crash-loop under KeepAlive (never a silent root-owned socket).
+    @Option(name: .customLong("owner-uid"), help: "uid that owns the control socket")
+    var ownerUid: Int
+
+    func run() throws {
+        let fc = try FanControl()
+        let server = try DaemonServer(fanControl: fc, ownerUID: uid_t(ownerUid))
+        server.run()
+    }
+}

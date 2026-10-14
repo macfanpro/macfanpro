@@ -1,5 +1,5 @@
 {
-  "title": "MacFanControl — Free, open-source fan control for Mac",
+  "title": "MacFanPro — Free, open-source fan control for Mac",
   "description": "Native fan control for Apple Silicon Macs. Monitor temperatures, use smart fan curves, and install with Homebrew or a proxy-aware installer. Free and open source. macOS 14+.",
   "skip": "Skip to content",
   "nav": [
@@ -13,11 +13,11 @@
     "A clearer view."
   ],
   "intro": "Know your temperatures at a glance. Let smart curves handle the fans, or take control yourself. Native, free, and open source.",
-  "install": "Get MacFanControl",
+  "install": "Get MacFanPro",
   "source": "View source on GitHub",
   "requirements": "macOS 14+ · Apple Silicon · Physical fans required",
   "stage_note": "At home in your menu bar",
-  "caption": "Interface preview · v0.2.3.64 · Sample readings",
+  "caption": "Actual app · v0.2.3.36 · M4 Max MacBook Pro",
   "facts": [
     [
       "Swift",
@@ -91,11 +91,11 @@
     ],
     [
       "Find your menu bar icon",
-      "Open MacFanControl after installation. Click the fan icon and choose a mode that works for you."
+      "Open MacFanPro after installation. Click the fan icon and choose a mode that works for you."
     ]
   ],
   "update": "What about updates?",
-  "update_body": "DMG: drag the new MacFanControl.app into Applications, choose Replace, and relaunch it. Quit the old app if it is still running; authorize service synchronization if prompted. No uninstall is needed. Settings, calibration and logs are kept. Homebrew users should use Homebrew; online installer users can run their command again. Use a proxy if GitHub is unreachable.",
+  "update_body": "DMG: drag the new MacFanPro.app into Applications, choose Replace, and relaunch it. Quit the old app if it is still running; authorize service synchronization if prompted. No uninstall is needed. Settings, calibration and logs are kept. Homebrew users should use Homebrew; online installer users can run their command again. Use a proxy if GitHub is unreachable.",
   "download": "Download a release",
   "full_guide": "Full installation & proxy guide",
   "source_build": "Build from source",
@@ -112,7 +112,7 @@
     ],
     [
       "Can I just drag the app into Applications?",
-      "0.2.3.50+ · DMG — Drag MacFanControl into Applications, then open it from there. MacFanControl needs a background service to control fans. macOS will ask for administrator authorization. Current releases are ad-hoc signed and not notarized by Apple; macOS may show a security prompt on first launch."
+      "0.2.3.50+ · DMG — Drag MacFanPro into Applications, then open it from there. MacFanPro needs a background service to control fans. macOS will ask for administrator authorization. Current releases are ad-hoc signed and not notarized by Apple; macOS may show a security prompt on first launch."
     ],
     [
       "The installer stopped at Password. What now?",
@@ -134,12 +134,11 @@
   "issues": "Report an issue",
   "license": "MIT license",
   "credit": "Built on ThermalForge. Thanks to upstream and all contributors.",
-  "image_alt": "MacFanControl panel: temperatures, fan speeds, control modes, and language settings",
+  "image_alt": "MacFanPro panel: temperatures, fan speeds, control modes, and language settings",
   "main_nav": "Main navigation",
   "languages": "Choose a language",
-  "copyright": "MacFanControl contributors",
+  "copyright": "MacFanPro contributors",
   "dmg_title": "Install from a DMG",
   "dmg_download": "Download DMG",
-  "dmg_body": "Drag MacFanControl into Applications, then open it from there. MacFanControl needs a background service to control fans. macOS will ask for administrator authorization.",
-  "transition_note": "MacFanControl was formerly MacFanPro. Existing users can update through their usual installation method."
+  "dmg_body": "Drag MacFanPro into Applications, then open it from there. MacFanPro needs a background service to control fans. macOS will ask for administrator authorization."
 }

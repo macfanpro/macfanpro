@@ -16,7 +16,7 @@ import unittest
 
 SCRIPT = Path(__file__).resolve().with_name('install.sh')
 VERSION = '1.2.3.4'
-NAME = f'MacFanControl-{VERSION}-macos-arm64'
+NAME = f'MacFanPro-{VERSION}-macos-arm64'
 
 HARNESS = r'''
 source "$SCRIPT"
@@ -44,7 +44,7 @@ curl() {
         url="$1"; shift
     done
     case "$url" in
-        https://github.com/macfancontrol/macfancontrol/releases/download/v1.2.3.4/*) ;;
+        https://github.com/macfanpro/macfanpro/releases/download/v1.2.3.4/*) ;;
         *) return 99 ;;
     esac
     cp "$FIXTURE/${url##*/}" "$dest"
@@ -77,7 +77,6 @@ esac
 BREW = '''#!/bin/bash
 echo "brew $* no_ask=${HOMEBREW_NO_ASK:-} no_auto_update=${HOMEBREW_NO_AUTO_UPDATE:-} proxy=${https_proxy:-${all_proxy:-}}" >> "$EVENTS"
 case "$1" in
- tap) printf '%s\n' "${BREW_TAP:-macfanpro/tap}" ;;
  trust) exit "${BAD_TRUST:-0}" ;;
  update) [ "${BAD_UPDATE:-0}" = 0 ] ;;
  upgrade) [ "${BAD_BREW:-0}" = 0 ] ;;
@@ -89,15 +88,15 @@ esac
 
 class InstallerTests(unittest.TestCase):
     def setUp(self):
-        self.temp = tempfile.TemporaryDirectory(prefix='macfancontrol-installer-test-')
+        self.temp = tempfile.TemporaryDirectory(prefix='macfanpro-installer-test-')
         self.addCleanup(self.temp.cleanup)
         self.root = Path(self.temp.name)
         self.pkg = self.root / 'keg'
         (self.pkg / 'bin').mkdir(parents=True)
-        cli = self.pkg / 'bin/macfancontrol'
+        cli = self.pkg / 'bin/macfanpro'
         cli.write_text(CLI)
         cli.chmod(0o755)
-        app = self.pkg / 'MacFanControl.app/Contents'
+        app = self.pkg / 'MacFanPro.app/Contents'
         app.mkdir(parents=True)
         (app / 'Info.plist').write_bytes(plistlib.dumps(dict(
             CFBundleIdentifier='io.github.macfanpro.app',
@@ -124,7 +123,7 @@ class InstallerTests(unittest.TestCase):
                     entry.size = 1
                     tar.addfile(entry, io.BytesIO(b'x'))
         digest = hashlib.sha256(archive.read_bytes()).hexdigest()
-        self.manifest = self.root / 'MacFanControl-SHA256SUMS'
+        self.manifest = self.root / 'SHA256SUMS'
         self.manifest.write_text(f'{digest}  {archive.name}\n')
 
     def run_installer(self, *args, success=True, **overrides):
@@ -177,7 +176,7 @@ class InstallerTests(unittest.TestCase):
                 self.assertNotIn('install install', events)
 
     def test_app_identity_and_version(self):
-        path = self.pkg / 'MacFanControl.app/Contents/Info.plist'
+        path = self.pkg / 'MacFanPro.app/Contents/Info.plist'
         original = plistlib.loads(path.read_bytes())
         for key, value in [('CFBundleIdentifier','bad.app'), ('CFBundleVersion','9.0.0'), ('CFBundleShortVersionString','9.0.0')]:
             with self.subTest(key=key):
@@ -216,35 +215,26 @@ class InstallerTests(unittest.TestCase):
 
     def test_homebrew_keeps_ownership(self):
         _, events = self.run_installer('--homebrew', BREW_FIXTURE='1')
-        self.assertIn('brew upgrade macfancontrol', events)
+        self.assertIn('brew upgrade macfanpro', events)
         self.assertIn('install install', events)
         self.assertNotIn('curl ', events)
-        self.assertLess(events.index('brew trust macfanpro/tap'), events.index('brew upgrade macfancontrol'))
+        self.assertLess(events.index('brew trust macfanpro/tap'), events.index('brew upgrade macfanpro'))
         # Only this tap is refreshed, and the upgrade never stops at Homebrew's y/n prompt.
         self.assertIn('git -C %s/tap pull --ff-only' % self.root, events)
         self.assertNotIn('brew update', events)
-        self.assertIn('brew upgrade macfancontrol no_ask=1 no_auto_update=1', events)
-
-    def test_renamed_homebrew_tap(self):
-        for tap in ('macfancontrol/tap', 'macfanpro/tap', 'macfancontrol/tap\nmacfanpro/tap'):
-            with self.subTest(tap=tap):
-                _, events = self.run_installer('--homebrew', BREW_FIXTURE='1', BREW_TAP=tap)
-                for installed_tap in tap.splitlines():
-                    self.assertIn('brew trust ' + installed_tap, events)
-                    self.assertIn('brew --repository ' + installed_tap, events)
-                self.assertIn('brew upgrade macfancontrol', events)
+        self.assertIn('brew upgrade macfanpro no_ask=1 no_auto_update=1', events)
 
     def test_proxy_reaches_homebrew_and_git(self):
         _, events = self.run_installer('--homebrew', BREW_FIXTURE='1',
                                        all_proxy='socks5h://custom.test:1080')
         self.assertIn('git -C %s/tap pull --ff-only --quiet proxy=socks5h://custom.test:1080' % self.root, events)
-        self.assertIn('brew upgrade macfancontrol no_ask=1 no_auto_update=1 proxy=socks5h://custom.test:1080', events)
+        self.assertIn('brew upgrade macfanpro no_ask=1 no_auto_update=1 proxy=socks5h://custom.test:1080', events)
 
     def test_homebrew_tolerates_trust_and_update_failures(self):
         # Older Homebrew has no trust command; one unreachable tap fails update.
         _, events = self.run_installer('--homebrew', BREW_FIXTURE='1', BAD_TRUST='1', BAD_GIT='1', BAD_UPDATE='1')
         self.assertIn('brew update', events)
-        self.assertIn('brew upgrade macfancontrol', events)
+        self.assertIn('brew upgrade macfanpro', events)
         self.assertIn('install install', events)
 
     def test_homebrew_unavailable_or_behind(self):

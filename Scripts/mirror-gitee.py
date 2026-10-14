@@ -13,8 +13,8 @@ import urllib.parse
 import urllib.request
 import uuid
 
-REPOSITORY = "macfancontrol/macfancontrol"  # Authoritative GitHub source.
-GITEE_REPOSITORY = "macfancontrol/macfancontrol"
+REPOSITORY = "macfanpro/macfanpro"  # Authoritative GitHub source.
+GITEE_REPOSITORY = "macfanpro/macfanpro"
 GITEE_API = "/repos/" + GITEE_REPOSITORY
 GITEE_GIT = "https://gitee.com/" + GITEE_REPOSITORY + ".git"
 
@@ -42,7 +42,7 @@ class Gitee:
             data = None
         elif upload:
             safe_name(upload.name)
-            boundary = "macfancontrol-" + uuid.uuid4().hex
+            boundary = "macfanpro-" + uuid.uuid4().hex
             data = b"".join(
                 f'--{boundary}\r\nContent-Disposition: form-data; name="{key}"\r\n\r\n{value}\r\n'.encode()
                 for key, value in fields.items())
@@ -228,7 +228,7 @@ def main():
     if not token:
         raise MirrorError("Set the GITEE_TOKEN repository secret (Gitee projects permission)")
     api = Gitee(token)
-    with tempfile.TemporaryDirectory(prefix="macfancontrol-gitee-") as folder:
+    with tempfile.TemporaryDirectory(prefix="macfanpro-gitee-") as folder:
         directory = Path(folder)
         bare = mirror_refs(api, directory)
         if args.event_name in {"push", "delete"}:

@@ -12,8 +12,8 @@ from urllib.parse import unquote, urlsplit
 ROOT = Path(__file__).resolve().parents[1]
 SOURCE = ROOT / 'website'
 OUTPUT = ROOT / '.build' / 'website'
-BASE = 'https://macfancontrol.github.io/macfancontrol/'
-REPO = 'https://github.com/macfancontrol/macfancontrol'
+BASE = 'https://macfanpro.github.io/macfanpro/'
+REPO = 'https://github.com/macfanpro/macfanpro'
 LANGUAGES = {
     'zh-Hans': '简体中文', 'en': 'English', 'zh-Hant': '繁體中文',
     'ja': '日本語', 'ko': '한국어', 'de': 'Deutsch', 'fr': 'Français',
@@ -21,9 +21,9 @@ LANGUAGES = {
     'ru': 'Русский', 'uk': 'Українська', 'pl': 'Polski', 'nl': 'Nederlands',
     'tr': 'Türkçe', 'vi': 'Tiếng Việt', 'id': 'Bahasa Indonesia', 'ar': 'العربية',
 }
-PROXY = '(\n  export https_proxy=http://127.0.0.1:7890\n  set -o pipefail\n  curl -fsSL https://github.com/macfancontrol/macfancontrol/releases/latest/download/install.sh | bash\n)'
-DIRECT = '(\n  set -o pipefail\n  curl -fsSL https://github.com/macfancontrol/macfancontrol/releases/latest/download/install.sh | bash\n)'
-BREW = 'brew tap macfancontrol/tap &&\nbrew trust macfancontrol/tap &&\nbrew install macfancontrol &&\nsudo "$(brew --prefix macfancontrol)/bin/macfancontrol" install &&\nopen /Applications/MacFanControl.app'
+PROXY = '(\n  export https_proxy=http://127.0.0.1:7890\n  set -o pipefail\n  curl -fsSL https://github.com/macfanpro/macfanpro/releases/latest/download/install.sh | bash\n)'
+DIRECT = '(\n  set -o pipefail\n  curl -fsSL https://github.com/macfanpro/macfanpro/releases/latest/download/install.sh | bash\n)'
+BREW = 'brew tap macfanpro/tap &&\nbrew trust macfanpro/tap &&\nbrew install macfanpro &&\nsudo "$(brew --prefix macfanpro)/bin/macfanpro" install &&\nopen /Applications/MacFanPro.app'
 
 
 def route(lang):
@@ -88,7 +88,7 @@ def validate_links():
 
 
 def build():
-    app_languages = {p.stem for p in (ROOT / 'Sources/MacFanControlLocalization/Resources').glob('*.json')}
+    app_languages = {p.stem for p in (ROOT / 'Sources/MacFanProLocalization/Resources').glob('*.json')}
     if set(LANGUAGES) != app_languages:
         raise ValueError('Website language list must match the app')
     translations = {lang: json.loads((SOURCE / 'locales' / f'{lang}.json').read_text()) for lang in LANGUAGES}
@@ -104,7 +104,7 @@ def build():
     (OUTPUT / 'assets').mkdir(parents=True)
     for name in ['site.css', 'site.js']:
         shutil.copy2(SOURCE / 'assets' / name, OUTPUT / 'assets' / name)
-    for name in ['icon.png', 'macfancontrol-menu-en.png', 'macfancontrol-menu-zh-CN.png', 'macfancontrol-social-en.png', 'macfancontrol-social-zh-CN.png']:
+    for name in ['icon.png', 'menu-bar-en.png', 'menu-bar-zh-CN.png', 'social-preview.png', 'social-preview-zh-CN.png']:
         shutil.copy2(ROOT / 'docs' / 'images' / name, OUTPUT / 'assets' / name)
     template = Template((SOURCE / 'template.html').read_text())
     alternates = '\n  '.join(f'<link rel="alternate" hreflang="{lang}" href="{BASE}{route(lang)}">' for lang in LANGUAGES)
@@ -123,7 +123,7 @@ def build():
             command = escape({'proxy': PROXY, 'direct': DIRECT, 'brew': BREW}[method])
             panels.append(f'<section class="install-panel" id="panel-{method}" aria-labelledby="heading-{method}"><h3 id="heading-{method}">{d[method]}</h3><p class="method-note">{d[method + "_note"]}</p>{fields}<div class="terminal"><div class="terminal-bar"><span><i></i><i></i><i></i> Terminal</span><button type="button" class="copy-button" data-copy="command-{method}" hidden>{d["copy"]}</button></div><pre tabindex="0" aria-label="{d[method]}"><code id="command-{method}">{command}</code></pre></div></section>')
         language_items = ''.join(f'<li><a href="{prefix}{route(code) or "?lang=zh-Hans"}" lang="{code}" hreflang="{code}" dir="auto" data-language="{code}"' + (' aria-current="page"' if code == lang else '') + f'>{name}</a></li>' for code,name in LANGUAGES.items())
-        schema = {'@context': 'https://schema.org', '@type': 'SoftwareApplication', 'name': 'MacFanControl', 'applicationCategory': 'UtilitiesApplication', 'operatingSystem': 'macOS 14+ (Apple Silicon with physical fans)', 'inLanguage': lang, 'url': BASE + route(lang), 'downloadUrl': REPO + '/releases/latest', 'license': REPO + '/blob/main/LICENSE', 'offers': {'@type': 'Offer', 'price': '0', 'priceCurrency': 'USD'}}
+        schema = {'@context': 'https://schema.org', '@type': 'SoftwareApplication', 'name': 'MacFanPro', 'applicationCategory': 'UtilitiesApplication', 'operatingSystem': 'macOS 14+ (Apple Silicon with physical fans)', 'inLanguage': lang, 'url': BASE + route(lang), 'downloadUrl': REPO + '/releases/latest', 'license': REPO + '/blob/main/LICENSE', 'offers': {'@type': 'Offer', 'price': '0', 'priceCurrency': 'USD'}}
         d.update(
             lang=lang, direction='rtl' if lang == 'ar' else 'ltr', prefix=prefix,
             root_page=str(lang == 'zh-Hans').lower(), url=BASE + route(lang), base=BASE, repo=REPO,
@@ -131,8 +131,8 @@ def build():
                        'ja':'ja_JP','ko':'ko_KR','de':'de_DE','fr':'fr_FR','es':'es_ES','it':'it_IT',
                        'ru':'ru_RU','uk':'uk_UA','pl':'pl_PL','nl':'nl_NL','tr':'tr_TR',
                        'vi':'vi_VN','id':'id_ID','ar':'ar_SA'}[lang],
-            image='macfancontrol-menu-zh-CN.png' if chinese else 'macfancontrol-menu-en.png',
-            social='macfancontrol-social-zh-CN.png' if chinese else 'macfancontrol-social-en.png',
+            image='menu-bar-zh-CN.png' if chinese else 'menu-bar-en.png',
+            social='social-preview-zh-CN.png' if chinese else 'social-preview.png',
             alternates=alternates, schema=json.dumps(schema,ensure_ascii=False),
             nav_features=d['nav'][0], nav_install=d['nav'][1], nav_faq=d['nav'][2],
             headline_first=d['headline'][0], headline_second=d['headline'][1],

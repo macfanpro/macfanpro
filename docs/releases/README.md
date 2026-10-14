@@ -6,8 +6,8 @@ README 面向安装和使用，CHANGELOG 汇总版本历史，GitHub Release 描
 
 - 每个版本使用独立文件，例如 `0.2.3.15.md` 对应标签 `v0.2.3.15`。
 - 从 [TEMPLATE.md](TEMPLATE.md) 复制新文件，填写实际变化并删除没有内容的可选分类；不要发布占位符或未经验证的结论。
-- 自 0.2.3.64 起发布标题统一为 `MacFanControl 版本号`（旧版本标题不变），正文无需重复一级标题。
-- Homebrew 配方与预编译包（bottle）已自动化：在网页上公开发布后，tap 仓库的 [Update formula](https://github.com/macfancontrol/homebrew-tap/blob/main/.github/workflows/update-formula.yml) 工作流由主仓库的 [Update Homebrew tap](https://github.com/macfancontrol/macfancontrol/blob/main/.github/workflows/notify-tap.yml) 在发布后立即启动（使用 `TAP_DISPATCH_TOKEN` 这个只授权 tap 仓库 Actions 读写的 fine-grained 令牌；令牌缺失或过期时该运行失败提醒续期，tap 仍会在一小时内自行更新，也可执行 `gh workflow run update-formula.yml -R macfancontrol/homebrew-tap`），把配方指向新标签、构建并上传 `arm64_sonoma` 预编译包、确认 Homebrew 直接安装预编译包且 `brew test` 通过，然后才提交配方。草稿不会触发。工作流失败时查看其运行日志，必要时按工作流中的步骤手动处理。
+- 发布标题统一为 `MacFanPro 版本号`，正文无需重复一级标题。
+- Homebrew 配方与预编译包（bottle）已自动化：在网页上公开发布后，tap 仓库的 [Update formula](https://github.com/macfanpro/homebrew-tap/blob/main/.github/workflows/update-formula.yml) 工作流由主仓库的 [Update Homebrew tap](https://github.com/macfanpro/macfanpro/blob/main/.github/workflows/notify-tap.yml) 在发布后立即启动（使用 `TAP_DISPATCH_TOKEN` 这个只授权 tap 仓库 Actions 读写的 fine-grained 令牌；令牌缺失或过期时该运行失败提醒续期，tap 仍会在一小时内自行更新，也可执行 `gh workflow run update-formula.yml -R macfanpro/homebrew-tap`），把配方指向新标签、构建并上传 `arm64_sonoma` 预编译包、确认 Homebrew 直接安装预编译包且 `brew test` 通过，然后才提交配方。草稿不会触发。工作流失败时查看其运行日志，必要时按工作流中的步骤手动处理。
 - 自 0.2.3.29 起，发布说明中英双语：英文在前，`## 中文说明` 之后为中文，两部分内容一致；安装链接分别指向 `README.md`（英文）与 `README.zh-CN.md`（中文）的对应章节。已发布的旧版本不回改。
 - 发布工作流先检查对应说明文件，再执行既有测试和打包，最后以该文件创建草稿；不再把整个 CHANGELOG 放入单个发行页。
 - 下载草稿附件、完成相应验证后，再填写准确的验证结果并更新草稿正文，最后公开发布。不要提前把预计完成的测试写成“已通过”。
@@ -18,7 +18,7 @@ README 面向安装和使用，CHANGELOG 汇总版本历史，GitHub Release 描
 
 1. **一句话摘要**：说明这一版解决的主要问题和上游基础版本。
 2. **更新内容**：按实际内容使用“新增”“修复”“改进”分类，用简短条目描述用户能感知的变化；有相关 PR 或提交时附链接。不要把已有功能写成新增。
-3. **下载与安装**：发布页顶部提供中文跳转和本版本 DMG 直达链接；中文摘要之后直接展示“下载与安装”，用醒目的中文链接推荐 DMG，并写明适用机型和拖入“应用程序”的步骤，不要只写“下载见上表”。其他安装方式与校验文件可折叠展示，说明 `.sha256` / `SHA256SUMS` 是校验文件、GitHub 自动附带的 `Source code` 是源码。所有下载链接必须对应本版本实际附件；历史版本的 Homebrew 链接只能说明安装当前稳定版，不能暗示会安装历史版本。
+3. **下载与安装**：用表格标明平台、完整安装包及 SHA-256 文件，链接到 README 中的三种安装方法。历史版本的 Homebrew 链接只能说明安装当前稳定版，不能暗示会安装历史版本。
 4. **升级说明**：明确用户是否需要额外操作。较长的命令可放入 `<details>`，保持主页面便于浏览。
 5. **验证与限制**：列出实际完成的检查，区分自动化与本机验证，并链接对应版本的记录。未公证或未覆盖的环境应说明。
 6. **完整变更**：使用相邻有效标签的 compare 链接；首个 MacFanPro 版本没有上一 MacFanPro 标签时，链接本版本源代码即可。
@@ -37,9 +37,3 @@ Release 正文中的文件链接应使用完整 GitHub URL。对会随时间变�
 
 
 DMG 发行：同时上传 `MacFanPro-<版本>-macos-arm64.dmg` 及其 `.dmg.sha256`，不要把 DMG 加入旧 `SHA256SUMS`。核验挂载后的应用签名、内置服务程序、语言资源和“应用程序”链接，并在干净的 macOS 上完成首次授权安装、更新与卸载验收（见 [DMG 验证说明](../dmg-installation.md)）。首次发布时更新 README 和 DMG 文档中的“尚未发布”说明。官网在最新正式发行确实包含 DMG 时自动显示下载入口；不往旧标签补传新代码构建的 DMG。
-
-0.2.3.64 起，新版使用 `MacFanControl.app`、`macfancontrol` 和 `MacFanControl-<版本>-macos-arm64`。额外发布旧名称压缩包及旧 `SHA256SUMS`，仅供旧安装器兼容升级。新版压缩包使用独立 `MacFanControl-SHA256SUMS`。详见 [改名升级说明](../macfancontrol-transition.md)。
-
-## Legacy update endpoint after repository migration
-
-After publishing, run `gh workflow run sync.yml -R macfanpro/macfanpro` and verify the **Sync legacy releases** run succeeds. Confirm the old `/releases/latest` resolves to an old-repository tag URL with the new version and that its compatibility assets match the main release. The compatibility repository also checks every 15 minutes; scheduling can be delayed. Keep old package names and checksum manifests in each release. Never delete the compatibility repository while supporting old clients.
