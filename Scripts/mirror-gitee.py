@@ -140,6 +140,8 @@ def download(url, destination, host):
 
 
 def rewrite_downloads(body, source_assets, target_assets):
+    body = body.replace("https://github.com/macfanpro/macfanpro/releases/download/",
+                        "https://github.com/" + REPOSITORY + "/releases/download/")
     links = {asset["name"]: asset["browser_download_url"] for asset in target_assets}
     # .dmg is a prefix of .dmg.sha256; replace longer URLs first.
     for asset in sorted(source_assets, key=lambda a: len(a["browser_download_url"]), reverse=True):
@@ -226,6 +228,8 @@ def main():
     if not token:
         raise MirrorError("Set the GITEE_TOKEN repository secret (Gitee projects permission)")
     api = Gitee(token)
+    api.call("PATCH", GITEE_API, {"description": "MacFanControl 官方镜像；GitHub 为唯一维护源：https://github.com/" + REPOSITORY,
+                                 "homepage": "https://macfancontrol.github.io/macfancontrol/"})
     with tempfile.TemporaryDirectory(prefix="macfancontrol-gitee-") as folder:
         directory = Path(folder)
         bare = mirror_refs(api, directory)
