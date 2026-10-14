@@ -9,6 +9,7 @@ permissions:
 
 jobs:
   release:
+    if: github.repository == 'macfancontrol/macfancontrol'
     runs-on: macos-15
     steps:
       - uses: actions/checkout@v4
