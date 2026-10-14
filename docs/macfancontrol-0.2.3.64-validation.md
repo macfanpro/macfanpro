@@ -30,3 +30,23 @@ No installation, privileged authorization, service replacement, fan-control oper
 ## Release gates
 
 Draft asset download/verification and Homebrew migration acceptance are recorded below after execution. The repository transfer is deferred; this release must not claim it already happened.
+
+## Verified release and Homebrew evidence
+
+- Source tag `v0.2.3.64`: `7d8549613b15461ad9e4bc2e92c50f2dc28c5b63`.
+- [Main CI](https://github.com/macfanpro/macfanpro/actions/runs/38489705341) and [release CI](https://github.com/macfanpro/macfanpro/actions/runs/38489709385) passed.
+- All eight GitHub draft assets were downloaded. Both archive manifests, DMG checksum and installer checksum passed. App/helper signatures, CLI 0.2.3.64, new display/executable names, stable bundle ID, macOS 14 minimum, 18 localization tables and embedded installer identity passed. The read-only mounted DMG app and both tar copies match. Its Applications link points to `/Applications`.
+- The unmodified 0.2.3.63 installer accepted the downloaded legacy archive. No install function was called.
+- Real macOS temporary-file check confirmed `chflags -h hidden` hides only the compatibility link, not the new application directory.
+- [Homebrew acceptance](https://github.com/macfanpro/homebrew-tap/actions/runs/38489722878) built/poured the new bottle, installed the real old 0.2.3.63 bottle, then successfully ran `brew upgrade macfanpro`. Homebrew migrated the formula to `macfancontrol`, poured 0.2.3.64, resolved both formula names to the same prefix and passed `brew test`, including both command names. No daemon was installed on the runner.
+- Independent formula CI initially failed because it lacked Homebrew tap trust. The workflow now trusts the tap and uses the canonical formula; [rerun](https://github.com/macfanpro/homebrew-tap/actions/runs/38490007541) passed.
+- The source-only `uninstall.sh` helper was subsequently updated on main in `565553d` to choose the canonical command and fall back to the legacy command. This helper is not part of the release app, DMG or tar assets.
+
+### Downloaded draft checksums
+
+```
+801be1f79d62f98fb90b0cd49129f6db3591dc43128ca684ceb175d3a7047702  MacFanControl-0.2.3.64-macos-arm64.tar.gz
+ebf344016453bc67fcd85b0b02ba1267ddd15857424d10671eb7bd58e5f77118  MacFanPro-0.2.3.64-macos-arm64.tar.gz
+3bf6ccd68c72f222dd30cdeaa8e427bebe1a439bf1255b6ef39c5119e7e91c34  MacFanControl-0.2.3.64-macos-arm64.dmg
+85de210437c8cdea72d7e27507f555d95b344774ffe5925dc0f4938d212a6ad1  install.sh
+```
