@@ -34,7 +34,7 @@ MacFanControl 原名 MacFanPro。0.2.3.64 起，新版应用文件为 **MacFanCo
 
 主仓库为 https://github.com/macfancontrol/macfancontrol ，官网为 https://macfancontrol.github.io/macfancontrol/ 。Gitee https://gitee.com/macfancontrol/macfancontrol 仅接收主仓库镜像。
 
-旧仓库 https://github.com/macfanpro/macfanpro 作为兼容仓库长期保留。旧更新器要求最终 URL 仍属于旧仓库，所以兼容仓库复制已发布版本及附件，并验证 SHA256 后发布；不能把旧更新入口简单重定向到新仓库。每 15 分钟检查一次新版本，GitHub 调度可能延迟；发布维护者应主动触发同步并确认成功。失败可从 Actions 重试，旧的有效版本仍可下载。
+旧仓库 https://github.com/macfanpro/macfanpro 作为兼容仓库长期保留。旧更新器要求最终 URL 仍属于旧仓库，所以兼容仓库复制已发布版本及附件，并验证 SHA256 后发布；不能把旧更新入口简单重定向到新仓库。主仓库发布后自动通知并等待兼容同步成功；另每 15 分钟检查一次新版本，GitHub 调度可能延迟；发布维护者应主动触发同步并确认成功。失败可从 Actions 重试，旧的有效版本仍可下载。
 
 旧官网保留跳转，并传递语言路径、查询参数和页面锚点。旧仓库地址已由兼容仓库占用，GitHub 的自动仓库重定向不再适用。已有源码克隆需要更新远程地址：
 

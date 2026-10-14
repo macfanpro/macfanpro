@@ -1,0 +1,31 @@
+name: Update legacy upgrade endpoint
+on:
+  release:
+    types: [published, edited]
+  workflow_dispatch:
+permissions: {}
+concurrency:
+  group: notify-legacy
+  cancel-in-progress: false
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    timeout-minutes: 65
+    steps:
+      - name: Trigger and verify legacy release synchronization
+        env:
+          GH_TOKEN: ${{ secrets.LEGACY_DISPATCH_TOKEN }}
+        run: |
+          set -euo pipefail
+          test -n "$GH_TOKEN" || { echo '::error::LEGACY_DISPATCH_TOKEN is missing; scheduled synchronization remains available.'; exit 1; }
+          request_id="$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT"
+          gh workflow run sync.yml -R macfanpro/macfanpro -f request_id="$request_id"
+          run_id=''
+          for attempt in $(seq 30); do
+            run_id=$(gh run list -R macfanpro/macfanpro --workflow sync.yml --event workflow_dispatch --limit 20 \
+              --json databaseId,displayTitle --jq ".[] | select(.displayTitle == \"Legacy sync $request_id\") | .databaseId")
+            [ -z "$run_id" ] || break
+            sleep 2
+          done
+          test -n "$run_id" || { echo '::error::Could not locate the dispatched legacy sync run.'; exit 1; }
+          gh run watch "$run_id" -R macfanpro/macfanpro --exit-status

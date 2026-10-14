@@ -14,7 +14,7 @@ The compatibility repository occupies the original path. This intentionally repl
 
 `Scripts/legacy-bridge/` is the reviewed source for the compatibility repository's release sync script and workflow. Copy updates there explicitly. The workflow copies public stable releases, verifies source checksums and downloads uploaded copies before publishing drafts. Existing matching asset digests avoid redundant transfers. It does not build software, install services or copy secrets. Failed jobs leave new releases as drafts and can be rerun.
 
-Every 15 minutes the compatibility repository checks for new releases. GitHub may delay scheduled jobs. Maintainers also trigger and verify this workflow after publication (see releases/README.md). A monthly successful-sync commit prevents the repository's scheduled workflow from becoming inactive due to lack of repository activity.
+Publishing or editing a release in the main repository triggers and waits for compatibility synchronization via the Actions-only LEGACY_DISPATCH_TOKEN. Every 15 minutes the compatibility repository also checks for new releases. GitHub may delay scheduled jobs. Maintainers also trigger and verify this workflow after publication (see releases/README.md). A monthly successful-sync commit prevents the repository's scheduled workflow from becoming inactive due to lack of repository activity.
 
 Old Pages redirects retain a supported language path, query string and fragment. Without JavaScript a visible link remains available. No credentials are used by the redirect.
 

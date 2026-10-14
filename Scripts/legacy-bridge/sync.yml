@@ -1,9 +1,13 @@
 name: Sync legacy releases
+run-name: Legacy sync ${{ inputs.request_id || github.run_id }}
 on:
   schedule:
     - cron: '7,22,37,52 * * * *'
   workflow_dispatch:
     inputs:
+      request_id:
+        type: string
+        required: false
       source:
         type: string
         default: macfancontrol/macfancontrol
