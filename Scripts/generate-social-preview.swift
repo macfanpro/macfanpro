@@ -1,7 +1,7 @@
 #!/usr/bin/env swift
 // Renders the social preview images (1280x640) from the app icon and a menu screenshot:
-//   swift Scripts/generate-social-preview.swift docs/images/icon.png docs/images/menu-bar-en.png docs/images/social-preview.png en
-//   swift Scripts/generate-social-preview.swift docs/images/icon.png docs/images/menu-bar-zh-CN.png docs/images/social-preview-zh-CN.png
+//   swift Scripts/generate-social-preview.swift docs/images/icon.png docs/images/macfancontrol-menu-en.png docs/images/macfancontrol-social-en.png en
+//   swift Scripts/generate-social-preview.swift docs/images/icon.png docs/images/macfancontrol-menu-zh-CN.png docs/images/macfancontrol-social-zh-CN.png
 import AppKit
 let args = CommandLine.arguments
 let icon = NSImage(contentsOfFile: args[1])!, shot = NSImage(contentsOfFile: args[2])!, out = args[3]
@@ -52,7 +52,7 @@ for (i, line) in lines.enumerated() {
     NSGraphicsContext.restoreGraphicsState()
     text(line, .systemFont(ofSize: 30, weight: .medium), rgb(200, 220, 240), 110, y)
 }
-text("github.com/macfanpro/macfanpro", .monospacedSystemFont(ofSize: 22, weight: .regular), cyan.withAlphaComponent(0.75), 72, 40)
+text("MacFanControl · Free & Open Source", .monospacedSystemFont(ofSize: 22, weight: .regular), cyan.withAlphaComponent(0.75), 72, 40)
 
 // Menu screenshot with a cyan edge glow.
 let h: CGFloat = 588, w = shot.size.width / shot.size.height * h

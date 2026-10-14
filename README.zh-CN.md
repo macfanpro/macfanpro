@@ -72,10 +72,10 @@
 ## 功能与界面
 
 <p align="center">
-  <img src="docs/images/menu-bar-zh-CN.png" width="320" alt="MacFanControl 简体中文菜单：温度、风扇转速、控制模式与更新设置">
-  <img src="docs/images/menu-bar-en.png" width="320" alt="MacFanControl 英文菜单：温度、风扇转速、控制模式与更新设置">
+  <img src="docs/images/macfancontrol-menu-zh-CN.png" width="320" alt="MacFanControl 简体中文菜单：温度、风扇转速、控制模式与设置入口">
+  <img src="docs/images/macfancontrol-menu-en.png" width="320" alt="MacFanControl 英文菜单：温度、风扇转速、控制模式与设置入口">
   <br>
-  <sub>MacFanControl 0.2.3.36 在 M4 Max MacBook Pro 上的实际界面。此处展示简体中文与英文，应用共支持 18 种语言。</sub>
+  <sub>MacFanControl 0.2.3.64 界面预览，使用示例读数。此处展示简体中文与英文，应用共支持 18 种语言。</sub>
 </p>
 
 界面预览使用示例读数，不代表硬件实测结果。

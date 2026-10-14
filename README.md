@@ -71,10 +71,10 @@ An open-source alternative to tools like Macs Fan Control for people who want tr
 ## Features
 
 <p align="center">
-  <img src="docs/images/menu-bar-en.png" width="320" alt="MacFanControl English menu showing temperatures, fan speeds, profiles and update settings">
-  <img src="docs/images/menu-bar-zh-CN.png" width="320" alt="MacFanControl Simplified Chinese menu showing temperatures, fan speeds, profiles and update settings">
+  <img src="docs/images/macfancontrol-menu-en.png" width="320" alt="MacFanControl English menu showing temperatures, fan speeds, profiles and the Settings entry">
+  <img src="docs/images/macfancontrol-menu-zh-CN.png" width="320" alt="MacFanControl Simplified Chinese menu showing temperatures, fan speeds, profiles and the Settings entry">
   <br>
-  <sub>MacFanControl 0.2.3.36 on an M4 Max MacBook Pro. English and Simplified Chinese shown; 18 interface languages available.</sub>
+  <sub>MacFanControl 0.2.3.64 interface preview with sample readings. English and Simplified Chinese shown; 18 interface languages available.</sub>
 </p>
 
 Interface previews use sample readings; no hardware test is implied.

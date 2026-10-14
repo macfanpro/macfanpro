@@ -104,7 +104,7 @@ def build():
     (OUTPUT / 'assets').mkdir(parents=True)
     for name in ['site.css', 'site.js']:
         shutil.copy2(SOURCE / 'assets' / name, OUTPUT / 'assets' / name)
-    for name in ['icon.png', 'menu-bar-en.png', 'menu-bar-zh-CN.png', 'social-preview.png', 'social-preview-zh-CN.png']:
+    for name in ['icon.png', 'macfancontrol-menu-en.png', 'macfancontrol-menu-zh-CN.png', 'macfancontrol-social-en.png', 'macfancontrol-social-zh-CN.png']:
         shutil.copy2(ROOT / 'docs' / 'images' / name, OUTPUT / 'assets' / name)
     template = Template((SOURCE / 'template.html').read_text())
     alternates = '\n  '.join(f'<link rel="alternate" hreflang="{lang}" href="{BASE}{route(lang)}">' for lang in LANGUAGES)
@@ -131,8 +131,8 @@ def build():
                        'ja':'ja_JP','ko':'ko_KR','de':'de_DE','fr':'fr_FR','es':'es_ES','it':'it_IT',
                        'ru':'ru_RU','uk':'uk_UA','pl':'pl_PL','nl':'nl_NL','tr':'tr_TR',
                        'vi':'vi_VN','id':'id_ID','ar':'ar_SA'}[lang],
-            image='menu-bar-zh-CN.png' if chinese else 'menu-bar-en.png',
-            social='social-preview-zh-CN.png' if chinese else 'social-preview.png',
+            image='macfancontrol-menu-zh-CN.png' if chinese else 'macfancontrol-menu-en.png',
+            social='macfancontrol-social-zh-CN.png' if chinese else 'macfancontrol-social-en.png',
             alternates=alternates, schema=json.dumps(schema,ensure_ascii=False),
             nav_features=d['nav'][0], nav_install=d['nav'][1], nav_faq=d['nav'][2],
             headline_first=d['headline'][0], headline_second=d['headline'][1],
