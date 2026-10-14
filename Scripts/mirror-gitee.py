@@ -13,9 +13,10 @@ import urllib.parse
 import urllib.request
 import uuid
 
-REPOSITORY = "macfanpro/macfanpro"
-GITEE_API = "/repos/" + REPOSITORY
-GITEE_GIT = "https://gitee.com/" + REPOSITORY + ".git"
+REPOSITORY = "macfanpro/macfanpro"  # GitHub source; transfer is deferred.
+GITEE_REPOSITORY = "macfancontrol/macfancontrol"
+GITEE_API = "/repos/" + GITEE_REPOSITORY
+GITEE_GIT = "https://gitee.com/" + GITEE_REPOSITORY + ".git"
 
 
 class MirrorError(Exception):

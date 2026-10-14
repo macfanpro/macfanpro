@@ -32,7 +32,7 @@ MacFanControl 原名 MacFanPro。0.2.3.64 起，新版应用文件为 **MacFanCo
 
 ## 仓库迁移分两步
 
-当前 GitHub 主仓库仍是 https://github.com/macfanpro/macfanpro ，官网仍是 https://macfanpro.github.io/macfanpro/ 。Gitee https://gitee.com/macfanpro/macfanpro 只接收来自 GitHub 的镜像。
+当前 GitHub 主仓库仍是 https://github.com/macfanpro/macfanpro ，官网仍是 https://macfanpro.github.io/macfanpro/ 。Gitee https://gitee.com/macfancontrol/macfancontrol 只接收来自 GitHub 的镜像。
 
 旧版更新器拒绝跳转到新仓库后的最终 URL，无法通过服务端重定向修补。所以先发布本过渡版，让用户正常收到更新。本版识别旧仓库与未来的 `macfancontrol/macfancontrol`，之后另行迁移仓库并处理旧官网跳转。未升级过渡版的历史版本届时可能需要手动下载；不能承诺所有历史版本在迁移后仍能发现更新。
 

@@ -1,10 +1,14 @@
 # Gitee 镜像
 
 - GitHub 维护源：<https://github.com/macfanpro/macfanpro>
-- Gitee 镜像：<https://gitee.com/macfanpro/macfanpro>
-- Gitee 发行版本：<https://gitee.com/macfanpro/macfanpro/releases>
+- Gitee 镜像：<https://gitee.com/macfancontrol/macfancontrol>
+- Gitee 发行版本：<https://gitee.com/macfancontrol/macfancontrol/releases>
 
 镜像包括代码历史、全部分支和标签、已公开 Release 的标题、说明、预发布标记及全部附件。发行说明中的附件下载链接替换为 Gitee 地址，上传后重新下载核对 SHA-256；附件内容保持原样。Gitee 的发行记录创建时间是同步时间，原始发布时间以 GitHub 为准。
+
+## 改名迁移（2026-10-14）
+
+原镜像已原地改名并转入 `macfancontrol` 组织，仓库 ID 保持不变，37 个公开发行版本及其附件记录保留。GitHub 维护源暂未迁移，镜像脚本分别配置 GitHub 来源和 Gitee 目标。请将已有 Gitee 克隆的 remote 更新为 `https://gitee.com/macfancontrol/macfancontrol.git`。
 
 ## 自动同步
 
