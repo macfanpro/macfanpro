@@ -3,7 +3,7 @@
 ## 入口与发布
 
 ```bash
-curl -fsSL https://github.com/macfanpro/macfanpro/releases/latest/download/install.sh | bash
+curl -fsSL https://github.com/macfancontrol/macfancontrol/releases/latest/download/install.sh | bash
 ```
 
 此入口自 0.2.3.33 起可用；更早的版本没有 `install.sh` 附件。

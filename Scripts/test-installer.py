@@ -44,7 +44,7 @@ curl() {
         url="$1"; shift
     done
     case "$url" in
-        https://github.com/macfanpro/macfanpro/releases/download/v1.2.3.4/*) ;;
+        https://github.com/macfancontrol/macfancontrol/releases/download/v1.2.3.4/*) ;;
         *) return 99 ;;
     esac
     cp "$FIXTURE/${url##*/}" "$dest"

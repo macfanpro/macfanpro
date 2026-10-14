@@ -52,7 +52,7 @@ public enum UpdateChecker {
     /// `/releases/latest` redirects to the newest release EXCLUDING drafts and
     /// prereleases, so only stable releases we actually cut can ever surface. Also
     /// the fallback "What's new" link when a persisted check has no stored URL.
-    public static let releasesPageURL = "https://github.com/macfanpro/macfanpro/releases/latest"
+    public static let releasesPageURL = "https://github.com/macfancontrol/macfancontrol/releases/latest"
     // A transition build must recognize the destination before the repository
     // moves. Keep both exact repository paths; never accept arbitrary GitHub repos.
     private static let releasesPaths = [

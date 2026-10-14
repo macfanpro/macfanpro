@@ -12,8 +12,8 @@ from urllib.parse import unquote, urlsplit
 ROOT = Path(__file__).resolve().parents[1]
 SOURCE = ROOT / 'website'
 OUTPUT = ROOT / '.build' / 'website'
-BASE = 'https://macfanpro.github.io/macfanpro/'
-REPO = 'https://github.com/macfanpro/macfanpro'
+BASE = 'https://macfancontrol.github.io/macfancontrol/'
+REPO = 'https://github.com/macfancontrol/macfancontrol'
 LANGUAGES = {
     'zh-Hans': '简体中文', 'en': 'English', 'zh-Hant': '繁體中文',
     'ja': '日本語', 'ko': '한국어', 'de': 'Deutsch', 'fr': 'Français',
@@ -21,8 +21,8 @@ LANGUAGES = {
     'ru': 'Русский', 'uk': 'Українська', 'pl': 'Polski', 'nl': 'Nederlands',
     'tr': 'Türkçe', 'vi': 'Tiếng Việt', 'id': 'Bahasa Indonesia', 'ar': 'العربية',
 }
-PROXY = '(\n  export https_proxy=http://127.0.0.1:7890\n  set -o pipefail\n  curl -fsSL https://github.com/macfanpro/macfanpro/releases/latest/download/install.sh | bash\n)'
-DIRECT = '(\n  set -o pipefail\n  curl -fsSL https://github.com/macfanpro/macfanpro/releases/latest/download/install.sh | bash\n)'
+PROXY = '(\n  export https_proxy=http://127.0.0.1:7890\n  set -o pipefail\n  curl -fsSL https://github.com/macfancontrol/macfancontrol/releases/latest/download/install.sh | bash\n)'
+DIRECT = '(\n  set -o pipefail\n  curl -fsSL https://github.com/macfancontrol/macfancontrol/releases/latest/download/install.sh | bash\n)'
 BREW = 'brew tap macfancontrol/tap &&\nbrew trust macfancontrol/tap &&\nbrew install macfancontrol &&\nsudo "$(brew --prefix macfancontrol)/bin/macfancontrol" install &&\nopen /Applications/MacFanControl.app'
 
 

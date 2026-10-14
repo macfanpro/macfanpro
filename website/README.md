@@ -1,6 +1,6 @@
 # MacFanControl website
 
-Public address: <https://macfanpro.github.io/macfanpro/>.
+Public address: <https://macfancontrol.github.io/macfancontrol/>.
 
 The site is hosted on GitHub Pages. A shared HTML template, local CSS/JavaScript and 18 translation files produce static pages; visitors need no JavaScript to read the content, use language links or view installation commands. There are no external fonts, UI frameworks, analytics or runtime translation requests.
 

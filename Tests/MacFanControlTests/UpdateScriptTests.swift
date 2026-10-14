@@ -35,7 +35,7 @@ struct UpdateScriptTests {
     @Test("Download navigation reports failure and retries without invoking an installer")
     @MainActor
     func downloadNavigationRecovery() {
-        let release = "https://github.com/macfanpro/macfanpro/releases/tag/v1.2.3.4"
+        let release = "https://github.com/macfancontrol/macfancontrol/releases/tag/v1.2.3.4"
         var opened: [URL] = []
         let model = UpdateDetailsModel(update: .init(version: "1.2.3.4", url: release), homebrew: false,
             launch: { _, _ in Issue.record("Downloading must not launch an installer") },
@@ -83,7 +83,7 @@ struct UpdateScriptTests {
                 == "cd '/Users/me/My Code/it'\\''s' && git pull --ff-only && ./setup.sh")
         for missing in [nil, ""] as [String?] {
             #expect(UpdateScript.sourceCommand(directory: missing)
-                    == "git clone https://github.com/macfanpro/macfanpro.git ~/macfancontrol 2>/dev/null; cd ~/macfancontrol && git pull --ff-only && ./setup.sh")
+                    == "git clone https://github.com/macfancontrol/macfancontrol.git ~/macfancontrol 2>/dev/null; cd ~/macfancontrol && git pull --ff-only && ./setup.sh")
         }
     }
 

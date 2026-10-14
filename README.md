@@ -15,16 +15,16 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/macfanpro/macfanpro/releases/latest"><img src="https://img.shields.io/github/v/release/macfanpro/macfanpro?sort=date&amp;style=flat-square" alt="Latest release"></a>
+  <a href="https://github.com/macfancontrol/macfancontrol/releases/latest"><img src="https://img.shields.io/github/v/release/macfancontrol/macfancontrol?sort=date&amp;style=flat-square" alt="Latest release"></a>
   <a href="#requirements"><img src="https://img.shields.io/badge/macOS-14%2B-blue?style=flat-square" alt="macOS 14 or later"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue?style=flat-square" alt="MIT license"></a>
-  <a href="https://github.com/macfanpro/macfanpro/actions/workflows/ci.yml"><img src="https://github.com/macfanpro/macfanpro/actions/workflows/ci.yml/badge.svg" alt="CI status"></a>
+  <a href="https://github.com/macfancontrol/macfancontrol/actions/workflows/ci.yml"><img src="https://github.com/macfancontrol/macfancontrol/actions/workflows/ci.yml/badge.svg" alt="CI status"></a>
 </p>
 
 <p align="center">
-  <a href="https://macfanpro.github.io/macfanpro/en/"><b>Website · 18 languages</b></a>
+  <a href="https://macfancontrol.github.io/macfancontrol/en/"><b>Website · 18 languages</b></a>
   &nbsp;·&nbsp;
-  <a href="https://github.com/macfanpro/macfanpro/releases/latest"><b>Download</b></a>
+  <a href="https://github.com/macfancontrol/macfancontrol/releases/latest"><b>Download</b></a>
   &nbsp;·&nbsp;
   <a href="https://gitee.com/macfancontrol/macfancontrol/releases"><b>Gitee mirror</b></a>
   &nbsp;·&nbsp;
@@ -42,12 +42,12 @@
 
 For a manual download when GitHub is hard to reach, get the DMG from the [Gitee release mirror](https://gitee.com/macfancontrol/macfancontrol/releases). Mirrored packages are unchanged; the online installer below still downloads from GitHub. See [mirror details](docs/gitee-mirror.md).
 
-Run this block in Terminal as your normal login user. It downloads and verifies the prebuilt release, then installs the app and background service. No Homebrew or Xcode needed. If GitHub is hard to reach, use the [proxy command](#online-installer) or [configure your proxy on the website](https://macfanpro.github.io/macfanpro/en/#install) before installing.
+Run this block in Terminal as your normal login user. It downloads and verifies the prebuilt release, then installs the app and background service. No Homebrew or Xcode needed. If GitHub is hard to reach, use the [proxy command](#online-installer) or [configure your proxy on the website](https://macfancontrol.github.io/macfancontrol/en/#install) before installing.
 
 ```bash
 (
   set -o pipefail
-  curl -fsSL https://github.com/macfanpro/macfanpro/releases/latest/download/install.sh | bash
+  curl -fsSL https://github.com/macfancontrol/macfancontrol/releases/latest/download/install.sh | bash
 )
 ```
 
@@ -109,7 +109,7 @@ MacBook Pro, Mac mini, Mac Studio and iMac configurations with Apple Silicon and
 
 Starting with **0.2.3.50**, download `MacFanControl-<version>-macos-arm64.dmg` for graphical installation:
 
-1. Download the DMG from [Releases](https://github.com/macfanpro/macfanpro/releases/latest), open it, and drag **MacFanControl.app** into **Applications**.
+1. Download the DMG from [Releases](https://github.com/macfancontrol/macfancontrol/releases/latest), open it, and drag **MacFanControl.app** into **Applications**.
 2. Open the app from Applications. If macOS blocks it, follow the [first-launch instructions](#macos-says-it-cant-verify-the-developer); these builds are not notarized.
 3. Choose **Install and enable** in the setup window and approve the macOS administrator authorization dialog. The app includes the service executable, so this step needs no network, Homebrew or Xcode.
 
@@ -122,7 +122,7 @@ Starting with **0.2.3.50**, download `MacFanControl-<version>-macos-arm64.dmg` f
 ```bash
 (
   set -o pipefail
-  curl -fsSL https://github.com/macfanpro/macfanpro/releases/latest/download/install.sh | bash
+  curl -fsSL https://github.com/macfancontrol/macfancontrol/releases/latest/download/install.sh | bash
 )
 ```
 
@@ -132,7 +132,7 @@ For a first install when GitHub cannot be reached directly, start a proxy and fi
 (
   export https_proxy=http://127.0.0.1:7890
   set -o pipefail
-  curl -fsSL https://github.com/macfanpro/macfanpro/releases/latest/download/install.sh | bash
+  curl -fsSL https://github.com/macfancontrol/macfancontrol/releases/latest/download/install.sh | bash
 )
 ```
 
@@ -170,7 +170,7 @@ Since Homebrew 7, formulae from third-party taps are not loaded until you trust 
 
 No Homebrew or Xcode needed.
 
-1. Go to [Releases](https://github.com/macfanpro/macfanpro/releases/latest) and download `MacFanControl-<version>-macos-arm64.tar.gz`. Choose this package, not GitHub's automatic `Source code` archives.
+1. Go to [Releases](https://github.com/macfancontrol/macfancontrol/releases/latest) and download `MacFanControl-<version>-macos-arm64.tar.gz`. Choose this package, not GitHub's automatic `Source code` archives.
 2. Double-click to extract it. Keep `MacFanControl.app` and the `bin` folder together.
 3. In Terminal, go into the extracted folder, install, and open the app.
 
@@ -191,7 +191,7 @@ For drag-and-drop installation with a graphical service setup window, use the DM
 You need Xcode 16 or later.
 
 ```bash
-git clone https://github.com/macfanpro/macfanpro.git
+git clone https://github.com/macfancontrol/macfancontrol.git
 cd macfancontrol
 ./setup.sh
 ```
@@ -344,7 +344,7 @@ If GitHub is unreachable, start a trusted proxy and find its **local HTTP proxy 
 (
   export https_proxy=http://127.0.0.1:7890
   set -o pipefail
-  curl -fsSL https://github.com/macfanpro/macfanpro/releases/latest/download/install.sh | bash
+  curl -fsSL https://github.com/macfancontrol/macfancontrol/releases/latest/download/install.sh | bash
 )
 ```
 
@@ -479,7 +479,7 @@ macfancontrol status
 macfancontrol discover --output discover.txt
 ```
 
-Open a [compatibility report](https://github.com/macfanpro/macfanpro/issues/new?template=compatibility-report.md) with the exact model, chip, year, macOS version and installation method. Include which actions you actually tested; do not infer fan-write or wake support from temperature readings alone.
+Open a [compatibility report](https://github.com/macfancontrol/macfancontrol/issues/new?template=compatibility-report.md) with the exact model, chip, year, macOS version and installation method. Include which actions you actually tested; do not infer fan-write or wake support from temperature readings alone.
 
 ## FAQ
 
@@ -503,7 +503,7 @@ Each release includes `SHA256SUMS`. Put it in the same folder as the archive and
 
 ### Temperatures or fan readings differ from another Mac
 
-Models differ in their sensors, number of fans and speed ranges. When reporting an issue, include your Mac model, macOS version, MacFanControl version, install method, steps to reproduce, and the relevant status output or log excerpt. Report issues at [Issues](https://github.com/macfanpro/macfanpro/issues).
+Models differ in their sensors, number of fans and speed ranges. When reporting an issue, include your Mac model, macOS version, MacFanControl version, install method, steps to reproduce, and the relevant status output or log excerpt. Report issues at [Issues](https://github.com/macfancontrol/macfancontrol/issues).
 
 ### Temperatures don't match Stats or similar tools
 
@@ -558,11 +558,11 @@ bash Scripts/package-release.sh
 
 Output goes to `dist/`: a `.tar.gz` with the app and CLI, `SHA256SUMS`, and the version-pinned `install.sh` and `install.sh.sha256`. Packaging doesn't replace the installed app; run `./setup.sh` when you want to install a development build.
 
-When opening a [Pull Request](https://github.com/macfanpro/macfanpro/pulls), describe the problem, the scope of the change and how you verified it. Changes to fan control, background service communication or native menu behavior should include matching hardware checks, keeping automated tests, isolated rendering tests and real hardware results distinct.
+When opening a [Pull Request](https://github.com/macfancontrol/macfancontrol/pulls), describe the problem, the scope of the change and how you verified it. Changes to fan control, background service communication or native menu behavior should include matching hardware checks, keeping automated tests, isolated rendering tests and real hardware results distinct.
 
 ### Documentation and upstream maintenance
 
-- [Website](https://macfanpro.github.io/macfanpro/en/) and [website maintenance](website/README.md): the 18-language introduction, installation commands and GitHub Pages build instructions.
+- [Website](https://macfancontrol.github.io/macfancontrol/en/) and [website maintenance](website/README.md): the 18-language introduction, installation commands and GitHub Pages build instructions.
 - [Documentation index](docs/README.md): user guides, technical notes and validation history, grouped by task.
 - [Changelog](CHANGELOG.md) and [release notes](docs/releases/README.md): what changed in published versions and how releases are prepared.
 - [Upstream differences](docs/upstream-divergence.md) and [2026-10-03 integration review](docs/upstream-sync-20261003.md): which fork behaviors must survive an upstream merge and what was checked this time.
@@ -574,16 +574,16 @@ Versions are **the upstream version plus a fourth revision number**, defined in 
 
 ## Contributing
 
-All kinds of contributions are welcome — see [CONTRIBUTING.md](CONTRIBUTING.md) for details. For questions and ideas, use [Discussions](https://github.com/macfanpro/macfanpro/discussions); report security problems privately as described in [SECURITY.md](SECURITY.md).
+All kinds of contributions are welcome — see [CONTRIBUTING.md](CONTRIBUTING.md) for details. For questions and ideas, use [Discussions](https://github.com/macfancontrol/macfancontrol/discussions); report security problems privately as described in [SECURITY.md](SECURITY.md).
 
-- **Bug reports**: report problems or submit a compatibility report in [Issues](https://github.com/macfanpro/macfanpro/issues), with your Mac model, macOS version, MacFanControl version and `macfancontrol status` output.
-- **Code**: build and test as described in [Development](#development), then open a [Pull Request](https://github.com/macfanpro/macfanpro/pulls).
+- **Bug reports**: report problems or submit a compatibility report in [Issues](https://github.com/macfancontrol/macfancontrol/issues), with your Mac model, macOS version, MacFanControl version and `macfancontrol status` output.
+- **Code**: build and test as described in [Development](#development), then open a [Pull Request](https://github.com/macfancontrol/macfancontrol/pulls).
 - **Translations**: the interface translations were made by the maintainer; native speakers are welcome to correct them or add a language. See [GUI localization](docs/gui-localization.md).
 
 ### Contributors
 
-<a href="https://github.com/macfanpro/macfanpro/graphs/contributors">
-  <img src="https://contrib.rocks/image?repo=macfanpro/macfanpro" alt="MacFanControl contributors">
+<a href="https://github.com/macfancontrol/macfancontrol/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=macfancontrol/macfancontrol" alt="MacFanControl contributors">
 </a>
 
 ## Credits and license

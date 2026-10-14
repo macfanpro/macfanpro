@@ -29,7 +29,7 @@ struct LocalizedPanelTests {
             state.externalHold = scenario == "held-update" ? DaemonHoldState(command: "setfan 1 5777", owner: "cli") : nil
             // Available releases use the same compact row for both install methods.
             state.installedWithHomebrew = scenario == "update-brew"
-            state.availableUpdate = ["held-update", "update-brew"].contains(scenario) ? AvailableUpdate(version: "99.99.99", url: "https://github.com/macfanpro/macfanpro/releases") : nil
+            state.availableUpdate = ["held-update", "update-brew"].contains(scenario) ? AvailableUpdate(version: "99.99.99", url: "https://github.com/macfancontrol/macfancontrol/releases") : nil
             state.daemonVersionMismatch = scenario == "mismatch-safety" ? "0.2.3.5" : nil
             state.daemonUnreachable = scenario == "daemon-down"
             // Long localized results must wrap within the fixed menu width.

@@ -13,7 +13,7 @@ Start with [English README](../README.md) or [中文 README](../README.zh-CN.md)
 | Fan curves, Smart and calibration / 曲线、智能与校准 | [English](../README.md#fan-curves-and-smart-mode) · [中文](../README.zh-CN.md#风扇曲线与智能模式原理) |
 | Sensor readings and comparison with Stats / 传感器读数对照 | [Sensor calibration / 传感器校准记录](thermal-sensor-calibration-20260924.md) |
 | Runtime logs and CSV recording / 运行日志与采样 | [English](../README.md#logs-and-data) · [中文](../README.zh-CN.md#日志与数据) |
-| Release changes / 已发行变化 | [Changelog](../CHANGELOG.md) · [GitHub Releases](https://github.com/macfanpro/macfanpro/releases) |
+| Release changes / 已发行变化 | [Changelog](../CHANGELOG.md) · [GitHub Releases](https://github.com/macfancontrol/macfancontrol/releases) |
 
 ## Develop and maintain / 开发与维护
 

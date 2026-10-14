@@ -302,7 +302,7 @@ private struct ServiceSection: View {
             }
         }
         if setup.phase == .homebrew {
-            Link(language.text("Installation guide"), destination: URL(string: "https://macfanpro.github.io/macfanpro/" + (language.language == .simplifiedChinese ? "?lang=zh-Hans" : language.language.rawValue + "/") + "#install")!)
+            Link(language.text("Installation guide"), destination: URL(string: "https://macfancontrol.github.io/macfancontrol/" + (language.language == .simplifiedChinese ? "?lang=zh-Hans" : language.language.rawValue + "/") + "#install")!)
         }
         actions
             .alert(language.text("Remove background service?"), isPresented: $confirmRemoval) {

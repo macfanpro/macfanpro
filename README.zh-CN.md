@@ -15,16 +15,16 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/macfanpro/macfanpro/releases/latest"><img src="https://img.shields.io/github/v/release/macfanpro/macfanpro?sort=date&amp;style=flat-square" alt="最新发行版"></a>
+  <a href="https://github.com/macfancontrol/macfancontrol/releases/latest"><img src="https://img.shields.io/github/v/release/macfancontrol/macfancontrol?sort=date&amp;style=flat-square" alt="最新发行版"></a>
   <a href="#系统要求"><img src="https://img.shields.io/badge/macOS-14%2B-blue?style=flat-square" alt="macOS 14 或更高版本"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue?style=flat-square" alt="MIT 开源协议"></a>
-  <a href="https://github.com/macfanpro/macfanpro/actions/workflows/ci.yml"><img src="https://github.com/macfanpro/macfanpro/actions/workflows/ci.yml/badge.svg" alt="CI 状态"></a>
+  <a href="https://github.com/macfancontrol/macfancontrol/actions/workflows/ci.yml"><img src="https://github.com/macfancontrol/macfancontrol/actions/workflows/ci.yml/badge.svg" alt="CI 状态"></a>
 </p>
 
 <p align="center">
-  <a href="https://macfanpro.github.io/macfanpro/?lang=zh-Hans"><b>官方网站 · 18 种语言</b></a>
+  <a href="https://macfancontrol.github.io/macfancontrol/?lang=zh-Hans"><b>官方网站 · 18 种语言</b></a>
   &nbsp;·&nbsp;
-  <a href="https://github.com/macfanpro/macfanpro/releases/latest"><b>下载发行版</b></a>
+  <a href="https://github.com/macfancontrol/macfancontrol/releases/latest"><b>下载发行版</b></a>
   &nbsp;·&nbsp;
   <a href="https://gitee.com/macfancontrol/macfancontrol/releases"><b>国内镜像下载</b></a>
   &nbsp;·&nbsp;
@@ -42,13 +42,13 @@
 
 **图形化安装可直接前往 [Gitee 国内镜像](https://gitee.com/macfancontrol/macfancontrol/releases)下载 DMG**，打开后将应用拖入“应用程序”。镜像附件保持原样；在线安装脚本和应用更新检查仍访问 GitHub，详见[镜像说明](docs/gitee-mirror.md)。
 
-使用下面的命令安装时，若无法正常访问 GitHub，请先打开代理软件，确认本地 HTTP 代理端口，将示例中的 `7890` 改为实际端口，然后在终端中复制执行整个代码块。也可以在[官网安装区](https://macfanpro.github.io/macfanpro/?lang=zh-Hans#install)选择代理类型、填写端口并复制生成的命令。
+使用下面的命令安装时，若无法正常访问 GitHub，请先打开代理软件，确认本地 HTTP 代理端口，将示例中的 `7890` 改为实际端口，然后在终端中复制执行整个代码块。也可以在[官网安装区](https://macfancontrol.github.io/macfancontrol/?lang=zh-Hans#install)选择代理类型、填写端口并复制生成的命令。
 
 ```bash
 (
   export https_proxy=http://127.0.0.1:7890
   set -o pipefail
-  curl -fsSL https://github.com/macfanpro/macfanpro/releases/latest/download/install.sh | bash
+  curl -fsSL https://github.com/macfancontrol/macfancontrol/releases/latest/download/install.sh | bash
 )
 ```
 
@@ -110,7 +110,7 @@
 
 从 **0.2.3.50** 起，可下载 `MacFanControl-<版本>-macos-arm64.dmg` 使用图形化安装：
 
-1. 从[发行页](https://github.com/macfanpro/macfanpro/releases/latest)下载并打开 DMG，将 **MacFanControl.app** 拖入 **“应用程序”**。国内下载不畅时，请先开启浏览器可用的代理。
+1. 从[发行页](https://github.com/macfancontrol/macfancontrol/releases/latest)下载并打开 DMG，将 **MacFanControl.app** 拖入 **“应用程序”**。国内下载不畅时，请先开启浏览器可用的代理。
 2. 从“应用程序”打开。遇到系统拦截时，按[首次运行说明](#下载后提示无法验证开发者)处理；当前构建尚未经过 Apple 公证。
 3. 在设置窗口点击 **“安装并启用”**，在 macOS 系统弹窗中授权。服务程序已内置，这一步无需联网、Homebrew 或 Xcode，也无需打开终端。
 
@@ -126,7 +126,7 @@
 (
   export https_proxy=http://127.0.0.1:7890
   set -o pipefail
-  curl -fsSL https://github.com/macfanpro/macfanpro/releases/latest/download/install.sh | bash
+  curl -fsSL https://github.com/macfancontrol/macfancontrol/releases/latest/download/install.sh | bash
 )
 ```
 
@@ -137,7 +137,7 @@
 ```bash
 (
   set -o pipefail
-  curl -fsSL https://github.com/macfanpro/macfanpro/releases/latest/download/install.sh | bash
+  curl -fsSL https://github.com/macfancontrol/macfancontrol/releases/latest/download/install.sh | bash
 )
 ```
 
@@ -173,7 +173,7 @@ Homebrew 7 起默认不加载第三方 tap 的配方，需要先用 `brew trust`
 
 此方式无需安装 Homebrew 或 Xcode。
 
-1. 前往 [Releases](https://github.com/macfanpro/macfanpro/releases/latest)，下载 `MacFanControl-版本号-macos-arm64.tar.gz`。请选择这个发行包，而非 GitHub 自动生成的 `Source code` 源码包。
+1. 前往 [Releases](https://github.com/macfancontrol/macfancontrol/releases/latest)，下载 `MacFanControl-版本号-macos-arm64.tar.gz`。请选择这个发行包，而非 GitHub 自动生成的 `Source code` 源码包。
 2. 双击解压，保留文件夹内的 `MacFanControl.app` 和 `bin` 目录。
 3. 在终端中进入解压后的文件夹，执行安装并打开应用。
 
@@ -194,7 +194,7 @@ open /Applications/MacFanControl.app
 前提：已安装 Xcode 16 或更高版本。
 
 ```bash
-git clone https://github.com/macfanpro/macfanpro.git
+git clone https://github.com/macfancontrol/macfancontrol.git
 cd macfancontrol
 ./setup.sh
 ```
@@ -347,7 +347,7 @@ sudo macfancontrol calibrate --mode standard --stress combined
 (
   export https_proxy=http://127.0.0.1:7890
   set -o pipefail
-  curl -fsSL https://github.com/macfanpro/macfanpro/releases/latest/download/install.sh | bash
+  curl -fsSL https://github.com/macfancontrol/macfancontrol/releases/latest/download/install.sh | bash
 )
 ```
 
@@ -482,7 +482,7 @@ macfancontrol status
 macfancontrol discover --output discover.txt
 ```
 
-提交[兼容性报告](https://github.com/macfanpro/macfanpro/issues/new?template=compatibility-report.md)时，附上具体机型、芯片、年份、macOS 版本与安装方式，并说明实际测试过的操作。能够读取温度不代表已验证风扇写入或睡眠唤醒。
+提交[兼容性报告](https://github.com/macfancontrol/macfancontrol/issues/new?template=compatibility-report.md)时，附上具体机型、芯片、年份、macOS 版本与安装方式，并说明实际测试过的操作。能够读取温度不代表已验证风扇写入或睡眠唤醒。
 
 ## 常见问题
 
@@ -506,7 +506,7 @@ macfancontrol discover --output discover.txt
 
 ### 温度或风扇读数与其他机器不同
 
-不同机型提供的传感器、风扇数量及转速范围可能不同。提交问题时，请附上机型、macOS 版本、MacFanControl 版本、安装方式、复现步骤，以及相关状态输出或日志片段。问题反馈入口：[Issues](https://github.com/macfanpro/macfanpro/issues)。
+不同机型提供的传感器、风扇数量及转速范围可能不同。提交问题时，请附上机型、macOS 版本、MacFanControl 版本、安装方式、复现步骤，以及相关状态输出或日志片段。问题反馈入口：[Issues](https://github.com/macfancontrol/macfancontrol/issues)。
 
 ### 温度与 Stats 等工具不一致
 
@@ -561,11 +561,11 @@ bash Scripts/package-release.sh
 
 产物输出到 `dist/`，包括完整应用与 CLI 的 `.tar.gz`、`SHA256SUMS`，以及固定版本的 `install.sh` 和 `install.sh.sha256`。打包不会替换本机已安装的应用；需要安装开发版本时再运行 `./setup.sh`。
 
-提交 [Pull Request](https://github.com/macfanpro/macfanpro/pulls) 时，请说明具体问题、改动范围和验证结果。涉及温控、后台通信或原生菜单行为的修改，应补充对应的本机验证，并区分自动化测试、隔离显示测试和真实硬件结果。
+提交 [Pull Request](https://github.com/macfancontrol/macfancontrol/pulls) 时，请说明具体问题、改动范围和验证结果。涉及温控、后台通信或原生菜单行为的修改，应补充对应的本机验证，并区分自动化测试、隔离显示测试和真实硬件结果。
 
 ### 文档与上游维护
 
-- [官方网站](https://macfanpro.github.io/macfanpro/?lang=zh-Hans)与[官网维护说明](website/README.md)：18 种语言的项目介绍、安装命令及 GitHub Pages 构建方式。
+- [官方网站](https://macfancontrol.github.io/macfancontrol/?lang=zh-Hans)与[官网维护说明](website/README.md)：18 种语言的项目介绍、安装命令及 GitHub Pages 构建方式。
 - [文档索引](docs/README.md)：按任务整理使用指南、技术资料和验证历史。
 - [更新记录](CHANGELOG.md)与[发布说明规范](docs/releases/README.md)：已发布的变化与发布流程。
 - [相对上游的差异](docs/upstream-divergence.md)与[本次合并检查](docs/upstream-sync-20261003.md)：合并时要保留的功能及此次验证结果。
@@ -577,16 +577,16 @@ bash Scripts/package-release.sh
 
 ## 参与贡献
 
-欢迎任何形式的贡献，详见 [CONTRIBUTING.md](CONTRIBUTING.md)（英文，也欢迎用中文提交）。问题讨论和功能建议可以发在 [Discussions](https://github.com/macfanpro/macfanpro/discussions)；安全问题请按 [SECURITY.md](SECURITY.md) 私下报告。
+欢迎任何形式的贡献，详见 [CONTRIBUTING.md](CONTRIBUTING.md)（英文，也欢迎用中文提交）。问题讨论和功能建议可以发在 [Discussions](https://github.com/macfancontrol/macfancontrol/discussions)；安全问题请按 [SECURITY.md](SECURITY.md) 私下报告。
 
-- **问题反馈**：在 [Issues](https://github.com/macfanpro/macfanpro/issues) 报告问题或提交兼容性报告，请附上机型、macOS 版本、MacFanControl 版本和 `macfancontrol status` 输出。
-- **代码**：按 [开发与贡献](#开发与贡献) 中的步骤构建和验证，再通过 [Pull Request](https://github.com/macfanpro/macfanpro/pulls) 提交。
+- **问题反馈**：在 [Issues](https://github.com/macfancontrol/macfancontrol/issues) 报告问题或提交兼容性报告，请附上机型、macOS 版本、MacFanControl 版本和 `macfancontrol status` 输出。
+- **代码**：按 [开发与贡献](#开发与贡献) 中的步骤构建和验证，再通过 [Pull Request](https://github.com/macfancontrol/macfancontrol/pulls) 提交。
 - **翻译**：界面翻译由维护者完成，欢迎母语用户修正或补充新语言；繁体中文由脚本从简体生成。流程见 [GUI 本地化](docs/gui-localization.md)。
 
 ### 贡献者
 
-<a href="https://github.com/macfanpro/macfanpro/graphs/contributors">
-  <img src="https://contrib.rocks/image?repo=macfanpro/macfanpro" alt="MacFanControl 贡献者">
+<a href="https://github.com/macfancontrol/macfancontrol/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=macfancontrol/macfancontrol" alt="MacFanControl 贡献者">
 </a>
 
 ## 来源与许可

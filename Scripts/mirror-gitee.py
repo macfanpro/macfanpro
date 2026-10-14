@@ -13,7 +13,7 @@ import urllib.parse
 import urllib.request
 import uuid
 
-REPOSITORY = "macfanpro/macfanpro"  # GitHub source; transfer is deferred.
+REPOSITORY = "macfancontrol/macfancontrol"  # Authoritative GitHub source.
 GITEE_REPOSITORY = "macfancontrol/macfancontrol"
 GITEE_API = "/repos/" + GITEE_REPOSITORY
 GITEE_GIT = "https://gitee.com/" + GITEE_REPOSITORY + ".git"

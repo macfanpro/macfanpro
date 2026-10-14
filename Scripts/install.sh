@@ -186,7 +186,7 @@ main() {
     fi
     if [ "$check" = 0 ]; then check_downgrade "$version"; fi
     name="MacFanControl-$version-macos-arm64"
-    base="https://github.com/macfanpro/macfanpro/releases/download/v$version"
+    base="https://github.com/macfancontrol/macfancontrol/releases/download/v$version"
     printf 'Downloading MacFanControl %s…\n' "$version"
     download "$base/$name.tar.gz" "$WORK/$name.tar.gz"
     download "$base/MacFanControl-SHA256SUMS" "$WORK/MacFanControl-SHA256SUMS"

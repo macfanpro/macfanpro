@@ -39,3 +39,7 @@ Release 正文中的文件链接应使用完整 GitHub URL。对会随时间变�
 DMG 发行：同时上传 `MacFanPro-<版本>-macos-arm64.dmg` 及其 `.dmg.sha256`，不要把 DMG 加入旧 `SHA256SUMS`。核验挂载后的应用签名、内置服务程序、语言资源和“应用程序”链接，并在干净的 macOS 上完成首次授权安装、更新与卸载验收（见 [DMG 验证说明](../dmg-installation.md)）。首次发布时更新 README 和 DMG 文档中的“尚未发布”说明。官网在最新正式发行确实包含 DMG 时自动显示下载入口；不往旧标签补传新代码构建的 DMG。
 
 0.2.3.64 起，新版使用 `MacFanControl.app`、`macfancontrol` 和 `MacFanControl-<版本>-macos-arm64`。额外发布旧名称压缩包及旧 `SHA256SUMS`，仅供旧安装器兼容升级。新版压缩包使用独立 `MacFanControl-SHA256SUMS`。详见 [改名升级说明](../macfancontrol-transition.md)。
+
+## Legacy update endpoint after repository migration
+
+After publishing, run `gh workflow run sync.yml -R macfanpro/macfanpro` and verify the **Sync legacy releases** run succeeds. Confirm the old `/releases/latest` resolves to an old-repository tag URL with the new version and that its compatibility assets match the main release. The compatibility repository also checks every 15 minutes; scheduling can be delayed. Keep old package names and checksum manifests in each release. Never delete the compatibility repository while supporting old clients.

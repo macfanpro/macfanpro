@@ -20,7 +20,7 @@ enum UpdateScript {
     /// first when missing.
     static func sourceCommand(directory: String?) -> String {
         guard let directory, !directory.isEmpty else {
-            return "git clone https://github.com/macfanpro/macfanpro.git ~/macfancontrol 2>/dev/null; cd ~/macfancontrol && git pull --ff-only && ./setup.sh"
+            return "git clone https://github.com/macfancontrol/macfancontrol.git ~/macfancontrol 2>/dev/null; cd ~/macfancontrol && git pull --ff-only && ./setup.sh"
         }
         let plain = directory.range(of: #"^[A-Za-z0-9/._+-]+$"#, options: .regularExpression) != nil
         return "cd \(plain ? directory : quote(directory)) && git pull --ff-only && ./setup.sh"

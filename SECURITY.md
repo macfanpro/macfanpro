@@ -4,7 +4,7 @@ MacFanControl installs a background service that runs as root and talks to the M
 
 ## Reporting a vulnerability
 
-Please **do not open a public issue**. Report it privately through GitHub: go to the repository's **Security** tab and choose **Report a vulnerability** ([direct link](https://github.com/macfanpro/macfanpro/security/advisories/new)).
+Please **do not open a public issue**. Report it privately through GitHub: go to the repository's **Security** tab and choose **Report a vulnerability** ([direct link](https://github.com/macfancontrol/macfancontrol/security/advisories/new)).
 
 Include the MacFanControl version, your macOS version, the steps to reproduce, and what an attacker could achieve. You'll get an acknowledgement within a few days. Once a fix is released, the release notes credit the reporter unless you prefer otherwise.
 

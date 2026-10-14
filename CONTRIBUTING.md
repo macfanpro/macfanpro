@@ -4,7 +4,7 @@ Thanks for helping! Bug reports, compatibility reports, code and translations ar
 
 ## Report a bug or a compatibility result
 
-Open an [issue](https://github.com/macfanpro/macfanpro/issues) with:
+Open an [issue](https://github.com/macfancontrol/macfancontrol/issues) with:
 
 - your Mac model (for example `MacBook Pro 16" M4 Max`) and macOS version,
 - the MacFanControl version (`macfancontrol --version`) and how you installed it,
@@ -13,14 +13,14 @@ Open an [issue](https://github.com/macfanpro/macfanpro/issues) with:
 
 Reports from Macs other than the M4 Max are especially useful: most hardware testing so far has been on that model. The *Compatibility report* issue template lists what helps.
 
-For questions and ideas, use [Discussions](https://github.com/macfanpro/macfanpro/discussions). For security problems, see [SECURITY.md](SECURITY.md) instead of opening a public issue.
+For questions and ideas, use [Discussions](https://github.com/macfancontrol/macfancontrol/discussions). For security problems, see [SECURITY.md](SECURITY.md) instead of opening a public issue.
 
 ## Contribute code
 
 You need an Apple Silicon Mac with Xcode 16 or later.
 
 ```bash
-git clone https://github.com/macfanpro/macfanpro.git
+git clone https://github.com/macfancontrol/macfancontrol.git
 cd macfancontrol
 bash Scripts/test.sh --all-configurations
 bash Scripts/check-localization-package.sh
