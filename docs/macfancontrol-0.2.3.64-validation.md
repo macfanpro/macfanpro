@@ -50,3 +50,7 @@ ebf344016453bc67fcd85b0b02ba1267ddd15857424d10671eb7bd58e5f77118  MacFanPro-0.2.
 3bf6ccd68c72f222dd30cdeaa8e427bebe1a439bf1255b6ef39c5119e7e91c34  MacFanControl-0.2.3.64-macos-arm64.dmg
 85de210437c8cdea72d7e27507f555d95b344774ffe5925dc0f4938d212a6ad1  install.sh
 ```
+
+## Post-publication checks
+
+Published at 2026-10-14 00:28:11 UTC. Both the published new installer and the unmodified 0.2.3.63 installer downloaded and verified 0.2.3.64 successfully with `--check`; neither installed anything. The old `/releases/latest` URL resolves to the current repository's `v0.2.3.64` tag, preserving discovery for old apps. The website serves the MacFanControl title and new previews. The Homebrew notification workflow succeeded. Gitee release publication and attachment verification are handled by the release-triggered mirror workflow.
