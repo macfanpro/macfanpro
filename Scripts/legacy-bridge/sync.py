@@ -41,7 +41,7 @@ def sync_tags(source, target):
         bare = Path(temp) / 'source.git'
         subprocess.run(['git', 'clone', '--bare', 'https://github.com/' + source + '.git', str(bare)], check=True)
         askpass = Path(temp) / 'askpass.py'
-        askpass.write_text("#!/usr/bin/env python3\nimport os,sys\nprint('x-access-token' if 'Username' in sys.argv[1] else os.environ['GH_TOKEN'])\n")
+        askpass.write_text("#!/usr/bin/env python3\nimport os,sys\nprint('x-access-token' if 'Username' in sys.argv[1] else os.environ['LEGACY_TAG_TOKEN'])\n")
         askpass.chmod(0o700)
         env = {**os.environ, 'GIT_ASKPASS': str(askpass), 'GIT_TERMINAL_PROMPT': '0'}
         leases = [f'--force-with-lease={ref}:{existing.get(ref, "")}' for ref in sorted(changed)]

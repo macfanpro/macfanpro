@@ -25,6 +25,7 @@ jobs:
       - name: Copy and verify published releases
         env:
           GH_TOKEN: ${{ github.token }}
+          LEGACY_TAG_TOKEN: ${{ secrets.LEGACY_TAG_TOKEN }}
           SOURCE: ${{ inputs.source || 'macfancontrol/macfancontrol' }}
         run: python3 sync.py --source "$SOURCE"
       - name: Keep the compatibility schedule active

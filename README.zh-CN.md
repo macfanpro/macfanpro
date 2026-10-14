@@ -36,7 +36,7 @@
 > [!NOTE]
 > 需要 **macOS 14 或更高版本**及**配备实体风扇的 Apple Silicon Mac**，具体见[兼容性与验证范围](#兼容性与验证范围)。安装时需要管理员密码来配置[后台服务](#安全机制与权限)。发行包尚未经过 Apple 公证；首次打开遇到系统拦截时，请查看[首次运行说明](#下载后提示无法验证开发者)。
 
-**MacFanControl 原名 MacFanPro。** 0.2.3.64 起，应用、命令与安装包统一使用新名称；老用户继续使用原有更新入口，兼容逻辑负责旧路径衔接，配置保持可用。GitHub 仓库及官网地址暂缓迁移。详见[改名升级说明](docs/macfancontrol-transition.md)。
+**MacFanControl 原名 MacFanPro。** 0.2.3.64 起，应用、命令与安装包统一使用新名称；老用户继续使用原有更新入口，兼容逻辑负责旧路径衔接，配置保持可用。GitHub 主仓库和官网已迁移至 macfancontrol，旧地址保留兼容升级入口和官网跳转。详见[改名升级说明](docs/macfancontrol-transition.md)。
 
 ## 快速安装
 
@@ -180,7 +180,7 @@ Homebrew 7 起默认不加载第三方 tap 的配方，需要先用 `brew trust`
 例如，`0.2.3.50` 解压在“下载”目录时：
 
 ```bash
-cd ~/Downloads/MacFanControl-0.2.3.64-macos-arm64
+cd ~/Downloads/MacFanControl-0.2.3.65-macos-arm64
 sudo ./bin/macfancontrol install
 open /Applications/MacFanControl.app
 ```

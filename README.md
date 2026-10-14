@@ -36,7 +36,7 @@
 > [!NOTE]
 > Requires **macOS 14 or later** and an **Apple Silicon Mac with physical fans**; see [compatibility](#compatibility). Installation needs an administrator password to set up the [background service](#safety-and-permissions). Release packages are not yet notarized by Apple; if macOS blocks the first launch, follow the [first-launch instructions](#macos-says-it-cant-verify-the-developer).
 
-**MacFanControl was formerly MacFanPro.** Version 0.2.3.64 introduces `MacFanControl.app`, the `macfancontrol` command and new package names. Existing users can use their usual update entry point; compatibility aliases preserve older updater contracts and existing settings. The GitHub repository and website stay at their current addresses until users have upgraded. See the [transition details](docs/macfancontrol-transition.md).
+**MacFanControl was formerly MacFanPro.** Version 0.2.3.64 introduces `MacFanControl.app`, the `macfancontrol` command and new package names. Existing users can use their usual update entry point; compatibility aliases preserve older updater contracts and existing settings. The repository and website have moved to macfancontrol; the old addresses retain compatible update downloads and a website redirect. See the [transition details](docs/macfancontrol-transition.md).
 
 ## Quick install
 
@@ -177,7 +177,7 @@ No Homebrew or Xcode needed.
 For example, with `0.2.3.50` extracted in Downloads:
 
 ```bash
-cd ~/Downloads/MacFanControl-0.2.3.64-macos-arm64
+cd ~/Downloads/MacFanControl-0.2.3.65-macos-arm64
 sudo ./bin/macfancontrol install
 open /Applications/MacFanControl.app
 ```
