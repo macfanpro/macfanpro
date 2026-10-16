@@ -30,6 +30,7 @@ Start with [English README](../README.md) or [中文 README](../README.zh-CN.md)
 | Previous upstream merges / 前次上游合并 | [2026-10-04](upstream-sync-20261004.md) · [2026-10-03](upstream-sync-20261003.md) |
 | Earlier upstream decisions / 早期上游取舍 | [2026-09-21 audit](upstream-followups-20260921.md) |
 | Translation and packaging / 翻译与打包 | [GUI localization](gui-localization.md) |
+| Real app screenshots / 真机截图 | [Capture and replace screenshots / 抓取与替换方法](real-app-screenshots.md) |
 | Native menu layout / 原生菜单排版 | [Label validation](menu-bar-label-validation.md) |
 | Release preparation / 发布准备 | [Release guide and template](releases/README.md) |
 | Installer checks / 安装器验证 | [Installer validation](online-installer-validation.md) |
