@@ -42,7 +42,7 @@ final class AppState: ObservableObject {
     /// visible, not just logged. Cleared the moment a heartbeat succeeds.
     @Published var daemonUnreachable: Bool = false
     /// A GitHub release newer than this installed build, else nil. Non-nil drives
-    /// the compact update row. Set from a once-daily check and from persisted
+    /// the compact update row. Set from a six-hour check and from persisted
     /// state on launch (so it shows without waiting for a network round-trip); a
     /// version dismissed in an older app is suppressed until a newer one ships.
     @Published var availableUpdate: AvailableUpdate?
@@ -322,8 +322,8 @@ final class AppState: ObservableObject {
                 }
             }
 
-            // Ride the heartbeat as a cheap clock, but hit the network at most once a
-            // day. Runs off-main; nothing here touches published state directly.
+            // Ride the heartbeat as a cheap clock, but schedule a network check every
+            // six hours. Runs off-main; nothing here touches published state directly.
             self?.maybeCheckForUpdate()
         }
         timer.resume()
@@ -343,9 +343,9 @@ final class AppState: ObservableObject {
     nonisolated private static let updateLatestVersionKey = "updateLatestVersion"
     nonisolated private static let updateLatestURLKey = "updateLatestURL"
     nonisolated private static let updateDismissedKey = "updateDismissedVersion"
-    /// Normal cadence: next check a day out. A machine asleep/off checks on next wake.
-    nonisolated private static let updateCheckInterval: TimeInterval = 24 * 60 * 60
-    /// After a failed check, next check ~1h out instead of a full day.
+    /// Normal cadence: next check six hours out. A machine asleep/off checks on next wake.
+    nonisolated private static let updateCheckInterval: TimeInterval = 6 * 60 * 60
+    /// After a failed check, next check ~1h out instead of six hours.
     nonisolated private static let updateRetryInterval: TimeInterval = 60 * 60
 
     /// Reconstruct the last-known available update from persisted state (launch path),
@@ -361,7 +361,7 @@ final class AppState: ObservableObject {
         )
     }
 
-    /// Fire a check if a day has elapsed. `nonisolated` so it runs on the heartbeat
+    /// Fire a check when the scheduled time has arrived. `nonisolated` so it runs on the heartbeat
     /// queue; only UserDefaults (thread-safe) is touched here, and the result is
     /// applied back on the main actor.
     nonisolated private func maybeCheckForUpdate() {
@@ -374,7 +374,7 @@ final class AppState: ObservableObject {
         Task { [weak self] in
             let result = await UpdateChecker.check()
             if case .failed = result {
-                // Transient failure — pull the next check back to ~1h out, not a day.
+                // Transient failure — pull the next check back to ~1h out, not six hours.
                 defaults.set(Date().addingTimeInterval(Self.updateRetryInterval), forKey: Self.updateNextCheckKey)
             }
             await self?.applyUpdateCheck(result)
@@ -402,9 +402,9 @@ final class AppState: ObservableObject {
         }
     }
 
-    /// "Check for Updates": check now instead of waiting for the daily check. A found
+    /// "Check for Updates": check now instead of waiting for the scheduled check. A found
     /// version shows even if "Later" dismissed it (the user asked); the dismissal still
-    /// applies to the daily check.
+    /// applies to the scheduled check.
     func checkForUpdatesNow() {
         guard manualUpdateCheck != .checking else { return }
         manualUpdateCheck = .checking
@@ -432,7 +432,7 @@ final class AppState: ObservableObject {
             manualUpdateCheck = .failed
             return
         }
-        // A completed check counts as today's; the daily one need not repeat it.
+        // A completed manual check starts the next six-hour window.
         UserDefaults.standard.set(Date().addingTimeInterval(Self.updateCheckInterval),
                                   forKey: Self.updateNextCheckKey)
     }

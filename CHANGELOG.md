@@ -1,5 +1,10 @@
 # MacFanPro changelog
 
+## 0.2.3.68
+
+- Check for application updates every six hours instead of every 24 hours. Failed checks still retry after about one hour; manual checks remain available.
+- Preserve an existing scheduled check when upgrading; subsequent successful checks use the six-hour interval.
+
 ## 0.2.3.67
 
 - Rate-limit ordinary temperature-anomaly reports and compact repeated process snapshots, while preserving safety/error diagnostics.
