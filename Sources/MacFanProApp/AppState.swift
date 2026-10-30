@@ -64,6 +64,7 @@ final class AppState: ObservableObject {
 
     private var servicesEnabled = false
     private var monitor: ThermalMonitor?
+    private var hardwareWakeObserver: NSObjectProtocol?
     private let executor = PrivilegedExecutor()
     private var heartbeatTimer: DispatchSourceTimer?
     /// Consecutive failed heartbeats, for debouncing `daemonUnreachable`.
@@ -140,11 +141,37 @@ final class AppState: ObservableObject {
 
     func pauseForServiceRemoval() async {
         servicesEnabled = false
-        monitor?.stop(); monitor = nil
         heartbeatTimer?.cancel(); heartbeatTimer = nil
+        if let hardwareWakeObserver { NSWorkspace.shared.notificationCenter.removeObserver(hardwareWakeObserver) }
+        hardwareWakeObserver = nil
+        let stopping = monitor
+        monitor = nil
+        if let stopping {
+            await withCheckedContinuation { continuation in
+                stopping.stopAsynchronously { continuation.resume() }
+            }
+        }
         await withCheckedContinuation { continuation in
             commandPump.runAtLaunch { continuation.resume() }
         }
+    }
+
+    func prepareForTermination(_ completion: @escaping @Sendable () -> Void) {
+        servicesEnabled = false
+        heartbeatTimer?.cancel(); heartbeatTimer = nil
+        if let hardwareWakeObserver { NSWorkspace.shared.notificationCenter.removeObserver(hardwareWakeObserver) }
+        hardwareWakeObserver = nil
+        let pump = commandPump
+        let finish: @Sendable () -> Void = {
+            pump.finish { ok in
+                if !ok { TFLogger.shared.info("App exit release not applied; executor diagnostics distinguish CLI ownership from service failure") }
+                completion()
+            }
+        }
+        let stopping = monitor
+        monitor = nil
+        if let stopping { stopping.stopAsynchronously(finish) }
+        else { finish() }
     }
 
     /// Sync to whatever the daemon is actually holding at launch instead of
@@ -223,6 +250,7 @@ final class AppState: ObservableObject {
     }
 
     deinit {
+        if let hardwareWakeObserver { NSWorkspace.shared.notificationCenter.removeObserver(hardwareWakeObserver) }
         heartbeatTimer?.cancel()
     }
 
@@ -414,7 +442,7 @@ final class AppState: ObservableObject {
     func startMonitoring() {
         guard let fc = try? FanControl() else { return }
 
-        let monitor = ThermalMonitor(fanControl: fc, profile: activeProfile)
+        let monitor = ThermalMonitor(fanControl: fc, profile: activeProfile, useInventoryCaching: true)
         monitor.onUpdate = { [weak self] status, profile, state in
             Task { @MainActor [weak self] in
                 self?.latestStatus = status
@@ -436,6 +464,10 @@ final class AppState: ObservableObject {
         }
         monitor.start()
         self.monitor = monitor
+        if let hardwareWakeObserver { NSWorkspace.shared.notificationCenter.removeObserver(hardwareWakeObserver) }
+        hardwareWakeObserver = NSWorkspace.shared.notificationCenter.addObserver(
+            forName: NSWorkspace.didWakeNotification, object: nil, queue: .main
+        ) { [weak monitor] _ in monitor?.invalidateHardwareInventory() }
     }
 
     // MARK: - Actions

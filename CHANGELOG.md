@@ -1,5 +1,15 @@
 # MacFanPro changelog
 
+## 0.2.3.67
+
+- Rate-limit ordinary temperature-anomaly reports and compact repeated process snapshots, while preserving safety/error diagnostics.
+- Quiesce monitoring on quit, finish accepted fan writes off the main thread, then release only app-owned control.
+- Preserve the previous fan target if switching back to automatic mode is rejected; retain automatic/system-mode readback and Ftst recovery.
+- Require five consecutive sampled cold seconds before normal Smart/curve release; explicit Default/Silent actions and safety/failed-acquisition recovery remain immediate.
+- Refresh displayed values once per second, with immediate profile/state changes, independently of the 100ms control loop.
+- Skip absent temperature keys only after complete firmware enumeration; invalidate the inventory on wake. Fan-control state and metadata are still read fresh.
+- Add reported temperature keys only on M6 CPU brands; M6 hardware acceptance remains unverified.
+
 ## 0.2.3.66
 
 - Continue the MacFanPro name and original GitHub, website, Homebrew and Gitee addresses.

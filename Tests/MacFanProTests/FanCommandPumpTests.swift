@@ -15,6 +15,24 @@ import Testing
 @Suite("FanCommandPump coalescing")
 struct FanCommandPumpTests {
 
+    @Test("Exit closes admission and releases only after accepted writes have completed")
+    func orderedExit() {
+        let h = Harness()
+        let finished = DispatchSemaphore(value: 0)
+        let rejected = DispatchSemaphore(value: 0)
+        let pump = FanCommandPump { h.execute($0) }
+        pump.submit(.setRPM(1000))
+        #expect(h.firstStarted.wait(timeout: .now() + 2) == .success)
+        pump.submit(.setMax)
+        pump.finish { ok in #expect(ok); finished.signal() }
+        pump.submit(.setRPM(3000)) { ok in #expect(!ok); rejected.signal() }
+        #expect(rejected.wait(timeout: .now() + 1) == .success)
+        #expect(finished.wait(timeout: .now() + 0.01) == .timedOut)
+        h.releaseFirst.signal()
+        #expect(finished.wait(timeout: .now() + 2) == .success)
+        #expect(h.recorded == [.setRPM(1000), .setMax, .releaseAppHold])
+    }
+
     /// Records executed commands and blocks the FIRST one, so a test can submit a
     /// burst that piles into the pump's pending buffer and then observe exactly which
     /// commands survive and in what order.

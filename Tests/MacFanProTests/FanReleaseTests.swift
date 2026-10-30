@@ -3,6 +3,18 @@ import Testing
 
 @Suite("Fan release — no hardware writes")
 struct FanReleaseTests {
+    @Test("Rejected automatic mode preserves the last target even when Ftst recovery also fails")
+    func rejectedModeNeverStopsFan() {
+        var targets: [String] = []
+        #expect(throws: (any Error).self) {
+            try FanHandoff.release(indices: [0, 1], hasFtst: true,
+                                   modeKey: { "F\($0)Md" }, read: { _ in 1 }) { key, _ in
+                if key.hasSuffix("Tg") { targets.append(key) }
+                return key == "F1Md"
+            }
+        }
+        #expect(targets == ["F1Tg"])
+    }
     @Test("A failed mode write still attempts the other fan and Ftst")
     func partialFailure() {
         var keys: [String] = []
@@ -13,7 +25,7 @@ struct FanReleaseTests {
                 return key != "F0Md"
             }
         }
-        #expect(keys == ["F0Md", "F0Tg", "F1Md", "F1Tg", "Ftst"])
+        #expect(keys == ["F0Md", "F1Md", "F1Tg", "Ftst"])
     }
 
     @Test("A rejected Ftst reset is reported by key")
@@ -67,7 +79,7 @@ struct FanReleaseTests {
             if key == "Ftst" { reset = true; return true }
             return false
         }
-        #expect(keys == ["F0Md", "F0Tg", "F1Md", "F1Tg", "Ftst"])
+        #expect(keys == ["F0Md", "F1Md", "Ftst"])
     }
 
     @Test("A diagnostic flag still set after rejection remains an error")

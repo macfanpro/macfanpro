@@ -298,6 +298,7 @@ public final class DaemonServer {
 
     public convenience init(fanControl: FanControl, ownerUID: uid_t,
                             sampleMaxTemp: (() -> Float?)? = nil) throws {
+        fanControl.enableInventoryCaching()
         self.init(fanControl: fanControl, ownerUID: ownerUID, sampleMaxTemp: sampleMaxTemp,
                   socketFD: try Self.openSocket(ownerUID: ownerUID), now: Date.init)
     }
@@ -595,7 +596,8 @@ public final class DaemonServer {
     /// Peak CPU/GPU temperature. Production path reads each safety key under smcLock
     /// and RELEASES between keys: the read serializes with client writes (no torn SMC
     /// access — the defect this fixes) but never holds the lock longer than a single
-    /// ~0.3ms read, so a full ~10ms sweep can't head-of-line-block a fan command.
+    /// ~0.3ms warm read. The first temperature read after wake may also enumerate
+    /// firmware keys, abandoning discovery after a 100ms budget between calls.
     /// Sampling temps interleaved with writes is safe — a write changes fan speed, not
     /// the sensors, and a threshold check doesn't need an instantaneous snapshot.
     private func currentSafetyTemp() -> Float? {
@@ -726,6 +728,17 @@ public final class DaemonServer {
     }
 
     private func handleWake() {
+        // Power notifications arrive on the main run loop. Do not wait there
+        // for a slow acquisition's SMC lock: sleep acknowledgements use it too.
+        DispatchQueue.global(qos: .utility).async { [self] in
+            invalidateInventoryAndReapplyAfterWake()
+        }
+    }
+
+    private func invalidateInventoryAndReapplyAfterWake() {
+        smcLock.lock()
+        fanControl.invalidateInventory()
+        smcLock.unlock()
         stateLock.lock()
         let heldCommand = hold.command
         stateLock.unlock()

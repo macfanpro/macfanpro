@@ -74,9 +74,8 @@ public final class ThermalMonitor: @unchecked Sendable {
     /// At 100ms thermal tick, 20 × 0.1s = 2 seconds.
     private static let monitorCadence = 20
 
-    /// UI update cadence: onUpdate fires every N thermal ticks.
-    /// At 100ms thermal tick, 5 × 0.1s = 500ms — smooth UI without excessive redraws.
-    private static let uiUpdateCadence = 5
+    private var pushGate = StatusPushGate()
+    private var fanOffGate = FanOffGate()
 
     private var tickCounter = 0
 
@@ -106,8 +105,7 @@ public final class ThermalMonitor: @unchecked Sendable {
 
     // MARK: - Anomaly Detection
 
-    /// Tracks temps over 30 seconds (15 readings at 2s monitor cadence)
-    private var anomalyHistory: [Float] = []
+    private var anomalyGate = AnomalyGate()
     private var isCalibrating = false
 
     // MARK: - Process Buffer
@@ -123,7 +121,7 @@ public final class ThermalMonitor: @unchecked Sendable {
     }
     private var calibration: CalibrationData?
 
-    /// Called on UI update cadence (every 500ms) with updated status.
+    /// Called at most once per second, or immediately on profile/state changes.
     public var onUpdate: ((ThermalStatus, FanProfile, MonitorState) -> Void)?
     /// Synchronous execution, used by CLI watch. Throwing leaves the command pending
     /// in the control state so it is retried while still required.
@@ -132,7 +130,11 @@ public final class ThermalMonitor: @unchecked Sendable {
     /// at most one monitor write is outstanding, with bounded backoff on failure.
     public var onFanCommandAsync: ((FanCommand, @escaping @Sendable (Bool) -> Void) -> Void)?
 
-    public convenience init(fanControl: FanControl, profile: FanProfile = .silent) {
+    public convenience init(fanControl: FanControl, profile: FanProfile = .silent,
+                            useInventoryCaching: Bool = false) {
+        // Only the app supplies a wake invalidation observer. CLI watch retains
+        // fresh probing because it has no AppKit wake lifecycle.
+        if useInventoryCaching { fanControl.enableInventoryCaching() }
         self.init(fanControl: fanControl, profile: profile, interval: 0.1, logger: .shared,
                   loadCalibration: CalibrationData.load, now: Date.init, captureProcesses: nil)
     }
@@ -187,6 +189,18 @@ public final class ThermalMonitor: @unchecked Sendable {
         }
     }
 
+    public func invalidateHardwareInventory() {
+        queue.async { [self] in fanControl.invalidateInventory() }
+    }
+
+    public func stopAsynchronously(_ completion: @escaping @Sendable () -> Void) {
+        queue.async { [self] in
+            timer?.cancel()
+            timer = nil
+            completion()
+        }
+    }
+
     /// Update the active profile. `applied`, if given, runs on the monitor's queue once
     /// the switch has taken effect, after any command the previous profile issued.
     public func switchProfile(_ profile: FanProfile, applied: (@Sendable () -> Void)? = nil) {
@@ -202,6 +216,8 @@ public final class ThermalMonitor: @unchecked Sendable {
             fansCurrentlyRunning = false
             sustainedAboveSeconds = 0
             tickCounter = 0
+            pushGate.reset()
+            fanOffGate.reset()
 
             if profile.id == "smart" {
                 // Reset Smart state and reload calibration data
@@ -238,6 +254,7 @@ public final class ThermalMonitor: @unchecked Sendable {
         if maxTemp >= FanProfile.safetyTempThreshold { safetyDemand = true }
         if maxTemp < FanProfile.safetyTempThreshold - FanProfile.hysteresisDegrees { safetyDemand = false }
         if safetyDemand {
+            fanOffGate.reset()
             if state != .safetyOverride || !commandConfirmed {
                 applyCommand(.setMax) { [self] in
                     state = .safetyOverride
@@ -247,7 +264,7 @@ public final class ThermalMonitor: @unchecked Sendable {
                     logger?.safety("Override triggered: \(String(format: "%.1f", maxTemp))°C — fans maxed")
                 }
             }
-            if tickCounter % Self.uiUpdateCadence == 0 {
+            if pushGate.shouldPush(at: now(), profileID: activeProfile.id, state: state) {
                 onUpdate?(status, activeProfile, state)
             }
             tickCounter += 1
@@ -270,8 +287,8 @@ public final class ThermalMonitor: @unchecked Sendable {
             tickCurve(status: status, peakTemp: maxTemp)
         }
 
-        // UI update at slower cadence (every 500ms)
-        if tickCounter % Self.uiUpdateCadence == 0 {
+        // Display cadence is independent of the 100ms control/safety loop.
+        if pushGate.shouldPush(at: now(), profileID: activeProfile.id, state: state) {
             onUpdate?(status, activeProfile, state)
         }
 
@@ -289,57 +306,12 @@ public final class ThermalMonitor: @unchecked Sendable {
         processBuffer.append((timestamp: ts, processes: currentProcs))
         if processBuffer.count > 15 { processBuffer.removeFirst() }
 
-        // Anomaly detection: two tiers
-        // Tier 1: instant spike — >5°C between consecutive readings (2 seconds)
-        // Tier 2: sustained change — >10°C over 30 seconds
-        if !isCalibrating {
-            var spikeDetected = false
-
-            // Tier 1: check against previous reading
-            if let prevTemp = anomalyHistory.last {
-                let instantDelta = maxTemp - prevTemp
-                if abs(instantDelta) > 5 {
-                    let direction = instantDelta > 0 ? "spike" : "drop"
-                    let fan0 = status.fans.first
-                    logger?.info(
-                        "Instant \(direction): \(String(format: "%.1f", prevTemp))→\(String(format: "%.1f", maxTemp))°C " +
-                        "(\(String(format: "%+.1f", instantDelta))°C in 2s) | " +
-                        "Fan0: \(fan0?.actualRPM ?? 0) RPM (\(fan0?.mode ?? "?")) | " +
-                        "Profile: \(activeProfile.name)"
-                    )
-                    spikeDetected = true
-                }
-            }
-
-            // Tier 2: check over 30-second window
-            if anomalyHistory.count >= 15 {
-                let oldest = anomalyHistory.first!
-                let sustainedDelta = maxTemp - oldest
-                if abs(sustainedDelta) > 10 {
-                    let direction = sustainedDelta > 0 ? "spike" : "drop"
-                    let fan0 = status.fans.first
-                    logger?.info(
-                        "Sustained \(direction): \(String(format: "%.1f", oldest))→\(String(format: "%.1f", maxTemp))°C " +
-                        "(\(String(format: "%+.1f", sustainedDelta))°C in 30s) | " +
-                        "Fan0: \(fan0?.actualRPM ?? 0) RPM (\(fan0?.mode ?? "?")) | " +
-                        "Profile: \(activeProfile.name)"
-                    )
-                    spikeDetected = true
-                    anomalyHistory.removeAll()
-                }
-            }
-
-            // Dump the rolling buffer on any spike — shows what was running BEFORE
-            if spikeDetected {
-                logger?.info("Pre-spike process history (last \(processBuffer.count * 2)s):")
-                for entry in processBuffer {
-                    logger?.info("  \(entry.timestamp): \(entry.processes)")
-                }
-            }
+        if let report = anomalyGate.report(temperature: maxTemp, at: now(), enabled: !isCalibrating) {
+            let fan = status.fans.first
+            logger?.info(report + " | Fan0: \(fan?.actualRPM ?? 0) RPM (\(fan?.mode ?? "?")) | Profile: \(activeProfile.name)")
+            logger?.info("Pre-spike process history (last \(processBuffer.count * 2)s):")
+            for line in AnomalyGate.compact(processBuffer) { logger?.info(line) }
         }
-
-        anomalyHistory.append(maxTemp)
-        if anomalyHistory.count > 15 { anomalyHistory.removeFirst() }
     }
 
     // MARK: - Smart Profile
@@ -363,8 +335,11 @@ public final class ThermalMonitor: @unchecked Sendable {
         let minRPM = status.fans.first.map { Float($0.minRPM) } ?? 2317
         let minPct = minRPM / maxRPM
 
-        // Below stop threshold and fans running: turn off (with hysteresis)
-        if peakTemp < Self.smartStopTemp && needsRelease && rateOfChange() <= 0 {
+        // Require five sampled cold seconds during ordinary operation. Safety
+        // recovery and partially failed acquisitions still release immediately.
+        let cold = peakTemp < Self.smartStopTemp && rateOfChange() <= 0
+        let coldConfirmed = fanOffGate.ready(cold: cold, interval: TimeInterval(tickInterval))
+        if cold && needsRelease && (!fansCurrentlyRunning || state == .safetyOverride || coldConfirmed) {
             applyCommand(.resetAuto) { [self] in
                 lastAppliedRPMPercent = 0
                 rampedRPMPercent = 0
@@ -484,9 +459,13 @@ public final class ThermalMonitor: @unchecked Sendable {
             return
         }
 
-        // Get target from curve (now applies curve shape: easeIn, linear, easeOut, sCurve)
-        guard let rawTarget = curve.targetPercent(at: peakTemp, fansCurrentlyRunning: fansCurrentlyRunning) else {
-            // Curve says fans should be off
+        // Debounce ordinary low-temperature release, not hands-off user intent or
+        // recovery after a failed acquisition / safety override.
+        let coldConfirmed = fanOffGate.ready(cold: peakTemp <= curve.stopTemp,
+                                             interval: TimeInterval(tickInterval))
+        let curveTarget = curve.targetPercent(at: peakTemp, fansCurrentlyRunning: fansCurrentlyRunning)
+        let holdMinimum = curveTarget == nil && fansCurrentlyRunning && state != .safetyOverride && !coldConfirmed
+        guard let rawTarget = curveTarget ?? (holdMinimum ? 0.001 : nil) else {
             if needsRelease {
                 applyCommand(.resetAuto) { [self] in
                     fansCurrentlyRunning = false

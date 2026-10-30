@@ -72,3 +72,7 @@ file logs (since 0.2.3.56 the daemon's diagnostics also use upstream's public
 fans at max until cooldown in that case. The startup reconcile and SIGTERM
 release from #31 are adopted as upstream wrote them (0.2.3.55). See
 [upstream-sync-20261007.md](upstream-sync-20261007.md).
+
+## 0.2.3.67 PR adaptations
+
+See [2026-10-30 decisions](upstream-sync-20261030.md). This version adds sampled-cold release confirmation (including Smart), asynchronous ordered exit release, UI/anomaly gates, M6 probe keys and a connection-local temperature key inventory. Only a complete inventory can suppress a missing temperature probe; wake invalidates it. Unlike the old removed metadata-cache experiment, mode/Ftst/fan-count metadata and all values remain fresh. The historical adoption/removal records describe their named versions, not the current implementation.

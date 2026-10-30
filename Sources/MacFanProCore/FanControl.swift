@@ -131,6 +131,9 @@ public final class FanControl {
 
     // MARK: - Fan Count
 
+    func enableInventoryCaching() { smc.enableInventoryCaching() }
+    func invalidateInventory() { smc.invalidateInventory() }
+
     public func fanCount() throws -> Int {
         let result = smc.readKey(SMCFanKey.count)
         guard result.success, !result.bytes.isEmpty else {
@@ -358,7 +361,7 @@ public final class FanControl {
         "TS0P",
         // Battery
         "TB0T",
-    ]
+    ] + GenerationThermalKeys.current
 
     /// The CPU (TC/Tp/Te) and GPU (TG/Tg) subset the thermal safety floor watches —
     /// derived from `thermalKeys` so it can't drift from what `status()` reports.

@@ -9,9 +9,13 @@ import SwiftUI
 import MacFanProCore
 import MacFanProLocalization
 
+@MainActor
 class AppDelegate: NSObject, NSApplicationDelegate {
     var supervisesFans = false
     private var duplicateInstance = false
+    var prepareForTermination: ((@escaping @Sendable () -> Void) -> Void)?
+    private var terminating = false
+    private var terminationReplied = false
     func applicationDidFinishLaunching(_ notification: Notification) {
         // No Dock icon — menu bar only
         NSApp.setActivationPolicy(.accessory)
@@ -26,20 +30,29 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         }
     }
 
-    func applicationWillTerminate(_ notification: Notification) {
+    func applicationShouldTerminate(_ sender: NSApplication) -> NSApplication.TerminateReply {
         // A setup-only or duplicate instance never acquired fan control.
-        guard supervisesFans, !duplicateInstance else { return }
-        // Reset fans on quit so the daemon doesn't hold stale APP settings — but
-        // ONLY if the app owns the hold. A CLI hold (`sudo macfanpro max`) is the
-        // user's deliberate, unsupervised choice; quitting the menu bar app must not
-        // destroy it — that's the v0.1.7 arbitration feature. Synchronous on purpose:
-        // the process is exiting, so an async write would be dropped; both calls are
-        // bounded by the sendRaw timeout.
-        let client = DaemonClient()
-        if let state = try? client.readState(), state.owner == "app" {
-            _ = try? client.execute(.releaseAppHold)
+        guard supervisesFans, !duplicateInstance, let prepareForTermination else { return .terminateNow }
+        guard !terminating else { return .terminateLater }
+        terminating = true
+        // A wedged daemon must not hold up logout behind several 30s requests.
+        // Stop heartbeats/admission now; on timeout the daemon watchdog recovers
+        // any supervised hold. Both paths share the same one-shot reply.
+        DispatchQueue.main.asyncAfter(deadline: .now() + 5) { [weak self] in
+            guard let self, !self.terminationReplied else { return }
+            TFLogger.shared.error("App exit drain timed out; daemon watchdog will recover app-owned control")
+            self.finishTermination()
         }
-        // owner == "cli" → leave the CLI hold alone; owner == "none" → nothing to reset.
+        prepareForTermination { [weak self] in
+            Task { @MainActor in self?.finishTermination() }
+        }
+        return .terminateLater
+    }
+
+    private func finishTermination() {
+        guard !terminationReplied else { return }
+        terminationReplied = true
+        NSApp.reply(toApplicationShouldTerminate: true)
     }
 }
 
@@ -67,9 +80,13 @@ struct MacFanProApp: App {
             )
             .environmentObject(language)
             .task {
-                setup.onReady = { delegate.supervisesFans = true; appState.activateServices() }
+                setup.onReady = {
+                    delegate.prepareForTermination = { completion in appState.prepareForTermination(completion) }
+                    delegate.supervisesFans = true
+                    appState.activateServices()
+                }
                 setup.beforeRemoval = { delegate.supervisesFans = false; await appState.pauseForServiceRemoval() }
-                setup.afterCancelledRemoval = { appState.activateServices() }
+                setup.afterCancelledRemoval = { delegate.supervisesFans = true; appState.activateServices() }
                 setup.windowContent = {
                     AnyView(SettingsView(setup: setup)
                     .environmentObject(appState)

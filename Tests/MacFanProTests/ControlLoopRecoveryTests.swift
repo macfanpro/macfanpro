@@ -317,10 +317,11 @@ struct MonitorRecoveryTests {
         f.tick(monitor)
     }
 
-    @Test("A failed first direct hold still releases partially acquired fans on cooldown")
-    func failedFirstHoldReleases() {
+    @Test("A failed first direct hold still releases partially acquired fans on cooldown",
+          arguments: [FanProfile.silent, .smart, .balanced])
+    func failedFirstHoldReleases(profile: FanProfile) {
         let f = ControlFixture()
-        let monitor = f.monitor(.silent)
+        let monitor = f.monitor(profile)
         monitor.onFanCommand = { command in
             switch command {
             case .setMax: try f.fans.setMax()
@@ -527,7 +528,7 @@ struct MonitorRecoveryTests {
         f.tick(monitor, count: 15)
         #expect(commands.count > 1)
         f.smc.temperature = 49
-        f.tick(monitor, count: 20)
+        f.tick(monitor, count: 70)
         #expect(commands.last == .resetAuto)
     }
 }

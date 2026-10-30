@@ -77,6 +77,27 @@ public final class SMCConnection {
 
     private let connection: io_connect_t
     private let injectedCall: ((inout SMCParamStruct, inout SMCParamStruct) -> kern_return_t)?
+    // The caller serializes SMC access (monitor queue / daemon smcLock).
+    private var inventory = SMCKeyInventory()
+    private var inventoryEnabled = false
+    private var inventoryRetry = SMCInventoryRetry()
+
+    func enableInventoryCaching() { inventoryEnabled = true }
+    func invalidateInventory() { inventory = SMCKeyInventory(); inventoryRetry = SMCInventoryRetry() }
+    var inventoryIsComplete: Bool { inventory.complete }
+
+    private func temperatureKeyMayExist(_ key: String) -> Bool {
+        // Never cache mode, Ftst, target or fan-count reads. Their acknowledgement
+        // and failure recovery continue to use fresh metadata and fresh values.
+        guard inventoryEnabled, key.hasPrefix("T") else { return true }
+        let now = ProcessInfo.processInfo.systemUptime
+        if !inventory.complete, inventoryRetry.canAttempt(at: now) {
+            if !inventory.rebuild(count: getKeyCount(), keyAtIndex: getKeyAtIndex) {
+                inventoryRetry.failed(at: now)
+            }
+        }
+        return inventory.mayContain(key)
+    }
 
     init(call: @escaping (inout SMCParamStruct, inout SMCParamStruct) -> kern_return_t) {
         connection = 0
@@ -116,6 +137,7 @@ public final class SMCConnection {
     /// Read raw bytes from an SMC key
     public func readKey(_ key: String) -> (success: Bool, bytes: [UInt8], size: UInt32) {
         guard let code = fourCharCode(key) else { return (false, [], 0) }
+        guard temperatureKeyMayExist(key) else { return (false, [], 0) }
         var input = SMCParamStruct()
         var output = SMCParamStruct()
 
@@ -183,7 +205,7 @@ public final class SMCConnection {
         input.data8 = SMCCommand.getKeyFromIndex.rawValue
         input.data32 = index
 
-        guard callSMC(&input, &output) == kIOReturnSuccess else {
+        guard callSMC(&input, &output) == kIOReturnSuccess, output.result == 0 else {
             return nil
         }
 

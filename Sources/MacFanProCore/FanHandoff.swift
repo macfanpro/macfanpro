@@ -20,7 +20,11 @@ enum FanHandoff {
         for index in indices {
             let key = modeKey(index)
             if !write(key, [0]) { failedModeKeys.append(key) }
-            _ = write(SMCFanKey.key(SMCFanKey.target, fan: index), floatToSMCBytes(0))
+            else {
+                // A rejected mode change may leave this fan manual. Never replace
+                // its last spinning target with zero while recovery is uncertain.
+                _ = write(SMCFanKey.key(SMCFanKey.target, fan: index), floatToSMCBytes(0))
+            }
         }
         let failedFtst = hasFtst && !write(SMCFanKey.forceTest, [0])
         // Stopped M4 fans can reject F*Md=0 while already in system mode (3).

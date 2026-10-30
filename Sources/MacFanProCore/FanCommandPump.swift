@@ -15,7 +15,8 @@ import Foundation
 public final class FanCommandPump: @unchecked Sendable {
     /// Executes one command; returns `true` on success. Runs on the pump's queue.
     public typealias Executor = @Sendable (FanCommand) -> Bool
-    /// Fired (on the pump's queue) with the command's success once it runs.
+    /// Fired on the pump's queue once a command runs. Rejected submissions after
+    /// finish report false immediately on the caller's thread.
     public typealias Completion = @Sendable (Bool) -> Void
 
     private let queue: DispatchQueue
@@ -24,6 +25,7 @@ public final class FanCommandPump: @unchecked Sendable {
     /// Fan writes awaiting the serial queue, oldest-first, each with its optional
     /// completion. Guarded by `lock`.
     private var pending: [(command: FanCommand, done: Completion?)] = []
+    private var accepting = true
 
     /// - execute: performs one command (blocking socket I/O is fine — it runs on the
     ///   pump's background queue, never the main thread) and returns whether it
@@ -65,6 +67,7 @@ public final class FanCommandPump: @unchecked Sendable {
     ///     for it, nor it for a setRPM.
     public func submit(_ command: FanCommand, onComplete: Completion? = nil) {
         lock.lock()
+        guard accepting else { lock.unlock(); onComplete?(false); return }
         if onComplete == nil, case .setRPM = command,
            let last = pending.last, last.done == nil, case .setRPM = last.command {
             pending[pending.count - 1] = (command, nil)   // coalesce consecutive setRPM
@@ -74,6 +77,18 @@ public final class FanCommandPump: @unchecked Sendable {
         lock.unlock()
 
         queue.async { [weak self] in self?.drain() }
+    }
+
+    /// Close admission BEFORE enqueueing the final ownership-aware release.
+    /// Runs off-main, behind every accepted command, including an in-flight write.
+    /// Unlike a main-thread sync barrier, a slow firmware request cannot freeze UI.
+    public func finish(onComplete: @escaping Completion) {
+        lock.lock()
+        guard accepting else { lock.unlock(); onComplete(false); return }
+        accepting = false
+        pending.append((.releaseAppHold, onComplete))
+        lock.unlock()
+        queue.async { [self] in drain() }
     }
 
     /// Drain pending writes in order. Only one drain runs at a time (the queue is
