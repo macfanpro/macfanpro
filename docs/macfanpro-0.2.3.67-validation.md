@@ -46,7 +46,20 @@ Local evidence is retained in ignored `dist/validation-0.2.3.67/`: `all-configur
 
 ## Downloaded draft / publication
 
-Pending creation of the tag-triggered draft. The downloaded draft assets must pass the same acceptance script before publication. Homebrew automation is checked after public release.
+- Source commit: `e3df5190074f540cdd534e1d4303e114604efa1e`; annotated tag object: `11fded63d5af5edb620806c2523dc71190065445`. GitHub confirms the tag resolves to that commit.
+- [Hosted CI 41087086180](https://github.com/macfanpro/macfanpro/actions/runs/41087086180) passed on macOS 15: Debug/Release each 182 tests, both disconnect regressions, 17 installer tests, 7 mirror tests and localization packaging.
+- [Automatic Release 41087085460](https://github.com/macfanpro/macfanpro/actions/runs/41087085460) remained queued without a runner for about nine minutes. It was intentionally canceled before execution to prevent a duplicate draft. This is not a remote-build success claim.
+- Assets were built locally from the tagged code using the same `Scripts/package-release.sh`: macOS 27.0.1 (26A434), Xcode 27.1 (27A9275), Swift 6.4. The CLI Mach-O declares arm64/macOS minimum 14.0. Hosted CI independently compiled and tested the same source on macOS 15.
+- Draft release ID `429242116`: all six assets were uploaded, then freshly downloaded from GitHub into `dist/validation-0.2.3.67/downloaded-draft/`. Every file matched both the uploaded bytes and GitHub's SHA-256 asset digest.
+- The downloaded archive/DMG/installer passed all checksum manifests, old-updater verification, strict signatures, App/CLI/helper versions, stable app identity, 18 source-matching language tables, embedded installer consistency and read-only DMG acceptance. Evidence: `downloaded-assets.log`, `github-draft-metadata.json`, `github-ci.log`.
+
+| Main downloaded asset | SHA-256 |
+| --- | --- |
+| DMG | `ec9a0e126d7e1cfdaa88e77043ee40f42a7cb097a19ae309e2b06c332aa8fb79` |
+| App/CLI archive | `b166efb74bde53a60e2da46e24a6828ac0153b243f9ec443a1ae04d60944bf3f` |
+| Online installer | `c449f806911eb60403a227c1902a946845bf84f13bd416f2918ac233fb41cf5c` |
+
+Publication is performed only after these downloaded-draft gates. Homebrew automation runs after public release; its status is recorded separately when available.
 
 ## Not performed
 
