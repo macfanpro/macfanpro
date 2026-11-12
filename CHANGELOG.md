@@ -1,5 +1,11 @@
 # MacFanPro changelog
 
+## 0.2.3.70
+
+- Retain explicit CLI speed-command diagnostics, including requested RPM, fan index, accepted per-fan targets and advisory notes, even while low-level ramp logging is quiet.
+- Add simulated dispatcher/logging regression coverage for repeated CLI targets, per-fan clamping and targets queued under thermal protection.
+- Cover temperature-only, fan-mode-only and disappearing-sensor interface notifications, including clearing a stale headline temperature.
+
 ## 0.2.3.69
 
 - Publish changed monitor and daemon state only, reducing redundant SwiftUI invalidation while preserving heartbeat debounce and unreadable advisory state.

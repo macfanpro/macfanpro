@@ -29,6 +29,41 @@ struct StatePublicationTests {
         #expect(app.activeProfile == .balanced)
     }
 
+    @Test("Temperature-only, fan-mode-only and disappearing sensor changes publish and clear stale values")
+    func independentSensorChanges() {
+        let app = AppState(startServices: false)
+        var publications = 0
+        let subscription = app.objectWillChange.sink { publications += 1 }
+        defer { subscription.cancel() }
+        func apply(_ temperatures: [String: Float], mode: String = "manual") {
+            let status = ThermalStatus(fans: [.init(index: 0, actualRPM: 2000, targetRPM: 2000,
+                                                    minRPM: 1000, maxRPM: 6000, mode: mode)],
+                                       temperatures: temperatures)
+            app.applyMonitorUpdate(status: status, profile: .smart, state: .active(profileName: "Smart"))
+        }
+        apply(["Tp01": 60, "Tg01": 50])
+        var before = publications
+        apply(["Tp01": 61, "Tg01": 50])
+        #expect(publications > before)
+        #expect(app.maxTemp == 61)
+        before = publications
+        apply(["Tp01": 61, "Tg01": 50], mode: "auto")
+        #expect(publications > before)
+        #expect(app.latestStatus?.fans.first?.mode == "auto")
+        before = publications
+        apply(["Tg01": 50], mode: "auto")
+        #expect(publications > before)
+        #expect(app.latestStatus?.temperatures["Tp01"] == nil)
+        #expect(app.maxTemp == 50)
+        before = publications
+        apply([:], mode: "auto")
+        #expect(publications > before)
+        #expect(app.maxTemp == nil)
+        before = publications
+        apply([:], mode: "auto")
+        #expect(publications == before)
+    }
+
     @Test("Heartbeat debounce and unreadable advisory state survive publication deduplication")
     func daemonPublication() {
         let app = AppState(startServices: false)
