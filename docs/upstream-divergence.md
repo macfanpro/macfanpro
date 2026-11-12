@@ -76,3 +76,7 @@ release from #31 are adopted as upstream wrote them (0.2.3.55). See
 ## 0.2.3.67 PR adaptations
 
 See [2026-10-30 decisions](upstream-sync-20261030.md). This version adds sampled-cold release confirmation (including Smart), asynchronous ordered exit release, UI/anomaly gates, M6 probe keys and a connection-local temperature key inventory. Only a complete inventory can suppress a missing temperature probe; wake invalidates it. Unlike the old removed metadata-cache experiment, mode/Ftst/fan-count metadata and all values remain fresh. The historical adoption/removal records describe their named versions, not the current implementation.
+
+## 0.2.3.69 selective performance adaptation
+
+See [2026-11-12 decisions](upstream-sync-20261112.md). Equal state values no longer republish to SwiftUI; routine successful diagnostics are sampled or suppressed. Errors, advisory outcomes, control-owner changes and safety events remain visible. Logger file handling and all control/safety policies remain local and unchanged.

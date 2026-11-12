@@ -267,6 +267,7 @@ public final class DaemonServer {
     private let ownerUID: uid_t
     /// Serializes all SMC access — prevents data race between client handler and watchdog
     private let smcLock = NSLock()
+    private let routineLogs = RoutineLogGate()
     /// The current hold and its owner. Re-applied after sleep/wake; the watchdog
     /// reverts it only when it's `.supervised` and the app has gone silent.
     private var hold: HoldState = .none
@@ -795,7 +796,9 @@ public final class DaemonServer {
             process(request)
         }
         // Verb + outcome only — never raw client bytes.
-        DaemonLog.notice("MacFanPro daemon: verb=\(request.verb.rawValue) outcome=\(response.ok ? "ok" : (response.error?.rawValue ?? "error"))")
+        if routineLogs.allows(request: request, response: response) {
+            DaemonLog.notice("MacFanPro daemon: verb=\(request.verb.rawValue) outcome=\(response.ok ? "ok" : (response.error?.rawValue ?? "error"))")
+        }
         return response
     }
 
@@ -818,11 +821,21 @@ public final class DaemonServer {
             // re-apply (handleWake) and the `state` snapshot are unchanged.
             func recordHold(_ heldCommand: String) {
                 stateLock.lock()
+                let previousOwner: String
+                switch hold {
+                case .none: previousOwner = "none"
+                case .supervised: previousOwner = "app"
+                case .unsupervised: previousOwner = "cli"
+                }
                 releasePending = false
                 hold = oneshot
                     ? .unsupervised(command: heldCommand)
                     : .supervised(command: heldCommand, lastBeat: now())
                 stateLock.unlock()
+                let owner = oneshot ? "cli" : "app"
+                if previousOwner != owner {
+                    DaemonLog.notice("MacFanPro daemon: control owner \(previousOwner) → \(owner)")
+                }
             }
 
             // A supervised (app) command must NOT silently overwrite an unsupervised
