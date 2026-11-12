@@ -267,8 +267,6 @@ public final class DaemonServer {
     private let ownerUID: uid_t
     /// Serializes all SMC access — prevents data race between client handler and watchdog
     private let smcLock = NSLock()
-    private let routineLogs = RoutineLogGate()
-    private let requestLog: (String) -> Void
     /// The current hold and its owner. Re-applied after sleep/wake; the watchdog
     /// reverts it only when it's `.supervised` and the app has gone silent.
     private var hold: HoldState = .none
@@ -308,9 +306,7 @@ public final class DaemonServer {
     /// The same dispatcher and control loops can run against a simulated SMC without
     /// binding the installed daemon's socket, starting timers, or requiring root.
     init(fanControl: FanControl, ownerUID: uid_t, sampleMaxTemp: (() -> Float?)?,
-         socketFD: Int32?, now: @escaping () -> Date,
-         requestLog: @escaping (String) -> Void = DaemonLog.notice) {
-        self.requestLog = requestLog
+         socketFD: Int32?, now: @escaping () -> Date) {
         self.fanControl = fanControl
         self.ownerUID = ownerUID
         self.socketFD = socketFD
@@ -798,10 +794,8 @@ public final class DaemonServer {
         let response = DaemonRequestPolicy.perform(request.verb, lock: smcLock) {
             process(request)
         }
-        // Typed outcomes and processed CLI targets only — never raw client bytes.
-        if routineLogs.allows(request: request, response: response) {
-            requestLog(DaemonRequestDiagnostic.message(request: request, response: response))
-        }
+        // Verb + outcome only — never raw client bytes.
+        DaemonLog.notice("MacFanPro daemon: verb=\(request.verb.rawValue) outcome=\(response.ok ? "ok" : (response.error?.rawValue ?? "error"))")
         return response
     }
 
@@ -824,21 +818,11 @@ public final class DaemonServer {
             // re-apply (handleWake) and the `state` snapshot are unchanged.
             func recordHold(_ heldCommand: String) {
                 stateLock.lock()
-                let previousOwner: String
-                switch hold {
-                case .none: previousOwner = "none"
-                case .supervised: previousOwner = "app"
-                case .unsupervised: previousOwner = "cli"
-                }
                 releasePending = false
                 hold = oneshot
                     ? .unsupervised(command: heldCommand)
                     : .supervised(command: heldCommand, lastBeat: now())
                 stateLock.unlock()
-                let owner = oneshot ? "cli" : "app"
-                if previousOwner != owner {
-                    DaemonLog.notice("MacFanPro daemon: control owner \(previousOwner) → \(owner)")
-                }
             }
 
             // A supervised (app) command must NOT silently overwrite an unsupervised

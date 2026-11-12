@@ -55,11 +55,11 @@ public struct FanRPM: Codable, Equatable {
     public init(index: Int, rpm: Int) { self.index = index; self.rpm = rpm }
 }
 
-public struct ThermalStatus: Encodable, Equatable {
+public struct ThermalStatus: Encodable {
     public let fans: [FanStatus]
     public let temperatures: [String: Float]
 
-    public struct FanStatus: Encodable, Equatable {
+    public struct FanStatus: Encodable {
         public let index: Int
         public let actualRPM: Int
         public let targetRPM: Int
@@ -95,7 +95,6 @@ public struct DiscoveredKey {
 public final class FanControl {
     private let smc: SMCConnection
     private let logger: TFLogger?
-    private let routineLogs = RoutineLogGate()
     /// Which mode key works on this hardware (detected at init)
     private let modeKeyTemplate: String
     /// Whether Ftst unlock is available (M1-M4) or not (M5+)
@@ -258,9 +257,7 @@ public final class FanControl {
         guard smc.writeKey(targetKey, bytes: floatToSMCBytes(rpm)) else {
             throw MacFanProError.writeFailed(targetKey)
         }
-        if routineLogs.allows(key: "fan-\(index)") {
-            log("Set fan \(index) to \(Int(rpm)) RPM")
-        }
+        log("Set fan \(index) to \(Int(rpm)) RPM")
     }
 
     /// Resolve each fan independently; fan 0's limits do not constrain other fans.
@@ -287,9 +284,7 @@ public final class FanControl {
             guard smc.writeKey(targetKey, bytes: floatToSMCBytes(target.rpm)) else {
                 throw MacFanProError.writeFailed(targetKey)
             }
-            if routineLogs.allows(key: "fan-\(target.index)") {
-                log("Set fan \(target.index) to \(Int(target.rpm)) RPM")
-            }
+            log("Set fan \(target.index) to \(Int(target.rpm)) RPM")
         }
         return targets.map { FanRPM(index: $0.index, rpm: Int($0.rpm)) }
     }

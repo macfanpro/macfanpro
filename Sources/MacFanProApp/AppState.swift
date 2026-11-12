@@ -308,8 +308,18 @@ final class AppState: ObservableObject {
 
             Task { @MainActor [weak self] in
                 guard let self else { return }
-                self.applyDaemonStatus(didReadVersion: didReadVersion, version: versionValue,
-                                       didReadState: didReadState, hold: holdValue, heartbeatOK: hbOK)
+                if didReadVersion { self.daemonVersionMismatch = versionValue }
+                if didReadState { self.externalHold = holdValue }
+                // Daemon reachability — debounced so a single blip doesn't flash the
+                // "fan control unavailable" banner. Two consecutive missed heartbeats
+                // (~10s) is a real outage; any success clears it immediately.
+                if hbOK {
+                    self.heartbeatFailures = 0
+                    self.daemonUnreachable = false
+                } else {
+                    self.heartbeatFailures += 1
+                    if self.heartbeatFailures >= 2 { self.daemonUnreachable = true }
+                }
             }
 
             // Ride the heartbeat as a cheap clock, but schedule a network check every
@@ -427,29 +437,6 @@ final class AppState: ObservableObject {
                                   forKey: Self.updateNextCheckKey)
     }
 
-    /// Publish changed fields only; equal assignments still invalidate SwiftUI observers.
-    func applyMonitorUpdate(status: ThermalStatus, profile: FanProfile, state: MonitorState) {
-        if latestStatus != status { latestStatus = status }
-        if activeProfile != profile { activeProfile = profile }
-        if monitorState != state { monitorState = state }
-        let peak = status.displayedPeakTemp
-        if maxTemp != peak { maxTemp = peak }
-    }
-
-    func applyDaemonStatus(didReadVersion: Bool, version: String?, didReadState: Bool,
-                           hold: DaemonHoldState?, heartbeatOK: Bool) {
-        if didReadVersion, daemonVersionMismatch != version { daemonVersionMismatch = version }
-        if didReadState, externalHold != hold { externalHold = hold }
-        // Keep the existing two-missed-heartbeat debounce and preserve unreadable state.
-        if heartbeatOK {
-            heartbeatFailures = 0
-            if daemonUnreachable { daemonUnreachable = false }
-        } else {
-            heartbeatFailures += 1
-            if heartbeatFailures >= 2, !daemonUnreachable { daemonUnreachable = true }
-        }
-    }
-
     // MARK: - Monitoring
 
     func startMonitoring() {
@@ -458,7 +445,11 @@ final class AppState: ObservableObject {
         let monitor = ThermalMonitor(fanControl: fc, profile: activeProfile, useInventoryCaching: true)
         monitor.onUpdate = { [weak self] status, profile, state in
             Task { @MainActor [weak self] in
-                self?.applyMonitorUpdate(status: status, profile: profile, state: state)
+                self?.latestStatus = status
+                self?.activeProfile = profile
+                self?.monitorState = state
+                // Max of only the displayed sensors (CPU and GPU rows)
+                self?.maxTemp = status.displayedPeakTemp
             }
         }
         monitor.onFanCommandAsync = { [weak self] command, complete in
